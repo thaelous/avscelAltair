@@ -1,0 +1,3974 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#07080b]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AVS Mobile Studio Pro</title>
+  <meta name="description" content="Editor de video móvil profesional multipista con aceleración WebGL por hardware, biblioteca persistente IndexedDB, control dinámico de velocidad y soporte PWA offline.">
+
+  <!-- PWA & Android Meta Tags -->
+  <meta name="theme-color" content="#07080b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="AVS Studio Pro">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AVS Studio Pro">
+
+  <!-- Manifest PWA dinámico y estático -->
+  <link rel="manifest" href="/manifest.json" id="manifestPlaceholder">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23090a10'/><path d='M25 30 L75 30 L55 50 L75 70 L25 70 Z' fill='%2300f0ff'/></svg>">
+
+  <!-- Iconos y Tipografía -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --bg-base: #07080b;
+      --bg-header: #0d0f17;
+      --bg-card: #12141f;
+      --bg-item: #141622;
+      --border-color: #1c1f2d;
+      --border-item: #222536;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --track-lane: #08090f;
+      --track-head: #11131e;
+      --accent-cyan: #00f0ff;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-header: #ffffff;
+      --bg-card: #f1f5f9;
+      --bg-item: #ffffff;
+      --border-color: #cbd5e1;
+      --border-item: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --track-lane: #edf2f7;
+      --track-head: #e2e8f0;
+      --accent-cyan: #0284c7;
+    }
+    
+    html, body {
+      height: 100%;
+      height: 100vh;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    [data-theme="light"] header {
+      background-color: var(--bg-header) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    [data-theme="light"] nav {
+      background-color: var(--bg-header) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    [data-theme="light"] #bottomDrawer {
+      background-color: var(--bg-card) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    [data-theme="light"] #timelineScrollContainer {
+      background-color: var(--track-lane) !important;
+    }
+
+    [data-theme="light"] .track-lane-head {
+      background-color: var(--track-head) !important;
+      border-color: var(--border-color) !important;
+      color: var(--text-primary) !important;
+    }
+
+    [data-theme="light"] #panel-timeline > div:first-child {
+      background-color: var(--bg-card) !important;
+      border-color: var(--border-color) !important;
+    }
+
+    [data-theme="light"] .drawer-panel {
+      color: var(--text-primary);
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .scroll-touch-x {
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .scroll-touch-x::-webkit-scrollbar,
+    .scroll-touch-y::-webkit-scrollbar {
+      display: none;
+    }
+
+    .scroll-touch-y {
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+
+    .touch-btn:active {
+      transform: scale(0.94);
+      opacity: 0.88;
+    }
+
+    .track-item.is-active {
+      border: 2px solid #00f0ff !important;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+      height: 22px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      border-radius: 50%;
+      background: #00f0ff;
+      cursor: pointer;
+      margin-top: -5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.7);
+      border: 2px solid #ffffff;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 6px;
+      cursor: pointer;
+      background: #252839;
+      border-radius: 9999px;
+    }
+
+    #bottomDrawer {
+      transition: max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pb-safe {
+      padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
+    }
+    .pt-safe {
+      padding-top: max(8px, env(safe-area-inset-top, 8px));
+    }
+
+    .btn-disabled {
+      opacity: 0.35 !important;
+      pointer-events: none !important;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+    .animate-slide-up {
+      animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+<body class="flex flex-col h-full overflow-hidden select-none">
+
+  <!-- BARRA SUPERIOR CON ACCIONES RÁPIDAS Y DESHACER / REHACER -->
+  <header class="h-13 bg-[#0d0f17] border-b border-[#1c1f2d] px-2 flex items-center shrink-0 z-30 pt-safe">
+    <div class="flex items-center gap-1.5 scroll-touch-x w-full py-1">
+      
+      <!-- Logo AVS PRO -->
+      <div class="flex items-center gap-1.5 shrink-0 pr-1">
+        <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center text-black font-extrabold text-xs shadow-md shadow-cyan-500/25">
+          <i class="fa-solid fa-scissors"></i>
+        </div>
+        <div class="flex items-baseline gap-1">
+          <span class="text-xs font-black tracking-tight text-white">AVS</span>
+          <span class="text-[9px] font-mono text-cyan-400 bg-cyan-950/80 border border-cyan-800/80 px-1 py-0.2 rounded font-bold">PRO</span>
+        </div>
+      </div>
+
+      <!-- BOTONES DE DESHACER (UNDO) Y REHACER (REDO) -->
+      <div class="flex items-center gap-1 shrink-0 bg-[#141622] px-1 py-0.5 rounded-lg border border-[#222536]">
+        <button id="btnUndo" class="touch-btn w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-white bg-[#1b1e2c] border border-[#2b2f42] btn-disabled transition-all" title="Deshacer (Undo)">
+          <i class="fa-solid fa-rotate-left text-xs"></i>
+        </button>
+        <button id="btnRedo" class="touch-btn w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-white bg-[#1b1e2c] border border-[#2b2f42] btn-disabled transition-all" title="Rehacer (Redo)">
+          <i class="fa-solid fa-rotate-right text-xs"></i>
+        </button>
+      </div>
+
+      <!-- BOTÓN NUEVO PROYECTO (+) -->
+      <button id="btnNewProject" class="touch-btn shrink-0 h-8 px-2.5 bg-cyan-950/80 border border-cyan-700/80 text-cyan-300 rounded-lg flex items-center gap-1 text-xs font-bold shadow-sm" title="Crear Nuevo Proyecto">
+        <i class="fa-solid fa-plus text-cyan-400 text-xs"></i>
+        <span class="text-[11px]">Nuevo</span>
+      </button>
+
+      <!-- SELECTOR DE TEMA CLARO / OSCURO -->
+      <button id="btnThemeToggle" class="touch-btn shrink-0 w-8 h-8 bg-[#171a26] border border-[#272b3d] text-amber-400 rounded-lg flex items-center justify-center shadow-sm" title="Cambiar Tema (Claro / Oscuro)">
+        <i id="iconThemeDark" class="fa-solid fa-moon text-xs"></i>
+        <i id="iconThemeLight" class="fa-solid fa-sun text-xs text-amber-500 hidden"></i>
+      </button>
+
+      <!-- BOTÓN INSTALACIÓN ANDROID PWA -->
+      <button id="pwaInstallBtn" class="touch-btn shrink-0 h-8 px-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/50 text-emerald-300 rounded-lg flex items-center gap-1 text-xs font-bold shadow-sm hidden">
+        <i class="fa-brands fa-android text-emerald-400 text-xs"></i>
+        <span class="text-[10px]">Instalar</span>
+      </button>
+
+      <!-- Selector de Proporción (16:9 / 9:16) -->
+      <button id="btnRatioToggle" class="touch-btn shrink-0 h-8 px-2 bg-[#171a26] border border-[#272b3d] text-[11px] text-gray-200 font-mono rounded-lg flex items-center gap-1 shadow-sm">
+        <i class="fa-solid fa-mobile-screen text-[10px] text-cyan-400"></i>
+        <span id="ratioLabel">16:9</span>
+      </button>
+
+      <!-- Botón Abrir Video -->
+      <label class="touch-btn shrink-0 h-8 px-2.5 bg-[#171a26] border border-[#272b3d] text-gray-200 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer shadow-sm">
+        <i class="fa-solid fa-folder-open text-cyan-400 text-xs"></i>
+        <span class="text-[11px]">Abrir</span>
+        <input type="file" id="videoFileInput" accept="video/*" class="hidden">
+      </label>
+
+      <!-- Botón Bottom Sheet Vaciar Timeline -->
+      <button id="btnOpenClearSheet" class="touch-btn shrink-0 h-8 px-2 bg-rose-950/80 border border-rose-800/80 text-rose-300 text-xs font-semibold rounded-lg flex items-center gap-1 shadow-sm" title="Opciones de Limpieza del Timeline">
+        <i class="fa-solid fa-broom text-xs text-rose-400"></i>
+        <span class="text-[11px]">Vaciar</span>
+      </button>
+
+      <!-- Botón Guardar / Exportar -->
+      <button id="exportBtn" class="touch-btn shrink-0 h-8 px-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-black rounded-lg flex items-center gap-1 shadow-md shadow-cyan-400/25 ml-auto">
+        <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
+        <span class="text-[11px]">Exportar</span>
+      </button>
+
+      <!-- Botón Menú Móvil Limpio (⋮) con todas las opciones -->
+      <div class="relative shrink-0 ml-1">
+        <button id="btnHeaderMenu" class="touch-btn w-8 h-8 rounded-lg bg-[#171a26] border border-[#272b3d] text-gray-200 hover:text-white flex items-center justify-center shadow-sm" title="Menú de opciones">
+          <i class="fa-solid fa-ellipsis-vertical text-sm text-cyan-400"></i>
+        </button>
+        <div id="headerDropdownMenu" class="hidden absolute right-0 top-10 w-52 bg-[#12141f] border border-[#222536] rounded-xl shadow-2xl py-1 z-50 text-left">
+          <button id="menuItemNewProject" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-gray-200 hover:bg-[#1a1e2e] hover:text-cyan-400 transition-colors">
+            <i class="fa-solid fa-plus text-cyan-400 w-4 text-center"></i>
+            <span>Nuevo Proyecto</span>
+          </button>
+          <label class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-gray-200 hover:bg-[#1a1e2e] hover:text-cyan-400 transition-colors cursor-pointer">
+            <i class="fa-solid fa-folder-open text-blue-400 w-4 text-center"></i>
+            <span>Importar Video</span>
+            <input type="file" id="menuVideoFileInput" accept="video/*" class="hidden">
+          </label>
+          <button id="menuItemExport" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-gray-200 hover:bg-[#1a1e2e] hover:text-cyan-400 transition-colors">
+            <i class="fa-solid fa-arrow-down-to-bracket text-cyan-400 w-4 text-center"></i>
+            <span>Exportar Video</span>
+          </button>
+          <button id="menuItemClearTimeline" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-rose-300 hover:bg-[#1a1e2e] transition-colors">
+            <i class="fa-solid fa-broom text-rose-400 w-4 text-center"></i>
+            <span>Vaciar Timeline</span>
+          </button>
+          <div class="h-px bg-[#222536] my-1"></div>
+          <button id="menuItemPwa" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-emerald-300 hover:bg-[#1a1e2e] transition-colors">
+            <i class="fa-brands fa-android text-emerald-400 w-4 text-center"></i>
+            <span>Instalar PWA</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- AVISO OFFLINE PWA -->
+  <div id="offlineIndicator" class="fixed top-14 left-1/2 -translate-x-1/2 bg-amber-950/95 border border-amber-500/80 text-amber-200 text-[10px] font-bold px-3 py-0.5 rounded-full shadow-2xl z-40 flex items-center gap-1.5 backdrop-blur-md hidden">
+    <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span>
+    Modo Sin Conexión (PWA Offline)
+  </div>
+
+  <!-- VISOR DE VIDEO CON GPU WEBGL Y OVERLAY MULTICAPA -->
+  <main class="relative flex-1 bg-[#050608] flex flex-col items-center justify-between p-2 min-h-0 overflow-hidden">
+    
+    <div class="relative w-full flex-1 flex items-center justify-center min-h-0">
+      <div id="playerFrame" class="relative max-w-full max-h-full aspect-video bg-[#000000] rounded-xl overflow-hidden shadow-2xl border border-[#181a26] flex items-center justify-center transition-all duration-200">
+        
+        <!-- Canvas WebGL acelerado por hardware GPU (proxy de previsualización 720p sin lag) -->
+        <canvas id="glCanvas" width="720" height="404" class="w-full h-full object-contain pointer-events-none"></canvas>
+        
+        <!-- Canvas Overlay 2D para V2 (PiP / B-Roll) y títulos vectoriales nítidos -->
+        <canvas id="overlayCanvas" width="720" height="404" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"></canvas>
+        
+        <!-- Configuración estricta de video para móviles: playsinline, webkit-playsinline, muted, preload auto -->
+        <video id="hiddenVideo" class="hidden" playsinline="true" webkit-playsinline="true" muted preload="auto" crossorigin="anonymous"></video>
+
+        <!-- Botón circular Play/Pause central -->
+        <button id="screenPlayBtn" class="touch-btn absolute inset-0 m-auto w-12 h-12 bg-black/60 border border-white/20 text-white rounded-full flex items-center justify-center transition-all shadow-xl z-20">
+          <i id="screenPlayIcon" class="fa-solid fa-play text-base ml-0.5 text-cyan-400"></i>
+        </button>
+
+        <!-- Indicador REC en exportación -->
+        <div id="recordingHud" class="absolute top-2.5 left-2.5 bg-rose-600 text-white text-[9px] font-mono px-2 py-0.5 rounded-full flex items-center gap-1.5 hidden shadow-lg animate-pulse z-30">
+          <span class="w-1.5 h-1.5 rounded-full bg-white"></span> REC
+        </div>
+
+        <!-- Badge de velocidad activa si difiere de 1.0x -->
+        <div id="speedHud" class="absolute top-2.5 right-2.5 bg-cyan-950/90 border border-cyan-500/60 text-cyan-300 font-mono text-[9px] px-2 py-0.5 rounded-full z-30 hidden font-bold">
+          <span id="speedHudText">1.0x</span>
+        </div>
+
+        <!-- Timecode de alta precisión (00:00:00.00) -->
+        <div class="absolute bottom-2 right-2 bg-black/85 px-2 py-0.5 rounded-md border border-white/10 font-mono text-[10px] text-gray-200 z-30 flex items-center gap-1 pointer-events-none">
+          <span id="currentTimeDisplay" class="text-cyan-400 font-bold">00:00.0</span>
+          <span class="text-gray-500">/</span>
+          <span id="totalTimeDisplay" class="text-gray-400">00:00.0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Transporte de Reproducción Ergonómica -->
+    <div class="w-full max-w-xs px-2 py-1 flex items-center justify-between text-xs shrink-0 mt-1">
+      <button id="btnJumpStart" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300" title="Al Inicio">
+        <i class="fa-solid fa-backward-step text-xs"></i>
+      </button>
+      <button id="btnPrevFrame" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300" title="Frame Anterior">
+        <i class="fa-solid fa-chevron-left text-xs"></i>
+      </button>
+      <button id="btnPlayPause" class="touch-btn w-13 h-8 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-black flex items-center justify-center shadow-lg shadow-cyan-400/20" title="Reproducir/Pausar">
+        <i id="playIcon" class="fa-solid fa-play ml-0.5 text-xs"></i>
+      </button>
+      <button id="btnNextFrame" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300" title="Frame Siguiente">
+        <i class="fa-solid fa-chevron-right text-xs"></i>
+      </button>
+      <button id="btnLoop" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-400" title="Bucle">
+        <i class="fa-solid fa-repeat text-xs"></i>
+      </button>
+    </div>
+  </main>
+
+  <!-- CAJÓN INFERIOR COLAPSABLE CON ARQUITECTURA MULTIPISTA REAL (4 PISTAS) -->
+  <section id="bottomDrawer" class="bg-[#0f111a] border-t border-[#1c1f2d] flex flex-col shrink-0 z-20 max-h-[44vh] h-auto overflow-hidden">
+    
+    <!-- Encabezado del cajón -->
+    <div class="h-8 px-3 bg-[#131520] border-b border-[#1f2231] flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-1.5 text-[11px] font-bold text-gray-200 uppercase tracking-wider" id="drawerTitle">
+        <i class="fa-solid fa-timeline text-cyan-400 text-xs"></i> Línea de Tiempo Multipista
+      </div>
+      <button id="btnCollapseDrawer" class="touch-btn text-xs text-gray-300 px-2 py-0.5 rounded flex items-center gap-1 bg-[#1a1d2b] border border-[#272b3d]">
+        <span id="collapseText" class="text-[10px]">Ocultar</span>
+        <i id="collapseIcon" class="fa-solid fa-chevron-down text-[10px] transition-transform"></i>
+      </button>
+    </div>
+
+    <!-- Cuerpo del cajón -->
+    <div id="drawerBody" class="flex-1 scroll-touch-y relative flex flex-col min-h-0">
+      
+      <!-- PESTAÑA 1: LÍNEA DE TIEMPO MULTIPISTA (V1 + V2 PiP + TEXTO + AUDIO A1) -->
+      <div id="panel-timeline" class="drawer-panel flex flex-col">
+        
+        <!-- Barra de herramientas del Timeline -->
+        <div class="h-9 px-2 bg-[#12141e] border-b border-[#1d202e] flex items-center justify-between shrink-0 gap-1.5 overflow-x-auto scroll-touch-x">
+          
+          <div class="flex items-center gap-1 shrink-0">
+            <!-- Cortar (Split) -->
+            <button id="quickSplitBtn" class="touch-btn h-7 px-2.5 bg-[#181b27] border border-[#272c3e] text-amber-400 rounded-md text-[10px] font-bold flex items-center gap-1 shadow-sm">
+              <i class="fa-solid fa-scissors"></i> Cortar
+            </button>
+            <!-- Copiar -->
+            <button id="quickCopyBtn" class="touch-btn h-7 px-2 bg-[#181b27] border border-[#272c3e] text-gray-200 rounded-md text-[10px] font-bold flex items-center gap-1 shadow-sm">
+              <i class="fa-regular fa-copy"></i> Copiar
+            </button>
+            <!-- Pegar -->
+            <button id="quickPasteBtn" class="touch-btn h-7 px-2 bg-[#181b27] border border-[#272c3e] text-emerald-400 rounded-md text-[10px] font-bold flex items-center gap-1 shadow-sm">
+              <i class="fa-regular fa-paste"></i> Pegar
+            </button>
+            <!-- Borrar Seleccionado -->
+            <button id="quickDeleteBtn" class="touch-btn h-7 px-2.5 bg-rose-950/80 border border-rose-800 text-rose-300 rounded-md text-[10px] font-bold flex items-center gap-1 shadow-sm">
+              <i class="fa-solid fa-trash-can text-rose-400"></i> Borrar
+            </button>
+            <!-- Vaciar Timeline Modal -->
+            <button id="quickClearTimelineBtn" class="touch-btn h-7 px-2.5 bg-red-950 border border-red-700 text-red-200 rounded-md text-[10px] font-bold flex items-center gap-1 shadow-sm">
+              <i class="fa-solid fa-broom text-red-400"></i> Vaciar
+            </button>
+          </div>
+
+          <!-- Slider Zoom del Timeline con botones +/- -->
+          <div class="flex items-center gap-1 shrink-0 bg-[#161824] px-1.5 py-0.5 rounded-md border border-[#232738] ml-auto">
+            <button id="zoomOutBtn" class="w-5 h-5 flex items-center justify-center text-gray-400 text-[10px] touch-btn">-</button>
+            <input type="range" id="zoomRange" min="0.5" max="3.0" step="0.1" value="1.0" class="w-16">
+            <button id="zoomInBtn" class="w-5 h-5 flex items-center justify-center text-gray-400 text-[10px] touch-btn">+</button>
+          </div>
+        </div>
+
+        <!-- Área de clips interactiva y multipista -->
+        <div id="timelineScrollContainer" class="relative overflow-x-auto overflow-y-hidden bg-[#08090f] touch-pan-x scroll-touch-x select-none min-h-[160px] py-1">
+          <div id="timelineContent" class="relative h-full min-w-[750px]">
+            
+            <!-- Regla graduada de tiempo -->
+            <div id="timeRuler" class="h-5 border-b border-[#181a27] relative text-[8px] font-mono text-gray-500 pointer-events-none"></div>
+
+            <!-- PISTA 1: V1 (VIDEO PRINCIPAL) -->
+            <div class="relative flex items-center border-b border-[#141624]">
+              <div class="w-8 h-14 bg-[#11131e] border-r border-[#1e2233] shrink-0 flex flex-col items-center justify-center text-[9px] font-bold font-mono text-cyan-400 z-10 sticky left-0 shadow">
+                <span>V1</span>
+                <i class="fa-solid fa-film text-[8px] text-gray-500 mt-0.5"></i>
+              </div>
+              <div id="videoTrack" class="h-14 relative flex-1 py-1 px-0.5 flex items-center"></div>
+            </div>
+
+            <!-- PISTA 2: V2 (SUPERPOSICIÓN PiP / B-ROLL) -->
+            <div class="relative flex items-center border-b border-[#141624]">
+              <div class="w-8 h-10 bg-[#11131e] border-r border-[#1e2233] shrink-0 flex flex-col items-center justify-center text-[9px] font-bold font-mono text-purple-400 z-10 sticky left-0 shadow">
+                <span>V2</span>
+                <i class="fa-solid fa-layer-group text-[8px] text-gray-500 mt-0.5"></i>
+              </div>
+              <div id="pipTrack" class="h-10 relative flex-1 py-1 px-0.5 flex items-center bg-[#0a0c14]"></div>
+            </div>
+
+            <!-- PISTA 3: TEXTO / TÍTULOS -->
+            <div class="relative flex items-center border-b border-[#141624]">
+              <div class="w-8 h-9 bg-[#11131e] border-r border-[#1e2233] shrink-0 flex flex-col items-center justify-center text-[9px] font-bold font-mono text-amber-400 z-10 sticky left-0 shadow">
+                <span>TXT</span>
+                <i class="fa-solid fa-font text-[8px] text-gray-500 mt-0.5"></i>
+              </div>
+              <div id="textTrack" class="h-9 relative flex-1 py-1 px-0.5 flex items-center bg-[#090b12]"></div>
+            </div>
+
+            <!-- PISTA 4: AUDIO (A1) -->
+            <div class="relative flex items-center border-b border-[#141624]">
+              <div class="w-8 h-10 bg-[#11131e] border-r border-[#1e2233] shrink-0 flex flex-col items-center justify-center text-[9px] font-bold font-mono text-emerald-400 z-10 sticky left-0 shadow">
+                <span>A1</span>
+                <i class="fa-solid fa-music text-[8px] text-gray-500 mt-0.5"></i>
+              </div>
+              <div id="audioTrack" class="h-10 relative flex-1 py-1 px-0.5 flex items-center bg-[#070910]"></div>
+            </div>
+
+            <!-- Cabezal rojo de reproducción (Playhead) -->
+            <div id="playhead" class="absolute top-0 bottom-0 w-0.5 bg-rose-500 z-30 pointer-events-auto transition-none shadow-[0_0_8px_rgba(244,63,94,0.9)]">
+              <div id="playheadThumb" class="touch-btn w-5 h-5 -ml-[10px] -mt-1 bg-rose-500 rounded-full border-2 border-white flex items-center justify-center shadow-lg cursor-grab">
+                <div class="w-1 h-2 bg-white rounded-full"></div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2: BIBLIOTECA DE MEDIOS PERSISTENTE -->
+      <div id="panel-library" class="drawer-panel hidden p-3 space-y-2.5">
+        <div class="flex items-center justify-between pb-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-gray-200">Media Pool Offline</span>
+            <span id="mediaCountBadge" class="text-[9px] font-mono bg-cyan-950 text-cyan-400 border border-cyan-800 px-1.5 py-0.2 rounded font-bold">0 medios</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <label class="touch-btn h-7 px-2.5 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-500/60 text-cyan-300 text-[10px] font-bold rounded-lg flex items-center gap-1 cursor-pointer">
+              <i class="fa-solid fa-cloud-arrow-up"></i> Subir
+              <input type="file" id="libraryFileInput" accept="video/*,image/*,audio/*" class="hidden">
+            </label>
+            <button id="synthMusicBtn" class="touch-btn h-7 px-2.5 bg-indigo-950/80 border border-indigo-700 text-indigo-300 text-[10px] font-bold rounded-lg flex items-center gap-1" title="Sintetizar pista de audio Web Audio API">
+              <i class="fa-solid fa-wand-sparkles text-indigo-400"></i> Sintetizar Música
+            </button>
+            <button id="saveCurrentToLibBtn" class="touch-btn h-7 px-2 bg-[#1c1f2e] border border-[#2d3246] text-gray-200 text-[10px] font-bold rounded-lg flex items-center gap-1" title="Guardar video actual en biblioteca">
+              <i class="fa-solid fa-bookmark text-amber-400"></i> Guardar
+            </button>
+          </div>
+        </div>
+
+        <!-- Filtros rápidos por tipo -->
+        <div class="flex items-center gap-1 pb-1">
+          <button class="lib-filter-btn touch-btn px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500 text-black" data-filter="all">Todos</button>
+          <button class="lib-filter-btn touch-btn px-2.5 py-0.5 rounded-full text-[9px] font-semibold bg-[#181a27] text-gray-300 border border-[#272b3d]" data-filter="video">Videos</button>
+          <button class="lib-filter-btn touch-btn px-2.5 py-0.5 rounded-full text-[9px] font-semibold bg-[#181a27] text-gray-300 border border-[#272b3d]" data-filter="image">Imágenes</button>
+          <button class="lib-filter-btn touch-btn px-2.5 py-0.5 rounded-full text-[9px] font-semibold bg-[#181a27] text-gray-300 border border-[#272b3d]" data-filter="audio">Audio</button>
+        </div>
+
+        <!-- Cuadrícula de medios almacenados en IndexedDB -->
+        <div id="libraryGrid" class="grid grid-cols-2 sm:grid-cols-3 gap-2 pb-2">
+          <!-- Inyectado dinámicamente -->
+        </div>
+
+        <div id="emptyLibraryNotice" class="py-8 text-center text-gray-500 text-xs hidden">
+          <i class="fa-solid fa-photo-film text-2xl text-gray-600 mb-2 block"></i>
+          Tu biblioteca local está vacía.<br>Sube archivos o genera pistas sintéticas con un solo toque.
+        </div>
+      </div>
+
+      <!-- PESTAÑA 3: EFECTOS FX EN GPU -->
+      <div id="panel-effects" class="drawer-panel hidden p-3 space-y-2.5">
+        <div class="flex items-center justify-between pb-1">
+          <span class="text-[10px] text-gray-400 font-medium">Shaders GLSL acelerados en GPU</span>
+          <button id="resetAllFxBtn" class="text-[10px] text-cyan-400 font-bold touch-btn px-2.5 py-0.5 bg-[#181a27] rounded-lg border border-[#272b3d]">
+            Restablecer FX
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2 pb-2">
+          <!-- Onda (Wave) -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-water"></i> Onda GPU</span>
+              <input type="checkbox" id="fxWaveToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            </div>
+            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Amplitud</span><span id="waveVal">16px</span></div>
+            <input type="range" id="fxWaveSlider" min="2" max="40" value="16" class="w-full">
+          </div>
+
+          <!-- Ojo de Pez (Fisheye) -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5"><i class="fa-solid fa-circle-dot"></i> Ojo de Pez</span>
+              <input type="checkbox" id="fxFisheyeToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            </div>
+            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Curvatura</span><span id="fishVal">1.8</span></div>
+            <input type="range" id="fxFisheyeSlider" min="0.5" max="3.2" step="0.1" value="1.8" class="w-full">
+          </div>
+
+          <!-- Sepia Vintage -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-camera-retro"></i> Sepia GPU</span>
+              <input type="checkbox" id="fxSepiaToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            </div>
+            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Intensidad</span><span id="sepiaVal">80%</span></div>
+            <input type="range" id="fxSepiaSlider" min="10" max="100" value="80" class="w-full">
+          </div>
+
+          <!-- Glitch VHS -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-pink-300 flex items-center gap-1.5"><i class="fa-solid fa-bolt"></i> Glitch VHS</span>
+              <input type="checkbox" id="fxGlitchToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            </div>
+            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Desfase</span><span id="glitchVal">12px</span></div>
+            <input type="range" id="fxGlitchSlider" min="3" max="30" value="12" class="w-full">
+          </div>
+
+          <!-- Pixelado -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-yellow-300 flex items-center gap-1.5"><i class="fa-solid fa-border-all"></i> Pixelado</span>
+              <input type="checkbox" id="fxPixelateToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            </div>
+            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Mosaico</span><span id="pixelVal">14px</span></div>
+            <input type="range" id="fxPixelSlider" min="4" max="36" value="14" class="w-full">
+          </div>
+
+          <!-- Filtros B&N, Inversión, Viñeta -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] flex flex-col justify-around text-xs space-y-1">
+            <label class="flex items-center justify-between py-0.5 cursor-pointer">
+              <span class="text-[11px] text-gray-300 font-medium">B & N Cine</span>
+              <input type="checkbox" id="fxBwToggle" class="w-3.5 h-3.5 accent-cyan-400">
+            </label>
+            <label class="flex items-center justify-between py-0.5 cursor-pointer">
+              <span class="text-[11px] text-gray-300 font-medium">Inversión Color</span>
+              <input type="checkbox" id="fxInvertToggle" class="w-3.5 h-3.5 accent-cyan-400">
+            </label>
+            <label class="flex items-center justify-between py-0.5 cursor-pointer">
+              <span class="text-[11px] text-gray-300 font-medium">Viñeta Opcional</span>
+              <input type="checkbox" id="fxVignetteToggle" class="w-3.5 h-3.5 accent-cyan-400">
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 4: EDICIÓN DE CLIPS, SPEED RAMPING Y CONTROL PiP -->
+      <div id="panel-edit" class="drawer-panel hidden p-3 space-y-3">
+        <div class="grid grid-cols-3 gap-2">
+          <button id="editSplitBtn" class="touch-btn h-12 bg-[#151724] border border-[#252a3d] rounded-xl flex flex-col items-center justify-center gap-1 text-white">
+            <i class="fa-solid fa-scissors text-amber-400 text-xs"></i>
+            <span class="text-[10px] font-semibold">Dividir (Split)</span>
+          </button>
+          <button id="editCopyBtn" class="touch-btn h-12 bg-[#151724] border border-[#252a3d] rounded-xl flex flex-col items-center justify-center gap-1 text-white">
+            <i class="fa-regular fa-copy text-cyan-400 text-xs"></i>
+            <span class="text-[10px] font-semibold">Copiar</span>
+          </button>
+          <button id="editPasteBtn" class="touch-btn h-12 bg-[#151724] border border-[#252a3d] rounded-xl flex flex-col items-center justify-center gap-1 text-white">
+            <i class="fa-regular fa-paste text-emerald-400 text-xs"></i>
+            <span class="text-[10px] font-semibold">Pegar</span>
+          </button>
+          <button id="editDuplicateBtn" class="touch-btn h-12 bg-[#151724] border border-[#252a3d] rounded-xl flex flex-col items-center justify-center gap-1 text-white">
+            <i class="fa-solid fa-clone text-indigo-400 text-xs"></i>
+            <span class="text-[10px] font-semibold">Duplicar</span>
+          </button>
+          <button id="editDeleteBtn" class="touch-btn h-12 bg-rose-950/80 border border-rose-800 rounded-xl flex flex-col items-center justify-center gap-1 text-rose-300">
+            <i class="fa-solid fa-trash-can text-rose-400 text-xs"></i>
+            <span class="text-[10px] font-semibold">Eliminar</span>
+          </button>
+          <button id="editResetClipsBtn" class="touch-btn h-12 bg-[#151724] border border-[#252a3d] rounded-xl flex flex-col items-center justify-center gap-1 text-gray-300">
+            <i class="fa-solid fa-arrows-rotate text-purple-400 text-xs"></i>
+            <span class="text-[10px] font-semibold">Restaurar</span>
+          </button>
+        </div>
+
+        <!-- CONTROL DINÁMICO DE VELOCIDAD POR CLIP (SPEED RAMPING) -->
+        <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[11px] font-semibold text-gray-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-gauge-high text-cyan-400 text-xs"></i> Curva de Velocidad (Speed Ramping)
+            </span>
+            <span id="clipSpeedDisplay" class="font-mono text-cyan-400 text-[11px] font-bold bg-cyan-950 px-1.5 py-0.2 rounded border border-cyan-800">1.0x</span>
+          </div>
+
+          <!-- Selector de velocidades preestablecidas requeridas -->
+          <div class="grid grid-cols-4 gap-1">
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="0.25">0.25x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="0.5">0.5x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="0.75">0.75x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-cyan-500 border border-cyan-400 text-black font-extrabold rounded text-[10px] font-mono" data-spd="1.0">1.0x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="1.25">1.25x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="1.5">1.5x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="2.0">2.0x</button>
+            <button class="clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300" data-spd="4.0">4.0x</button>
+          </div>
+        </div>
+
+        <!-- CONTROL PiP / B-ROLL (PISTA V2) -->
+        <div id="pipControlSection" class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[11px] font-semibold text-purple-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-layer-group text-purple-400"></i> Parámetros PiP Superpuesto (V2)
+            </span>
+            <button id="addPipBtn" class="touch-btn h-6 px-2 bg-purple-900/60 border border-purple-500 text-purple-200 text-[9px] font-bold rounded">
+              + Añadir PiP
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <span class="text-[9px] text-gray-400 block mb-0.5">Posición en Pantalla</span>
+              <select id="pipPosSelect" class="w-full h-7 bg-[#1a1d2c] border border-[#272c3e] rounded px-1.5 text-[10px] text-white">
+                <option value="bottom-right">Inferior Derecha</option>
+                <option value="top-right">Superior Derecha</option>
+                <option value="bottom-left">Inferior Izquierda</option>
+                <option value="top-left">Superior Izquierda</option>
+                <option value="center">Centro</option>
+              </select>
+            </div>
+            <div>
+              <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Escala</span><span id="pipScaleVal">35%</span></div>
+              <input type="range" id="pipScaleRange" min="20" max="90" value="35" class="w-full">
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Opacidad</span><span id="pipOpacityVal">95%</span></div>
+            <input type="range" id="pipOpacityRange" min="20" max="100" value="95" class="w-full">
+          </div>
+        </div>
+
+        <!-- Recorte fino -->
+        <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[11px] font-semibold text-gray-300">Recorte fino del segmento</span>
+            <span id="selectedClipDur" class="font-mono text-cyan-400 text-[10px] font-bold">0.0s</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="btnNudgeLeft" class="touch-btn flex-1 h-8 bg-[#1e2233] rounded-lg text-xs font-bold text-gray-200 border border-[#2b3046]">-0.5s</button>
+            <span class="text-[10px] text-gray-400 font-medium">Margen</span>
+            <button id="btnNudgeRight" class="touch-btn flex-1 h-8 bg-[#1e2233] rounded-lg text-xs font-bold text-gray-200 border border-[#2b3046]">+0.5s</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 5: PISTA DE TEXTO Y TÍTULOS ESTILIZADOS -->
+      <div id="panel-text" class="drawer-panel hidden p-3 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-[11px] font-bold text-amber-300 uppercase tracking-wider">Pista de Títulos y Textos Vectoriales</span>
+          <button id="addNewTextBtn" class="touch-btn h-6 px-2.5 bg-amber-500/20 border border-amber-500/60 text-amber-300 rounded text-[10px] font-bold">
+            + Añadir Título
+          </button>
+        </div>
+
+        <input type="text" id="titleInput" value="AVS Mobile Studio" class="w-full h-9 bg-[#151724] border border-[#272b3d] rounded-lg px-2.5 text-xs text-white focus:outline-none focus:border-cyan-400 font-semibold" placeholder="Escribe el texto aquí...">
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[9px] text-gray-400 block mb-1 font-medium">Tipografía</label>
+            <select id="titleFontSelect" class="w-full h-8 bg-[#151724] border border-[#272b3d] rounded-lg px-2 text-xs text-white focus:outline-none">
+              <option value="'Plus Jakarta Sans', sans-serif">Sans Moderno</option>
+              <option value="'JetBrains Mono', monospace">Terminal Mono</option>
+              <option value="'Playfair Display', serif">Cine Serif</option>
+              <option value="Impact, sans-serif">Impact Titular</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-[9px] text-gray-400 block mb-1 font-medium">Posición</label>
+            <select id="titlePosSelect" class="w-full h-8 bg-[#151724] border border-[#272b3d] rounded-lg px-2 text-xs text-white focus:outline-none">
+              <option value="bottom">Inferior (Subtítulo)</option>
+              <option value="center">Centro</option>
+              <option value="top">Superior</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="text-[9px] text-gray-400 block mb-1 font-medium">Color de Texto</label>
+            <input type="color" id="titleColorInput" value="#00f0ff" class="w-full h-8 bg-[#151724] border border-[#272b3d] rounded-lg p-0.5 cursor-pointer">
+          </div>
+          <div class="flex flex-col justify-end space-y-1">
+            <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
+              <input type="checkbox" id="titleStrokeToggle" checked class="w-3.5 h-3.5 accent-cyan-400">
+              <span class="text-[10px]">Contorno Negro</span>
+            </label>
+            <label class="flex items-center gap-1.5 text-xs text-gray-300 cursor-pointer">
+              <input type="checkbox" id="titleBgToggle" checked class="w-3.5 h-3.5 accent-cyan-400">
+              <span class="text-[10px]">Fondo Distintivo</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 6: PISTA DE AUDIO (A1) Y MEZCLA DE SONIDO -->
+      <div id="panel-audio" class="drawer-panel hidden p-3 space-y-3">
+        <div class="flex items-center justify-between pb-1 border-b border-[#1c1f2d]">
+          <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-music"></i> Pista de Audio Principal (A1)
+          </span>
+          <button id="addPresetMusicBtn" class="touch-btn h-6 px-2.5 bg-emerald-950 border border-emerald-600 text-emerald-300 text-[10px] font-bold rounded">
+            + Sintetizar Beat
+          </button>
+        </div>
+
+        <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] text-gray-300 font-semibold" id="activeAudioName">Pista: Ninguna cargada</span>
+            <span id="activeAudioVolDisplay" class="font-mono text-emerald-400 text-[10px] font-bold">100%</span>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Volumen (Ganancia A1)</span></div>
+            <input type="range" id="audioVolumeSlider" min="0" max="200" value="100" class="w-full accent-emerald-400">
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div>
+              <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Fade In</span><span id="audioFadeInVal">1.0s</span></div>
+              <input type="range" id="audioFadeInSlider" min="0" max="5" step="0.2" value="1.0" class="w-full">
+            </div>
+            <div>
+              <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Fade Out</span><span id="audioFadeOutVal">1.5s</span></div>
+              <input type="range" id="audioFadeOutSlider" min="0" max="5" step="0.2" value="1.5" class="w-full">
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- NAVEGACIÓN INFERIOR ERGONÓMICA CON 6 PESTAÑAS (TIMELINE + BIBLIOTECA + FX + EDITAR + TEXTO + AUDIO) -->
+  <nav class="h-14 bg-[#0a0c12] border-t border-[#181a26] flex items-center justify-around px-1 shrink-0 z-30 pb-safe">
+    <button class="nav-tab touch-btn flex-1 h-full flex flex-col items-center justify-center gap-1 text-cyan-400" data-target="panel-timeline" data-title="Línea de Tiempo Multipista" data-icon="fa-timeline">
+      <i class="fa-solid fa-timeline text-xs"></i>
+      <span class="text-[8px] font-bold tracking-tight">Timeline</span>
+    </button>
+    <button class="nav-tab touch-btn flex-1 h-full flex flex-col items-center justify-center gap-1 text-gray-400" data-target="panel-library" data-title="Media Pool Offline" data-icon="fa-photo-film">
+      <i class="fa-solid fa-photo-film text-xs"></i>
+      <span class="text-[8px] font-semibold tracking-tight">Biblioteca</span>
+    </button>
+    <button class="nav-tab touch-btn flex-1 h-full flex flex-col items-center justify-center gap-1 text-gray-400" data-target="panel-effects" data-title="Efectos Visuales GPU" data-icon="fa-wand-magic-sparkles">
+      <i class="fa-solid fa-wand-magic-sparkles text-xs"></i>
+      <span class="text-[8px] font-semibold tracking-tight">FX GPU</span>
+    </button>
+    <button class="nav-tab touch-btn flex-1 h-full flex flex-col items-center justify-center gap-1 text-gray-400" data-target="panel-edit" data-title="Edición, Velocidad & PiP" data-icon="fa-scissors">
+      <i class="fa-solid fa-scissors text-xs"></i>
+      <span class="text-[8px] font-semibold tracking-tight">Editar</span>
+    </button>
+    <button class="nav-tab touch-btn flex-1 h-full flex flex-col items-center justify-center gap-1 text-gray-400" data-target="panel-text" data-title="Pista de Títulos y Textos" data-icon="fa-heading">
+      <i class="fa-solid fa-heading text-xs"></i>
+      <span class="text-[8px] font-semibold tracking-tight">Texto</span>
+    </button>
+    <button class="nav-tab touch-btn flex-1 h-full flex flex-col items-center justify-center gap-1 text-gray-400" data-target="panel-audio" data-title="Pista de Audio & Mezcla" data-icon="fa-music">
+      <i class="fa-solid fa-music text-xs"></i>
+      <span class="text-[8px] font-semibold tracking-tight">Audio</span>
+    </button>
+  </nav>
+
+  <!-- MODAL BOTTOM SHEET ESTILIZADO PARA VACIAR LÍNEA DE TIEMPO -->
+  <!-- MODAL BOTTOM SHEET CONFIRMACIÓN NUEVO PROYECTO -->
+  <div id="newProjectModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end justify-center hidden">
+    <div class="bg-[#12141f] border-t border-[#292e44] rounded-t-3xl w-full max-w-md p-4 space-y-3.5 shadow-2xl animate-slide-up pb-safe">
+      <div class="w-10 h-1 bg-gray-600 rounded-full mx-auto mb-1"></div>
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xl shrink-0">
+          <i class="fa-solid fa-file-circle-plus"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider">Crear Nuevo Proyecto</h4>
+          <p class="text-[11px] text-gray-400">Se reiniciará la línea de tiempo a cero y se liberará la memoria de video.</p>
+        </div>
+      </div>
+      <div class="p-3 bg-[#181b28] rounded-xl border border-[#272b3d] text-xs text-gray-300 space-y-1.5">
+        <div class="flex items-center gap-2 text-cyan-300 font-semibold">
+          <i class="fa-solid fa-circle-info text-xs"></i>
+          <span>¿Deseas iniciar un lienzo limpio?</span>
+        </div>
+        <p class="text-[11px] text-gray-400">Tus medios almacenados en la Biblioteca (IndexedDB) no se perderán y podrás reutilizarlos cuando quieras.</p>
+      </div>
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button id="cancelNewProjectBtn" class="touch-btn h-10 bg-[#1b1e2c] hover:bg-[#25293d] text-gray-300 text-xs font-bold rounded-xl border border-[#272b3d]">
+          Cancelar
+        </button>
+        <button id="confirmNewProjectBtn" class="touch-btn h-10 bg-gradient-to-r from-cyan-500 to-blue-600 text-black text-xs font-black rounded-xl shadow-lg shadow-cyan-500/25 flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-check text-xs"></i>
+          <span>Sí, Crear Nuevo</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="clearTimelineSheet" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end justify-center hidden">
+    <div class="bg-[#12141f] border-t border-[#292e44] rounded-t-3xl w-full max-w-md p-4 space-y-3.5 shadow-2xl animate-slide-up pb-safe">
+      <div class="w-10 h-1 bg-gray-600 rounded-full mx-auto mb-1"></div>
+      
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-11 rounded-2xl bg-rose-500/20 text-rose-400 flex items-center justify-center text-xl shrink-0">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+          <h4 class="text-sm font-bold text-white uppercase tracking-wider">Limpieza de Línea de Tiempo</h4>
+          <p class="text-[11px] text-gray-400">Selecciona el alcance de vaciado. Acción 100% reversible con Deshacer (↶).</p>
+        </div>
+      </div>
+
+      <div class="space-y-1.5 pt-1">
+        <button id="btnActionClearAll" class="touch-btn w-full p-2.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700/80 rounded-xl text-left flex items-center justify-between text-rose-200">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-dumpster-fire text-rose-400 text-sm"></i>
+            <div>
+              <span class="text-xs font-bold block">Vaciar Todo el Proyecto</span>
+              <span class="text-[9px] text-rose-300">Borra V1, V2 PiP, Textos y Audio simultáneamente</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs opacity-60"></i>
+        </button>
+
+        <button id="btnActionClearV1" class="touch-btn w-full p-2.5 bg-[#181b28] hover:bg-[#202436] border border-[#272b3d] rounded-xl text-left flex items-center justify-between text-cyan-200">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-film text-cyan-400 text-sm"></i>
+            <div>
+              <span class="text-xs font-bold block">Vaciar solo Pista Principal (V1)</span>
+              <span class="text-[9px] text-gray-400">Conserva PiP, títulos y música</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs opacity-60"></i>
+        </button>
+
+        <button id="btnActionClearV2" class="touch-btn w-full p-2.5 bg-[#181b28] hover:bg-[#202436] border border-[#272b3d] rounded-xl text-left flex items-center justify-between text-purple-200">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-layer-group text-purple-400 text-sm"></i>
+            <div>
+              <span class="text-xs font-bold block">Vaciar solo PiP / B-Roll (V2)</span>
+              <span class="text-[9px] text-gray-400">Quita las capas superpuestas</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs opacity-60"></i>
+        </button>
+      </div>
+
+      <button id="btnCloseClearSheet" class="touch-btn w-full h-10 bg-[#1b1e2c] text-gray-300 text-xs font-bold rounded-xl border border-[#272b3d] mt-1">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL DE SELECCIÓN DE TRANSICIÓN ENTRE CLIPS -->
+  <div id="transitionModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 hidden">
+    <div class="bg-[#12141f] border border-[#252a3d] rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between pb-1 border-b border-[#1f2334]">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Transición de Unión (GPU)</h4>
+            <p id="transitionModalSubtitle" class="text-[10px] text-gray-400 font-mono">Clip #1 ➔ Clip #2</p>
+          </div>
+        </div>
+        <button id="closeTransitionModalBtn" class="touch-btn w-7 h-7 rounded-lg bg-[#1a1d2b] text-gray-400 flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <div class="space-y-1.5 max-h-[46vh] overflow-y-auto scroll-touch-y pr-0.5" id="transitionOptionsContainer">
+        <!-- Renderizado dinámico -->
+      </div>
+
+      <div class="space-y-1 bg-[#161824] p-2 rounded-xl border border-[#252a3d]">
+        <div class="flex justify-between text-[11px] text-gray-300">
+          <span>Duración de Efecto</span>
+          <span id="transDurDisplay" class="text-cyan-400 font-mono font-bold">0.6s</span>
+        </div>
+        <input type="range" id="transDurSlider" min="0.2" max="1.5" step="0.1" value="0.6" class="w-full">
+      </div>
+
+      <div class="flex gap-2">
+        <button id="btnRemoveTransition" class="touch-btn flex-1 h-9 bg-[#1a1d2b] text-rose-300 text-xs font-bold rounded-xl border border-rose-900/60">
+          Quitar
+        </button>
+        <button id="btnApplyTransition" class="touch-btn flex-1 h-9 bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-extrabold rounded-xl shadow-md shadow-cyan-400/25">
+          Listo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE EXPORTACIÓN Y PROGRESO MULTIPISTA -->
+  <div id="exportModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 hidden">
+    <div class="bg-[#12141f] border border-[#252a3d] rounded-2xl w-full max-w-sm p-4 space-y-3.5 shadow-2xl">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-cyan-400/20 text-cyan-400 flex items-center justify-center text-lg">
+          <i class="fa-solid fa-arrow-down-to-bracket animate-bounce"></i>
+        </div>
+        <div>
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider">Exportando Video Multipista</h4>
+          <p class="text-[11px] text-gray-400">Componiendo V1 + V2 PiP + Textos + Audio A1...</p>
+        </div>
+      </div>
+
+      <div class="space-y-1">
+        <div class="h-2 bg-[#08090f] rounded-full overflow-hidden border border-[#1b1e2c]">
+          <div id="exportProgressBar" class="h-full bg-gradient-to-r from-cyan-400 to-blue-500 w-0 transition-all duration-100"></div>
+        </div>
+        <div class="flex justify-between text-[10px] font-mono text-gray-400">
+          <span id="exportProgressText">0%</span>
+          <span>Procesando GPU 60 FPS</span>
+        </div>
+      </div>
+
+      <button id="cancelExportBtn" class="touch-btn w-full h-10 bg-[#1c1f2e] text-gray-200 text-xs font-bold rounded-xl border border-[#292e44]">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST DE NOTIFICACIÓN FLOTANTE -->
+  <div id="mobileToast" class="fixed top-15 left-1/2 -translate-x-1/2 bg-[#141624]/95 border border-cyan-400/60 text-white text-xs px-3.5 py-2 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-200 z-50 flex items-center gap-1.5 max-w-[90vw] truncate font-medium backdrop-blur-md">
+    <i class="fa-solid fa-circle-check text-cyan-400 text-xs"></i>
+    <span id="toastMessage">Acción completada</span>
+  </div>
+
+  <!-- APLICACIÓN MULTIMEDIA INTEGRAL Y AUTÓNOMA -->
+  <script type="module">
+    /* ========================================================
+       0. UTILIDADES ROBUSTAS DE SEGURIDAD DOM
+       ======================================================== */
+    // Helper universal para evitar 'Cannot read properties of null (reading addEventListener)'
+    function safeOn(target, event, handler, options) {
+      if (!target) return;
+      let el = target;
+      if (typeof target === 'string') {
+        el = document.getElementById(target);
+      }
+      if (el && typeof el.addEventListener === 'function') {
+        el.addEventListener(event, handler, options);
+      }
+    }
+
+    // Polyfill retrocompatible para roundRect en canvas 2D
+    if (typeof CanvasRenderingContext2D !== 'undefined' && !CanvasRenderingContext2D.prototype.roundRect) {
+      CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, radii) {
+        if (!radii) radii = 0;
+        const r = typeof radii === 'number' ? radii : (Array.isArray(radii) ? radii[0] : 0);
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.arcTo(x + w, y, x + w, y + h, r);
+        this.arcTo(x + w, y + h, x, y + h, r);
+        this.arcTo(x, y + h, x, y, r);
+        this.arcTo(x, y, x + w, y, r);
+        this.closePath();
+        return this;
+      };
+    }
+
+    /* ========================================================
+       1. INTEGRACIÓN PWA ANDROID OFFLINE COMPLETA
+       ======================================================== */
+    let deferredPrompt = null;
+    const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+    const offlineIndicator = document.getElementById('offlineIndicator');
+
+    function updateOnlineStatus() {
+      if (offlineIndicator) {
+        if (!navigator.onLine) {
+          offlineIndicator.classList.remove('hidden');
+        } else {
+          offlineIndicator.classList.add('hidden');
+        }
+      }
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+
+    // PWA Manifest embebido
+    try {
+      const appManifest = {
+        id: "/",
+        name: "AVS Mobile Studio Pro",
+        short_name: "AVS Studio",
+        description: "Editor de video móvil profesional multipista con aceleración WebGL GPU, biblioteca IndexedDB y PWA offline.",
+        start_url: window.location.href,
+        display: "standalone",
+        orientation: "portrait",
+        background_color: "#07080b",
+        theme_color: "#07080b",
+        icons: [
+          {
+            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='40' fill='%23090a10'/><path d='M45 50 L145 50 L105 96 L145 142 L45 142 Z' fill='%2300f0ff'/></svg>",
+            sizes: "192x192",
+            type: "image/svg+xml",
+            purpose: "any"
+          },
+          {
+            src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='100' fill='%23090a10'/><path d='M120 130 L390 130 L280 256 L390 382 L120 382 Z' fill='%2300f0ff'/></svg>",
+            sizes: "512x512",
+            type: "image/svg+xml",
+            purpose: "maskable"
+          }
+        ]
+      };
+      const manifestBlob = new Blob([JSON.stringify(appManifest)], { type: 'application/json' });
+      const manifestElem = document.getElementById('manifestPlaceholder');
+      if (manifestElem) {
+        manifestElem.setAttribute('href', URL.createObjectURL(manifestBlob));
+      }
+    } catch (e) {}
+
+    // Service Worker con Cache Storage
+    if ('serviceWorker' in navigator) {
+      try {
+        const swCode = `
+          const CACHE_NAME = 'avs-multitrack-v5';
+          self.addEventListener('install', (e) => { self.skipWaiting(); });
+          self.addEventListener('activate', (e) => { e.waitUntil(clients.claim()); });
+          self.addEventListener('fetch', (e) => {
+            if (e.request.method !== 'GET') return;
+            e.respondWith(
+              caches.match(e.request).then((cached) => {
+                const fetchPromise = fetch(e.request).then((networkRes) => {
+                  if (networkRes && networkRes.status === 200) {
+                    const resClone = networkRes.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, resClone));
+                  }
+                  return networkRes;
+                }).catch(() => cached);
+                return cached || fetchPromise;
+              })
+            );
+          });
+        `;
+        const swBlob = new Blob([swCode], { type: 'text/javascript' });
+        navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(() => {});
+      } catch (e) {}
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (pwaInstallBtn) pwaInstallBtn.classList.remove('hidden');
+    });
+
+    safeOn(pwaInstallBtn, 'click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        if (pwaInstallBtn) pwaInstallBtn.classList.add('hidden');
+        showMobileToast("¡Instalando AVS Studio Pro!");
+      }
+      deferredPrompt = null;
+    });
+
+    /* ========================================================
+       2. MOTOR INDEXEDDB: BIBLIOTECA DE MEDIOS (MEDIA POOL)
+       ======================================================== */
+    const DB_NAME = 'AVS_Studio_DB_v2';
+    const DB_VERSION = 2;
+    const STORE_NAME = 'media_pool';
+    let dbInstance = null;
+
+    function initIndexedDB() {
+      return new Promise((resolve, reject) => {
+        if (!window.indexedDB) return resolve(null);
+        const req = indexedDB.open(DB_NAME, DB_VERSION);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+          }
+        };
+        req.onsuccess = (e) => {
+          dbInstance = e.target.result;
+          resolve(dbInstance);
+        };
+        req.onerror = () => resolve(null);
+      });
+    }
+
+    async function dbSaveMediaItem(item) {
+      if (!dbInstance) await initIndexedDB();
+      if (!dbInstance) return item;
+      return new Promise((resolve) => {
+        try {
+          const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.put(item);
+          tx.oncomplete = () => resolve(item);
+          tx.onerror = () => resolve(item);
+        } catch (e) {
+          resolve(item);
+        }
+      });
+    }
+
+    async function dbGetAllMediaItems() {
+      if (!dbInstance) await initIndexedDB();
+      if (!dbInstance) return [];
+      return new Promise((resolve) => {
+        try {
+          const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.getAll();
+          req.onsuccess = () => resolve(req.result || []);
+          req.onerror = () => resolve([]);
+        } catch (e) {
+          resolve([]);
+        }
+      });
+    }
+
+    async function dbDeleteMediaItem(id) {
+      if (!dbInstance) await initIndexedDB();
+      if (!dbInstance) return true;
+      return new Promise((resolve) => {
+        try {
+          const tx = dbInstance.transaction(STORE_NAME, 'readwrite');
+          const store = tx.objectStore(STORE_NAME);
+          store.delete(id);
+          tx.oncomplete = () => resolve(true);
+          tx.onerror = () => resolve(false);
+        } catch (e) {
+          resolve(false);
+        }
+      });
+    }
+
+    /* ========================================================
+       3. SHADERS GLSL WEBGL: ACELERACIÓN GPU CERO LAG
+       ======================================================== */
+    const VS_SRC = `
+      attribute vec2 a_pos;
+      attribute vec2 a_uv;
+      varying vec2 v_uv;
+      void main() {
+        gl_Position = vec4(a_pos, 0.0, 1.0);
+        v_uv = a_uv;
+      }
+    `;
+
+    const FS_SRC = `
+      precision mediump float;
+      uniform sampler2D u_image;
+      uniform vec2 u_res;
+      uniform float u_time;
+      uniform float u_bright;
+      uniform float u_contrast;
+
+      uniform int u_fxWave;
+      uniform float u_waveAmp;
+      uniform int u_fxFish;
+      uniform float u_fishStr;
+      uniform int u_fxSepia;
+      uniform float u_sepiaVal;
+      uniform int u_fxGlitch;
+      uniform float u_glitchShift;
+      uniform int u_fxPixel;
+      uniform float u_pixelSize;
+      uniform int u_fxBw;
+      uniform int u_fxInvert;
+      uniform int u_fxVignette;
+
+      uniform int u_transType;
+      uniform float u_transProg;
+
+      varying vec2 v_uv;
+
+      void main() {
+        vec2 uv = v_uv;
+
+        // 1. Pixelado GPU
+        if (u_fxPixel == 1 && u_pixelSize > 1.0) {
+          vec2 pSize = vec2(u_pixelSize / u_res.x, u_pixelSize / u_res.y);
+          uv = floor(uv / pSize) * pSize;
+        }
+
+        // 2. Onda GPU
+        if (u_fxWave == 1) {
+          float shift = sin(uv.y * 32.0 + u_time * 6.0) * (u_waveAmp / u_res.x);
+          uv.x += shift;
+        }
+
+        // 3. Ojo de Pez Polar GPU
+        if (u_fxFish == 1) {
+          vec2 p = uv - vec2(0.5);
+          float r = length(p) * 2.0;
+          if (r < 1.0) {
+            float theta = atan(p.y, p.x);
+            float nr = pow(r, u_fishStr) * 0.5;
+            uv = vec2(0.5) + vec2(nr * cos(theta), nr * sin(theta));
+          }
+        }
+
+        uv = clamp(uv, 0.0, 1.0);
+
+        // 4. Glitch VHS con desfase cromático y scanlines
+        vec4 col;
+        if (u_fxGlitch == 1) {
+          float shift = u_glitchShift / u_res.x;
+          float r = texture2D(u_image, clamp(vec2(uv.x + shift, uv.y), 0.0, 1.0)).r;
+          float g = texture2D(u_image, uv).g;
+          float b = texture2D(u_image, clamp(vec2(uv.x - shift, uv.y), 0.0, 1.0)).b;
+          col = vec4(r, g, b, 1.0);
+          float scanline = sin(uv.y * 300.0) * 0.08;
+          col.rgb -= scanline;
+        } else {
+          col = texture2D(u_image, uv);
+        }
+
+        // Calibración Brillo y Contraste
+        col.rgb = (col.rgb - 0.5) * u_contrast + 0.5;
+        col.rgb *= u_bright;
+
+        // 5. Sepia Vintage
+        if (u_fxSepia == 1) {
+          vec3 sCol;
+          sCol.r = dot(col.rgb, vec3(0.393, 0.769, 0.189));
+          sCol.g = dot(col.rgb, vec3(0.349, 0.686, 0.168));
+          sCol.b = dot(col.rgb, vec3(0.272, 0.534, 0.131));
+          col.rgb = mix(col.rgb, sCol, u_sepiaVal);
+        }
+
+        // 6. Blanco y Negro Cine
+        if (u_fxBw == 1) {
+          float gr = dot(col.rgb, vec3(0.299, 0.587, 0.114));
+          col.rgb = vec3(gr);
+        }
+
+        // 7. Inversión
+        if (u_fxInvert == 1) {
+          col.rgb = 1.0 - col.rgb;
+        }
+
+        // 8. Viñeta
+        if (u_fxVignette == 1) {
+          float dist = distance(uv, vec2(0.5));
+          float vig = smoothstep(0.72, 0.28, dist);
+          col.rgb *= vig;
+        }
+
+        // 9. Transición GPU entre cortes
+        if (u_transType == 1) { // Fundido a Negro
+          float a = u_transProg < 0.5 ? u_transProg * 2.0 : (1.0 - u_transProg) * 2.0;
+          col.rgb = mix(col.rgb, vec3(0.0), clamp(a, 0.0, 1.0));
+        } else if (u_transType == 2) { // Destello Blanco (Flash)
+          float a = u_transProg < 0.5 ? u_transProg * 2.0 : (1.0 - u_transProg) * 2.0;
+          col.rgb = mix(col.rgb, vec3(1.0), clamp(a * 0.95, 0.0, 1.0));
+        } else if (u_transType == 3) { // Cortinilla (Wipe)
+          if (uv.x < u_transProg) {
+            col.rgb = mix(col.rgb, vec3(0.0, 0.94, 1.0), 0.22);
+          }
+          if (abs(uv.x - u_transProg) < 0.005) {
+            col.rgb = vec3(0.0, 0.94, 1.0);
+          }
+        } else if (u_transType == 4) { // Crossfade
+          float a = u_transProg < 0.5 ? u_transProg * 1.5 : (1.0 - u_transProg) * 1.5;
+          col.rgb = mix(col.rgb, vec3(0.04, 0.06, 0.1), clamp(a * 0.75, 0.0, 1.0));
+        }
+
+        gl_FragColor = col;
+      }
+    `;
+
+    class WebGLShaderEngine {
+      constructor(canvas) {
+        this.canvas = canvas;
+        this.gl = canvas ? (canvas.getContext('webgl2', { preserveDrawingBuffer: true, alpha: false }) ||
+                  canvas.getContext('webgl', { preserveDrawingBuffer: true, alpha: false })) : null;
+        if (!this.gl && canvas) {
+          this.ctx2d = canvas.getContext('2d');
+        }
+        if (!this.gl) return;
+        this.init();
+      }
+
+      init() {
+        const gl = this.gl;
+        if (!gl) return;
+        const vs = this.compile(gl.VERTEX_SHADER, VS_SRC);
+        const fs = this.compile(gl.FRAGMENT_SHADER, FS_SRC);
+        if (!vs || !fs) return;
+        const prog = gl.createProgram();
+        gl.attachShader(prog, vs);
+        gl.attachShader(prog, fs);
+        gl.linkProgram(prog);
+        this.prog = prog;
+        gl.useProgram(prog);
+
+        this.posBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, 1, -1, -1, 1, 1, 1, -1]), gl.DYNAMIC_DRAW);
+        const posAttr = gl.getAttribLocation(prog, 'a_pos');
+        gl.enableVertexAttribArray(posAttr);
+        gl.vertexAttribPointer(posAttr, 2, gl.FLOAT, false, 0, 0);
+
+        const uvBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
+        const uvAttr = gl.getAttribLocation(prog, 'a_uv');
+        gl.enableVertexAttribArray(uvAttr);
+        gl.vertexAttribPointer(uvAttr, 2, gl.FLOAT, false, 0, 0);
+
+        this.tex = gl.createTexture();
+        gl.bindTexture(gl.TEXTURE_2D, this.tex);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+        this.u = {};
+        const unifs = ['u_image', 'u_res', 'u_time', 'u_bright', 'u_contrast', 'u_fxWave', 'u_waveAmp',
+                       'u_fxFish', 'u_fishStr', 'u_fxSepia', 'u_sepiaVal', 'u_fxGlitch', 'u_glitchShift',
+                       'u_fxPixel', 'u_pixelSize', 'u_fxBw', 'u_fxInvert', 'u_fxVignette', 'u_transType', 'u_transProg'];
+        unifs.forEach(n => this.u[n] = gl.getUniformLocation(prog, n));
+        this.ready = true;
+      }
+
+      compile(type, src) {
+        if (!this.gl) return null;
+        const s = this.gl.createShader(type);
+        this.gl.shaderSource(s, src);
+        this.gl.compileShader(s);
+        return s;
+      }
+
+      render(sourceVideo, state) {
+        if (!this.canvas) return;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+
+        // Fallback 2D si WebGL no está disponible
+        if (!this.gl) {
+          if (!this.ctx2d && this.canvas) this.ctx2d = this.canvas.getContext('2d');
+          if (this.ctx2d && sourceVideo && sourceVideo.videoWidth > 0) {
+            const vw = sourceVideo.videoWidth;
+            const vh = sourceVideo.videoHeight;
+            const vAspect = vw / vh;
+            const cAspect = w / h;
+            let dw, dh, dx, dy;
+            if (vAspect > cAspect) {
+              dw = w;
+              dh = w / vAspect;
+              dx = 0;
+              dy = (h - dh) / 2;
+            } else {
+              dh = h;
+              dw = h * vAspect;
+              dx = (w - dw) / 2;
+              dy = 0;
+            }
+            this.ctx2d.fillStyle = '#000000';
+            this.ctx2d.fillRect(0, 0, w, h);
+            this.ctx2d.drawImage(sourceVideo, dx, dy, dw, dh);
+          }
+          return;
+        }
+
+        if (!this.ready || !this.gl) return;
+        const gl = this.gl;
+        gl.viewport(0, 0, w, h);
+        gl.useProgram(this.prog);
+
+        // AJUSTE AUTOMÁTICO DE ENCUADRE (LETTERBOXING / CONTAIN REAL EN GPU)
+        const vw = (sourceVideo && sourceVideo.videoWidth > 0) ? sourceVideo.videoWidth : w;
+        const vh = (sourceVideo && sourceVideo.videoHeight > 0) ? sourceVideo.videoHeight : h;
+        const vAspect = vw / vh;
+        const cAspect = w / h;
+
+        let scaleX = 1.0;
+        let scaleY = 1.0;
+        if (vAspect > cAspect) {
+          // Video más panorámico que el canvas: franjas negras arriba y abajo
+          scaleY = cAspect / vAspect;
+        } else if (vAspect < cAspect) {
+          // Video vertical o más estrecho que el canvas: franjas negras a los lados
+          scaleX = vAspect / cAspect;
+        }
+
+        // Limpieza de buffer con negro cinemático
+        gl.clearColor(0.0, 0.0, 0.0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // Posicionar quad ajustado centrado sin deformación
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
+          -scaleX,  scaleY,
+          -scaleX, -scaleY,
+           scaleX,  scaleY,
+           scaleX, -scaleY
+        ]), gl.DYNAMIC_DRAW);
+
+        try {
+          gl.bindTexture(gl.TEXTURE_2D, this.tex);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, sourceVideo);
+        } catch (e) {
+          return;
+        }
+
+        gl.uniform1i(this.u['u_image'], 0);
+        gl.uniform2f(this.u['u_res'], w, h);
+        gl.uniform1f(this.u['u_time'], performance.now() * 0.001);
+        gl.uniform1f(this.u['u_bright'], state.brightness / 100);
+        gl.uniform1f(this.u['u_contrast'], state.contrast / 100);
+
+        gl.uniform1i(this.u['u_fxWave'], state.effects.wave ? 1 : 0);
+        gl.uniform1f(this.u['u_waveAmp'], state.effects.waveAmp);
+        gl.uniform1i(this.u['u_fxFish'], state.effects.fisheye ? 1 : 0);
+        gl.uniform1f(this.u['u_fishStr'], state.effects.fisheyeStrength);
+        gl.uniform1i(this.u['u_fxSepia'], state.effects.sepia ? 1 : 0);
+        gl.uniform1f(this.u['u_sepiaVal'], state.effects.sepiaVal);
+        gl.uniform1i(this.u['u_fxGlitch'], state.effects.glitch ? 1 : 0);
+        gl.uniform1f(this.u['u_glitchShift'], state.effects.glitchShift);
+        gl.uniform1i(this.u['u_fxPixel'], state.effects.pixelate ? 1 : 0);
+        gl.uniform1f(this.u['u_pixelSize'], state.effects.pixelSize);
+        gl.uniform1i(this.u['u_fxBw'], state.effects.bw ? 1 : 0);
+        gl.uniform1i(this.u['u_fxInvert'], state.effects.invert ? 1 : 0);
+        gl.uniform1i(this.u['u_fxVignette'], state.effects.vignette ? 1 : 0);
+
+        gl.uniform1i(this.u['u_transType'], state.activeTransition.type);
+        gl.uniform1f(this.u['u_transProg'], state.activeTransition.prog);
+
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+    }
+
+    /* ========================================================
+       4. ESTADO GLOBAL MULTIPISTA & PATRÓN DE HISTORIAL
+       ======================================================== */
+    const TRANSITIONS_CATALOG = [
+      { type: 'none', label: 'Corte directo', icon: 'fa-scissors', color: 'text-gray-400', desc: 'Sin transición (cambio inmediato)' },
+      { type: 'fade-black', label: 'Fundido a Negro', icon: 'fa-circle-half-stroke', color: 'text-amber-400', desc: 'Oscurecimiento suave a negro en GPU' },
+      { type: 'crossfade', label: 'Desvanecimiento', icon: 'fa-shuffle', color: 'text-cyan-400', desc: 'Fusión gradual entre cortes' },
+      { type: 'flash', label: 'Destello Blanco', icon: 'fa-bolt', color: 'text-yellow-300', desc: 'Destello de brillo en el cambio de plano' },
+      { type: 'wipe', label: 'Cortinilla', icon: 'fa-table-columns', color: 'text-emerald-400', desc: 'Barrido lateral hacia el nuevo segmento' }
+    ];
+
+    const APP_STATE = {
+      currentTime: 0,
+      isPlaying: false,
+      isLooping: false,
+      fps: 30,
+      zoom: 1.0,
+      pixelsPerSecond: 45,
+      selectedTrackType: 'v1',
+      selectedItemId: null,
+      copiedClip: null,
+      sourceLoaded: false,
+      sourceDuration: 8,
+      sourceUrl: null,
+      sourceName: 'Demo Video',
+      brightness: 100,
+      contrast: 100,
+      isDrawerOpen: true,
+      currentRatio: '16:9',
+      activeTab: 'panel-timeline',
+      
+      clipsV1: [],
+      activeClipId: null,
+      activeTransition: { type: 0, prog: 0 },
+      clipsV2: [],
+      textItems: [
+        {
+          id: 'txt-1',
+          text: 'AVS Mobile Studio',
+          start: 0.5,
+          duration: 4.5,
+          font: "'Plus Jakarta Sans', sans-serif",
+          color: '#00f0ff',
+          position: 'bottom',
+          stroke: true,
+          bg: true
+        }
+      ],
+      audioClips: [],
+      effects: {
+        wave: false,
+        waveAmp: 16,
+        fisheye: false,
+        fisheyeStrength: 1.8,
+        sepia: false,
+        sepiaVal: 0.8,
+        glitch: false,
+        glitchShift: 12,
+        pixelate: false,
+        pixelSize: 14,
+        bw: false,
+        invert: false,
+        vignette: false
+      }
+    };
+
+    const HISTORY = {
+      stack: [],
+      index: -1,
+      maxLimit: 40
+    };
+
+    function hapticFeedback() {
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        try { navigator.vibrate(20); } catch(e) {}
+      }
+    }
+
+    function pushHistoryState(actionDescription = "Cambio") {
+      hapticFeedback();
+      if (HISTORY.index < HISTORY.stack.length - 1) {
+        HISTORY.stack = HISTORY.stack.slice(0, HISTORY.index + 1);
+      }
+
+      const snapshot = {
+        clipsV1: JSON.parse(JSON.stringify(APP_STATE.clipsV1)),
+        clipsV2: JSON.parse(JSON.stringify(APP_STATE.clipsV2)),
+        textItems: JSON.parse(JSON.stringify(APP_STATE.textItems)),
+        audioClips: JSON.parse(JSON.stringify(APP_STATE.audioClips)),
+        selectedTrackType: APP_STATE.selectedTrackType,
+        selectedItemId: APP_STATE.selectedItemId,
+        desc: actionDescription
+      };
+
+      HISTORY.stack.push(snapshot);
+      if (HISTORY.stack.length > HISTORY.maxLimit) {
+        HISTORY.stack.shift();
+      } else {
+        HISTORY.index++;
+      }
+      updateUndoRedoUI();
+    }
+
+    function undo() {
+      if (HISTORY.index <= 0) return;
+      hapticFeedback();
+      HISTORY.index--;
+      const state = HISTORY.stack[HISTORY.index];
+      APP_STATE.clipsV1 = JSON.parse(JSON.stringify(state.clipsV1));
+      APP_STATE.clipsV2 = JSON.parse(JSON.stringify(state.clipsV2));
+      APP_STATE.textItems = JSON.parse(JSON.stringify(state.textItems));
+      APP_STATE.audioClips = JSON.parse(JSON.stringify(state.audioClips));
+      APP_STATE.selectedTrackType = state.selectedTrackType;
+      APP_STATE.selectedItemId = state.selectedItemId;
+
+      const dur = getProjectDuration();
+      if (APP_STATE.currentTime > dur) APP_STATE.currentTime = dur;
+
+      updateUndoRedoUI();
+      renderTimeline();
+      syncPlayback(APP_STATE.currentTime);
+      showMobileToast(`Deshecho: ${state.desc}`);
+    }
+
+    function redo() {
+      if (HISTORY.index >= HISTORY.stack.length - 1) return;
+      hapticFeedback();
+      HISTORY.index++;
+      const state = HISTORY.stack[HISTORY.index];
+      APP_STATE.clipsV1 = JSON.parse(JSON.stringify(state.clipsV1));
+      APP_STATE.clipsV2 = JSON.parse(JSON.stringify(state.clipsV2));
+      APP_STATE.textItems = JSON.parse(JSON.stringify(state.textItems));
+      APP_STATE.audioClips = JSON.parse(JSON.stringify(state.audioClips));
+      APP_STATE.selectedTrackType = state.selectedTrackType;
+      APP_STATE.selectedItemId = state.selectedItemId;
+
+      updateUndoRedoUI();
+      renderTimeline();
+      syncPlayback(APP_STATE.currentTime);
+      showMobileToast(`Rehecho: ${state.desc}`);
+    }
+
+    function updateUndoRedoUI() {
+      const btnUndo = document.getElementById('btnUndo');
+      const btnRedo = document.getElementById('btnRedo');
+      if (btnUndo) {
+        if (HISTORY.index > 0) btnUndo.classList.remove('btn-disabled');
+        else btnUndo.classList.add('btn-disabled');
+      }
+      if (btnRedo) {
+        if (HISTORY.index < HISTORY.stack.length - 1) btnRedo.classList.remove('btn-disabled');
+        else btnRedo.classList.add('btn-disabled');
+      }
+    }
+
+    safeOn('btnUndo', 'click', undo);
+    safeOn('btnRedo', 'click', redo);
+
+    /* ========================================================
+       5. REFERENCIAS DOM Y UTILIDADES
+       ======================================================== */
+    const glCanvas = document.getElementById('glCanvas');
+    const overlayCanvas = document.getElementById('overlayCanvas');
+    const oCtx = overlayCanvas ? overlayCanvas.getContext('2d') : null;
+    const hiddenVideo = document.getElementById('hiddenVideo');
+    const playerFrame = document.getElementById('playerFrame');
+    const shaderEngine = new WebGLShaderEngine(glCanvas);
+
+    const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+    const totalTimeDisplay = document.getElementById('totalTimeDisplay');
+    const screenPlayBtn = document.getElementById('screenPlayBtn');
+    const screenPlayIcon = document.getElementById('screenPlayIcon');
+    const btnPlayPause = document.getElementById('btnPlayPause');
+    const playIcon = document.getElementById('playIcon');
+    const btnJumpStart = document.getElementById('btnJumpStart');
+    const btnPrevFrame = document.getElementById('btnPrevFrame');
+    const btnNextFrame = document.getElementById('btnNextFrame');
+    const btnLoop = document.getElementById('btnLoop');
+    const btnRatioToggle = document.getElementById('btnRatioToggle');
+    const ratioLabel = document.getElementById('ratioLabel');
+    const speedHud = document.getElementById('speedHud');
+    const speedHudText = document.getElementById('speedHudText');
+
+    const bottomDrawer = document.getElementById('bottomDrawer');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const btnCollapseDrawer = document.getElementById('btnCollapseDrawer');
+    const collapseIcon = document.getElementById('collapseIcon');
+    const collapseText = document.getElementById('collapseText');
+
+    const timelineScrollContainer = document.getElementById('timelineScrollContainer');
+    const timelineContent = document.getElementById('timelineContent');
+    const timeRuler = document.getElementById('timeRuler');
+    const videoTrack = document.getElementById('videoTrack');
+    const pipTrack = document.getElementById('pipTrack');
+    const textTrack = document.getElementById('textTrack');
+    const audioTrack = document.getElementById('audioTrack');
+    const playhead = document.getElementById('playhead');
+    const playheadThumb = document.getElementById('playheadThumb');
+    const zoomRange = document.getElementById('zoomRange');
+
+    const videoFileInput = document.getElementById('videoFileInput');
+    const btnNewProject = document.getElementById('btnNewProject');
+    const newProjectModal = document.getElementById('newProjectModal');
+    const confirmNewProjectBtn = document.getElementById('confirmNewProjectBtn');
+    const cancelNewProjectBtn = document.getElementById('cancelNewProjectBtn');
+    const btnThemeToggle = document.getElementById('btnThemeToggle');
+    const iconThemeDark = document.getElementById('iconThemeDark');
+    const iconThemeLight = document.getElementById('iconThemeLight');
+    const exportBtn = document.getElementById('exportBtn');
+    const exportModal = document.getElementById('exportModal');
+    const exportProgressBar = document.getElementById('exportProgressBar');
+    const exportProgressText = document.getElementById('exportProgressText');
+    const cancelExportBtn = document.getElementById('cancelExportBtn');
+    const mobileToast = document.getElementById('mobileToast');
+    const toastMessage = document.getElementById('toastMessage');
+
+    const clearTimelineSheet = document.getElementById('clearTimelineSheet');
+    const btnOpenClearSheet = document.getElementById('btnOpenClearSheet');
+    const quickClearTimelineBtn = document.getElementById('quickClearTimelineBtn');
+    const btnCloseClearSheet = document.getElementById('btnCloseClearSheet');
+    const btnActionClearAll = document.getElementById('btnActionClearAll');
+    const btnActionClearV1 = document.getElementById('btnActionClearV1');
+    const btnActionClearV2 = document.getElementById('btnActionClearV2');
+
+    const transitionModal = document.getElementById('transitionModal');
+    const closeTransitionModalBtn = document.getElementById('closeTransitionModalBtn');
+    const transitionOptionsContainer = document.getElementById('transitionOptionsContainer');
+    const transDurSlider = document.getElementById('transDurSlider');
+    const transDurDisplay = document.getElementById('transDurDisplay');
+    const btnApplyTransition = document.getElementById('btnApplyTransition');
+    const btnRemoveTransition = document.getElementById('btnRemoveTransition');
+    let activeTransitionClipIndex = null;
+
+    const navTabs = document.querySelectorAll('.nav-tab');
+    const drawerPanels = document.querySelectorAll('.drawer-panel');
+
+    function showMobileToast(msg) {
+      if (!mobileToast || !toastMessage) return;
+      toastMessage.textContent = msg;
+      mobileToast.classList.remove('opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        mobileToast.classList.add('opacity-0', 'pointer-events-none');
+      }, 1900);
+    }
+
+    function formatTime(sec) {
+      if (isNaN(sec) || sec < 0) sec = 0;
+      const m = Math.floor(sec / 60);
+      const s = Math.floor(sec % 60);
+      const ms = Math.floor((sec % 1) * 10);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}.${ms}`;
+    }
+
+    function getProjectDuration() {
+      const v1Dur = APP_STATE.clipsV1.reduce((acc, c) => acc + (c.duration || 0), 0);
+      const v2Dur = APP_STATE.clipsV2.reduce((max, c) => Math.max(max, (c.start || 0) + (c.duration || 0)), 0);
+      const txtDur = APP_STATE.textItems.reduce((max, c) => Math.max(max, (c.start || 0) + (c.duration || 0)), 0);
+      const audDur = APP_STATE.audioClips.reduce((max, c) => Math.max(max, (c.start || 0) + (c.duration || 0)), 0);
+      return Math.max(v1Dur, v2Dur, txtDur, audDur, 0);
+    }
+
+    function toggleDrawer(open = null) {
+      if (!bottomDrawer) return;
+      if (open === null) {
+        APP_STATE.isDrawerOpen = !APP_STATE.isDrawerOpen;
+      } else {
+        APP_STATE.isDrawerOpen = open;
+      }
+
+      if (APP_STATE.isDrawerOpen) {
+        bottomDrawer.style.maxHeight = '44vh';
+        if (collapseIcon) collapseIcon.classList.remove('rotate-180');
+        if (collapseText) collapseText.textContent = "Ocultar";
+      } else {
+        bottomDrawer.style.maxHeight = '32px';
+        if (collapseIcon) collapseIcon.classList.add('rotate-180');
+        if (collapseText) collapseText.textContent = "Mostrar";
+      }
+    }
+
+    safeOn(btnCollapseDrawer, 'click', () => toggleDrawer());
+
+    navTabs.forEach(tab => {
+      safeOn(tab, 'click', () => {
+        const targetId = tab.dataset.target;
+        const titleText = tab.dataset.title;
+        const iconClass = tab.dataset.icon;
+
+        if (APP_STATE.activeTab === targetId && APP_STATE.isDrawerOpen) {
+          toggleDrawer(false);
+          return;
+        }
+
+        APP_STATE.activeTab = targetId;
+        toggleDrawer(true);
+
+        navTabs.forEach(t => {
+          t.classList.remove('text-cyan-400');
+          t.classList.add('text-gray-400');
+        });
+        tab.classList.remove('text-gray-400');
+        tab.classList.add('text-cyan-400');
+
+        if (drawerTitle) {
+          drawerTitle.innerHTML = `<i class="fa-solid ${iconClass} text-cyan-400 text-xs"></i> ${titleText}`;
+        }
+
+        drawerPanels.forEach(p => {
+          if (p.id === targetId) p.classList.remove('hidden');
+          else p.classList.add('hidden');
+        });
+
+        if (targetId === 'panel-library') {
+          renderLibraryUI();
+        }
+      });
+    });
+
+    safeOn(btnRatioToggle, 'click', () => {
+      if (!playerFrame || !glCanvas || !overlayCanvas) return;
+      if (APP_STATE.currentRatio === '16:9') {
+        APP_STATE.currentRatio = '9:16';
+        if (ratioLabel) ratioLabel.textContent = '9:16';
+        const menuLbl = document.getElementById('menuRatioLabel');
+        if (menuLbl) menuLbl.textContent = '9:16';
+        playerFrame.classList.remove('aspect-video');
+        playerFrame.classList.add('aspect-[9/16]');
+        glCanvas.width = 404;
+        glCanvas.height = 720;
+        overlayCanvas.width = 404;
+        overlayCanvas.height = 720;
+        showMobileToast('Formato Vertical 9:16 (Proxy 720p)');
+      } else {
+        APP_STATE.currentRatio = '16:9';
+        if (ratioLabel) ratioLabel.textContent = '16:9';
+        const menuLbl = document.getElementById('menuRatioLabel');
+        if (menuLbl) menuLbl.textContent = '16:9';
+        playerFrame.classList.remove('aspect-[9/16]');
+        playerFrame.classList.add('aspect-video');
+        glCanvas.width = 720;
+        glCanvas.height = 404;
+        overlayCanvas.width = 720;
+        overlayCanvas.height = 404;
+        showMobileToast('Formato Panorámico 16:9 (Proxy 720p)');
+      }
+      if (shaderEngine && shaderEngine.gl) {
+        shaderEngine.gl.viewport(0, 0, glCanvas.width, glCanvas.height);
+      }
+      renderCurrentFrame();
+    });
+
+    /* ========================================================
+       6. MOTOR DE AUDIO WEB AUDIO API (A1 + FADES)
+       ======================================================== */
+    let audioCtx = null;
+    let audioGainNode = null;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) audioCtx = new AudioContextClass();
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+      return audioCtx;
+    }
+
+    function updateAudioPlaybackVolume(currentTime) {
+      if (!audioGainNode || APP_STATE.audioClips.length === 0) return;
+      const actClip = APP_STATE.audioClips.find(c => currentTime >= c.start && currentTime <= c.start + c.duration);
+      if (!actClip || actClip.muted) {
+        audioGainNode.gain.value = 0;
+        return;
+      }
+
+      const localTime = currentTime - actClip.start;
+      const baseVol = actClip.volume || 1.0;
+      let gain = baseVol;
+
+      if (actClip.fadeIn > 0 && localTime < actClip.fadeIn) {
+        gain = baseVol * (localTime / actClip.fadeIn);
+      }
+      const remaining = actClip.duration - localTime;
+      if (actClip.fadeOut > 0 && remaining < actClip.fadeOut) {
+        gain = baseVol * (remaining / actClip.fadeOut);
+      }
+
+      audioGainNode.gain.value = Math.max(0, Math.min(gain, 2.0));
+    }
+
+    function synthesizeWavMusic(preset = 'cyber') {
+      const sampleRate = 22050;
+      const durationSec = 6.0;
+      const totalSamples = Math.floor(sampleRate * durationSec);
+      const buffer = new Float32Array(totalSamples);
+
+      for (let i = 0; i < totalSamples; i++) {
+        const t = i / sampleRate;
+        let s = 0;
+
+        if (preset === 'cyber') {
+          const bassFreq = [55, 65.4, 73.4, 49][Math.floor(t * 2) % 4];
+          s += Math.sin(2 * Math.PI * bassFreq * t) * 0.4;
+          s += (Math.sin(2 * Math.PI * bassFreq * 2 * t) > 0 ? 0.15 : -0.15);
+          const beatPhase = (t * 2) % 1;
+          if (beatPhase < 0.15) {
+            s += Math.sin(2 * Math.PI * (120 - beatPhase * 600) * beatPhase) * 0.5;
+          }
+          const hatPhase = (t * 4) % 1;
+          if (hatPhase < 0.05) {
+            s += (Math.random() * 2 - 1) * 0.15;
+          }
+        } else {
+          s += Math.sin(2 * Math.PI * 220 * t) * 0.25;
+          s += Math.sin(2 * Math.PI * 330 * t + Math.sin(t * 2) * 2) * 0.2;
+          s += Math.sin(2 * Math.PI * 440 * t) * 0.15;
+        }
+
+        buffer[i] = Math.max(-1, Math.min(1, s));
+      }
+
+      const length = totalSamples * 2 + 44;
+      const out = new DataView(new ArrayBuffer(length));
+      out.setUint32(0, 0x46464952, true);
+      out.setUint32(4, length - 8, true);
+      out.setUint32(8, 0x45564157, true);
+      out.setUint32(12, 0x20746d66, true);
+      out.setUint32(16, 16, true);
+      out.setUint16(20, 1, true);
+      out.setUint16(22, 1, true);
+      out.setUint32(24, sampleRate, true);
+      out.setUint32(28, sampleRate * 2, true);
+      out.setUint16(32, 2, true);
+      out.setUint16(34, 16, true);
+      out.setUint32(36, 0x61746164, true);
+      out.setUint32(40, length - 44, true);
+
+      let p = 44;
+      for (let i = 0; i < totalSamples; i++) {
+        let sample = buffer[i];
+        let val = (sample < 0 ? sample * 0x8000 : sample * 0x7FFF) | 0;
+        out.setInt16(p, val, true);
+        p += 2;
+      }
+
+      return new Blob([out.buffer], { type: 'audio/wav' });
+    }
+
+    /* ========================================================
+       7. RENDERIZADO VISUAL COMPUESTO (V1 + V2 PiP + TEXTOS)
+       ======================================================== */
+    const pipImageCache = new Map();
+
+    function renderCompositeOverlays() {
+      if (!oCtx || !overlayCanvas) return;
+      oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+      const w = overlayCanvas.width;
+      const h = overlayCanvas.height;
+      const curTime = APP_STATE.currentTime;
+
+      // 1. DIBUJAR PISTA V2 (PiP / B-ROLL SUPERPUESTO)
+      APP_STATE.clipsV2.forEach(pip => {
+        if (curTime >= pip.start && curTime <= pip.start + pip.duration) {
+          const scale = pip.scale || 0.35;
+          const pw = w * scale;
+          const ph = h * scale;
+          let px = w - pw - 18;
+          let py = h - ph - 18;
+
+          if (pip.position === 'top-left') { px = 18; py = 18; }
+          else if (pip.position === 'top-right') { px = w - pw - 18; py = 18; }
+          else if (pip.position === 'bottom-left') { px = 18; py = h - ph - 18; }
+          else if (pip.position === 'center') { px = (w - pw) / 2; py = (h - ph) / 2; }
+
+          oCtx.save();
+          oCtx.globalAlpha = pip.opacity !== undefined ? pip.opacity : 0.95;
+
+          oCtx.shadowColor = 'rgba(0,0,0,0.8)';
+          oCtx.shadowBlur = 12;
+          oCtx.fillStyle = '#161824';
+          oCtx.beginPath();
+          oCtx.roundRect(px, py, pw, ph, 10);
+          oCtx.fill();
+          oCtx.strokeStyle = '#00f0ff';
+          oCtx.lineWidth = 2;
+          oCtx.stroke();
+
+          if (pip.thumbUrl) {
+            let img = pipImageCache.get(pip.thumbUrl);
+            if (!img) {
+              img = new Image();
+              img.src = pip.thumbUrl;
+              pipImageCache.set(pip.thumbUrl, img);
+            }
+            if (img.complete && img.naturalWidth > 0) {
+              oCtx.save();
+              oCtx.beginPath();
+              oCtx.roundRect(px, py, pw, ph, 8);
+              oCtx.clip();
+              oCtx.drawImage(img, px, py, pw, ph);
+              oCtx.restore();
+            }
+          }
+
+          oCtx.font = "bold 10px monospace";
+          oCtx.fillStyle = "rgba(0,0,0,0.7)";
+          oCtx.fillRect(px + 4, py + 4, 38, 14);
+          oCtx.fillStyle = "#00f0ff";
+          oCtx.fillText("PiP V2", px + 8, py + 14);
+
+          oCtx.restore();
+        }
+      });
+
+      // 2. DIBUJAR PISTA DE TÍTULOS Y TEXTO
+      APP_STATE.textItems.forEach(t => {
+        if (curTime >= t.start && curTime <= t.start + t.duration) {
+          oCtx.save();
+          oCtx.font = `bold 24px ${t.font || "'Plus Jakarta Sans', sans-serif"}`;
+          oCtx.textAlign = 'center';
+
+          let py = h - 45;
+          if (t.position === 'top') py = 50;
+          if (t.position === 'center') py = h / 2;
+
+          const metrics = oCtx.measureText(t.text);
+          const pad = 14;
+
+          if (t.bg) {
+            oCtx.fillStyle = 'rgba(7, 8, 12, 0.82)';
+            oCtx.beginPath();
+            oCtx.roundRect((w - metrics.width) / 2 - pad, py - 22, metrics.width + pad * 2, 32, 6);
+            oCtx.fill();
+          }
+
+          if (t.stroke) {
+            oCtx.lineWidth = 4;
+            oCtx.strokeStyle = '#000000';
+            oCtx.strokeText(t.text, w / 2, py);
+          }
+
+          oCtx.shadowColor = 'rgba(0,0,0,0.85)';
+          oCtx.shadowBlur = 6;
+          oCtx.fillStyle = t.color || '#00f0ff';
+          oCtx.fillText(t.text, w / 2, py);
+          oCtx.restore();
+        }
+      });
+    }
+
+    function renderCurrentFrame() {
+      let transType = 0;
+      let transProg = 0;
+      let accumTime = 0;
+
+      for (let i = 0; i < APP_STATE.clipsV1.length - 1; i++) {
+        const cA = APP_STATE.clipsV1[i];
+        accumTime += cA.duration;
+        if (cA.transition && cA.transition !== 'none') {
+          const tDur = cA.transitionDuration || 0.6;
+          const diff = APP_STATE.currentTime - accumTime;
+          if (diff >= -tDur / 2 && diff <= tDur / 2) {
+            transProg = Math.max(0, Math.min(1, (diff + tDur / 2) / tDur));
+            if (cA.transition === 'fade-black') transType = 1;
+            else if (cA.transition === 'flash') transType = 2;
+            else if (cA.transition === 'wipe') transType = 3;
+            else if (cA.transition === 'crossfade') transType = 4;
+            break;
+          }
+        }
+      }
+
+      APP_STATE.activeTransition.type = transType;
+      APP_STATE.activeTransition.prog = transProg;
+
+      if (APP_STATE.sourceLoaded && hiddenVideo && hiddenVideo.readyState >= 2) {
+        shaderEngine.render(hiddenVideo, APP_STATE);
+      } else {
+        const gl = shaderEngine.gl;
+        if (gl) {
+          gl.clearColor(0.02, 0.03, 0.05, 1.0);
+          gl.clear(gl.COLOR_BUFFER_BIT);
+        }
+      }
+
+      renderCompositeOverlays();
+      updateAudioPlaybackVolume(APP_STATE.currentTime);
+    }
+
+    function getV1ClipAt(time) {
+      let accum = 0;
+      for (const clip of APP_STATE.clipsV1) {
+        if (time >= accum && time <= accum + clip.duration) {
+          return { clip, localTime: time - accum, offset: accum };
+        }
+        accum += clip.duration;
+      }
+      return null;
+    }
+
+    function syncPlayback(targetTime) {
+      if (!APP_STATE.sourceLoaded || !hiddenVideo) return;
+      const match = getV1ClipAt(targetTime);
+      if (match) {
+        const clip = match.clip;
+        const activeSpeed = clip.speed || 1.0;
+        const sourcePos = clip.startInSource + (match.localTime * activeSpeed);
+        
+        if (Math.abs(hiddenVideo.playbackRate - activeSpeed) > 0.05) {
+          hiddenVideo.playbackRate = activeSpeed;
+        }
+
+        if (speedHud && speedHudText) {
+          if (Math.abs(activeSpeed - 1.0) > 0.05) {
+            speedHud.classList.remove('hidden');
+            speedHudText.textContent = `${activeSpeed.toFixed(2)}x`;
+          } else {
+            speedHud.classList.add('hidden');
+          }
+        }
+
+        if (APP_STATE.activeClipId !== clip.id || Math.abs(hiddenVideo.currentTime - sourcePos) > 0.15) {
+          APP_STATE.activeClipId = clip.id;
+          hiddenVideo.currentTime = Math.min(sourcePos, APP_STATE.sourceDuration);
+        }
+      }
+    }
+
+    function seekTimeline(targetTime) {
+      const totalDur = getProjectDuration();
+      APP_STATE.currentTime = Math.max(0, Math.min(targetTime, totalDur));
+
+      if (APP_STATE.sourceLoaded && hiddenVideo) {
+        const match = getV1ClipAt(APP_STATE.currentTime);
+        if (match) {
+          const clip = match.clip;
+          const activeSpeed = clip.speed || 1.0;
+          const sourcePos = clip.startInSource + (match.localTime * activeSpeed);
+          APP_STATE.activeClipId = clip.id;
+          if (Math.abs(hiddenVideo.playbackRate - activeSpeed) > 0.05) {
+            hiddenVideo.playbackRate = activeSpeed;
+          }
+          hiddenVideo.currentTime = Math.min(sourcePos, APP_STATE.sourceDuration);
+        }
+      }
+
+      updatePlayheadUI();
+      updateTimecodeUI();
+      requestAnimationFrame(renderCurrentFrame);
+    }
+
+    /* ========================================================
+       8. SINCRONIZACIÓN EFICIENTE DE FOTOGRAMAS (HARDWARE DECODER)
+       ======================================================== */
+    const hasRVFC = typeof HTMLVideoElement !== 'undefined' && 'requestVideoFrameCallback' in HTMLVideoElement.prototype;
+    let lastTimeLoop = performance.now();
+    let videoCallbackHandle = null;
+    let rafPlaybackHandle = null;
+
+    // Renderiza fotogramas sincronizados exclusivamente cuando el decodificador móvil entrega un nuevo frame
+    function onHardwareFrameDecoded(now, metadata) {
+      if (!APP_STATE.isPlaying) return;
+
+      const totalDur = getProjectDuration();
+      const match = getV1ClipAt(APP_STATE.currentTime);
+
+      if (match && hiddenVideo) {
+        const clip = match.clip;
+        const speed = clip.speed || 1.0;
+        const curVTime = hiddenVideo.currentTime;
+
+        // Comprobar fin de segmento o transición al próximo clip en el corte
+        if (curVTime >= clip.endInSource - 0.03) {
+          const nextTime = match.offset + clip.duration;
+          if (nextTime >= totalDur) {
+            if (APP_STATE.isLooping && totalDur > 0) {
+              seekTimeline(0);
+              hiddenVideo.play().catch(() => {});
+            } else {
+              pauseVideo();
+              seekTimeline(totalDur);
+              return;
+            }
+          } else {
+            seekTimeline(nextTime);
+            hiddenVideo.play().catch(() => {});
+          }
+        } else {
+          // El decodificador avanza fluidamente sin saltos de currentTime
+          const localElapsed = Math.max(0, (curVTime - clip.startInSource) / speed);
+          APP_STATE.currentTime = Math.min(match.offset + localElapsed, totalDur);
+          updatePlayheadUI();
+          updateTimecodeUI();
+        }
+      } else {
+        if (APP_STATE.currentTime >= totalDur) {
+          if (APP_STATE.isLooping && totalDur > 0) {
+            seekTimeline(0);
+          } else {
+            pauseVideo();
+            return;
+          }
+        }
+      }
+
+      renderCurrentFrame();
+
+      // Programar la lectura del siguiente frame decodificado por hardware
+      if (APP_STATE.isPlaying && hiddenVideo && hasRVFC) {
+        videoCallbackHandle = hiddenVideo.requestVideoFrameCallback(onHardwareFrameDecoded);
+      }
+    }
+
+    // Fallback de bucle solo para navegadores sin requestVideoFrameCallback
+    function fallbackPlaybackLoop(time) {
+      if (!APP_STATE.isPlaying) return;
+
+      const delta = (time - lastTimeLoop) / 1000;
+      lastTimeLoop = time;
+
+      const totalDur = getProjectDuration();
+      APP_STATE.currentTime += delta;
+
+      if (APP_STATE.currentTime >= totalDur) {
+        if (APP_STATE.isLooping && totalDur > 0) {
+          seekTimeline(0);
+        } else {
+          pauseVideo();
+          seekTimeline(totalDur);
+          return;
+        }
+      } else {
+        syncPlayback(APP_STATE.currentTime);
+        updatePlayheadUI();
+        updateTimecodeUI();
+        renderCurrentFrame();
+      }
+
+      rafPlaybackHandle = requestAnimationFrame(fallbackPlaybackLoop);
+    }
+
+    function playVideo() {
+      if (getProjectDuration() === 0) return showMobileToast("Carga medios en el timeline primero");
+      if (APP_STATE.currentTime >= getProjectDuration()) {
+        seekTimeline(0);
+      }
+      APP_STATE.isPlaying = true;
+      
+      getAudioContext();
+      if (playIcon) playIcon.className = "fa-solid fa-pause";
+      if (screenPlayIcon) screenPlayIcon.className = "fa-solid fa-pause text-base ml-0 text-cyan-400";
+      
+      const match = getV1ClipAt(APP_STATE.currentTime);
+      if (match && hiddenVideo) {
+        const clip = match.clip;
+        const targetRate = clip.speed || 1.0;
+        if (Math.abs(hiddenVideo.playbackRate - targetRate) > 0.05) {
+          hiddenVideo.playbackRate = targetRate;
+        }
+        const sourcePos = clip.startInSource + (match.localTime * targetRate);
+        if (Math.abs(hiddenVideo.currentTime - sourcePos) > 0.15) {
+          hiddenVideo.currentTime = sourcePos;
+        }
+      }
+
+      if (hiddenVideo) {
+        hiddenVideo.play().catch(() => {});
+      }
+      
+      lastTimeLoop = performance.now();
+
+      if (hasRVFC && hiddenVideo) {
+        videoCallbackHandle = hiddenVideo.requestVideoFrameCallback(onHardwareFrameDecoded);
+      } else {
+        rafPlaybackHandle = requestAnimationFrame(fallbackPlaybackLoop);
+      }
+    }
+
+    function pauseVideo() {
+      APP_STATE.isPlaying = false;
+      if (hiddenVideo) {
+        hiddenVideo.pause();
+        if (videoCallbackHandle !== null && hasRVFC && 'cancelVideoFrameCallback' in HTMLVideoElement.prototype) {
+          hiddenVideo.cancelVideoFrameCallback(videoCallbackHandle);
+          videoCallbackHandle = null;
+        }
+      }
+      if (rafPlaybackHandle !== null) {
+        cancelAnimationFrame(rafPlaybackHandle);
+        rafPlaybackHandle = null;
+      }
+      if (playIcon) playIcon.className = "fa-solid fa-play ml-0.5";
+      if (screenPlayIcon) screenPlayIcon.className = "fa-solid fa-play text-base ml-0.5 text-cyan-400";
+      if (speedHud) speedHud.classList.add('hidden');
+    }
+
+    safeOn(btnPlayPause, 'click', () => APP_STATE.isPlaying ? pauseVideo() : playVideo());
+    safeOn(screenPlayBtn, 'click', () => APP_STATE.isPlaying ? pauseVideo() : playVideo());
+
+    safeOn(btnJumpStart, 'click', () => {
+      pauseVideo();
+      seekTimeline(0);
+    });
+
+    safeOn(btnPrevFrame, 'click', () => {
+      pauseVideo();
+      const targetTime = Math.max(0, APP_STATE.currentTime - (1 / APP_STATE.fps));
+      seekTimeline(targetTime);
+    });
+
+    safeOn(btnNextFrame, 'click', () => {
+      pauseVideo();
+      const targetTime = Math.min(getProjectDuration(), APP_STATE.currentTime + (1 / APP_STATE.fps));
+      seekTimeline(targetTime);
+    });
+
+    safeOn(btnLoop, 'click', () => {
+      APP_STATE.isLooping = !APP_STATE.isLooping;
+      if (btnLoop) btnLoop.classList.toggle('text-cyan-400', APP_STATE.isLooping);
+      showMobileToast(APP_STATE.isLooping ? "Bucle activado" : "Bucle desactivado");
+    });
+
+    /* ========================================================
+       9. RENDERIZADO DE LAS 4 PISTAS MULTIPISTA
+       ======================================================== */
+    function renderTimeline() {
+      const pps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+      const totalDur = Math.max(getProjectDuration(), 8);
+      const totalWidth = Math.max(totalDur * pps + 180, window.innerWidth);
+      if (timelineContent) timelineContent.style.width = `${totalWidth}px`;
+
+      // 1. Regla graduada
+      if (timeRuler) {
+        timeRuler.innerHTML = '';
+        for (let s = 0; s <= totalDur + 4; s += 1) {
+          const mark = document.createElement('div');
+          mark.className = 'absolute top-0 bottom-0 border-l border-[#1c1f2d] pl-1 text-[8px] pointer-events-none';
+          mark.style.left = `${s * pps}px`;
+          mark.textContent = formatTime(s);
+          timeRuler.appendChild(mark);
+        }
+      }
+
+      // 2. PISTA V1 (VIDEO PRINCIPAL)
+      if (videoTrack) {
+        videoTrack.innerHTML = '';
+        let accumX = 0;
+
+        APP_STATE.clipsV1.forEach((clip, idx) => {
+          const clipWidth = clip.duration * pps;
+          const isSelected = APP_STATE.selectedTrackType === 'v1' && APP_STATE.selectedItemId === clip.id;
+          
+          const clipEl = document.createElement('div');
+          clipEl.className = `track-item touch-btn absolute top-1 bottom-1 rounded-lg bg-gradient-to-r ${clip.grad} border border-white/20 px-2 py-0.5 flex flex-col justify-between overflow-hidden cursor-pointer shadow ${isSelected ? 'is-active' : ''}`;
+          clipEl.style.left = `${accumX}px`;
+          clipEl.style.width = `${Math.max(clipWidth, 26)}px`;
+
+          const speedBadge = clip.speed && clip.speed !== 1.0 ? `<span class="font-mono text-[8px] bg-amber-400 text-black px-1 rounded font-extrabold mr-0.5">${clip.speed}x</span>` : '';
+
+          clipEl.innerHTML = `
+            <div class="flex items-center justify-between text-[9px] font-bold text-white truncate w-full gap-1">
+              <span class="truncate">#${idx + 1}</span>
+              <div class="flex items-center gap-1 shrink-0">
+                ${speedBadge}
+                <span class="font-mono text-[8px] bg-black/50 px-1 py-0.2 rounded text-cyan-300">${clip.duration.toFixed(1)}s</span>
+                <button class="clip-del-btn touch-btn w-4 h-4 rounded bg-rose-600/90 text-white flex items-center justify-center text-[8px] shadow" title="Eliminar clip">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+            <div class="h-1 flex items-end gap-0.5 opacity-40 overflow-hidden pointer-events-none">
+              ${Array.from({length: Math.min(Math.floor(clipWidth / 5), 24)}).map((_, i) => `<div class="w-0.5 bg-white rounded-full" style="height: ${(i % 4) + 2}px"></div>`).join('')}
+            </div>
+          `;
+
+          const delBtn = clipEl.querySelector('.clip-del-btn');
+          safeOn(delBtn, 'click', (e) => {
+            e.stopPropagation();
+            deleteV1Clip(clip.id);
+          });
+
+          safeOn(clipEl, 'click', (e) => {
+            e.stopPropagation();
+            APP_STATE.selectedTrackType = 'v1';
+            APP_STATE.selectedItemId = clip.id;
+            renderTimeline();
+            updateClipActionLabels();
+          });
+
+          videoTrack.appendChild(clipEl);
+
+          // Icono interactivo de Transición
+          if (idx < APP_STATE.clipsV1.length - 1) {
+            const transBtn = document.createElement('button');
+            const isTransActive = clip.transition && clip.transition !== 'none';
+            transBtn.className = `touch-btn absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-md flex items-center justify-center border shadow-md transition-all ${isTransActive ? 'bg-[#0b0e18] border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(0,240,255,0.45)]' : 'bg-[#141624]/90 border-gray-600/60 text-gray-400 hover:border-gray-400'}`;
+            transBtn.style.left = `${accumX + clipWidth}px`;
+            transBtn.title = `Transición hacia Clip #${idx + 2}`;
+
+            let transIcon = '<i class="fa-solid fa-scissors text-[9px]"></i>';
+            if (clip.transition === 'fade-black') transIcon = '<i class="fa-solid fa-circle-half-stroke text-[10px] text-amber-400"></i>';
+            else if (clip.transition === 'crossfade') transIcon = '<i class="fa-solid fa-shuffle text-[10px] text-cyan-400"></i>';
+            else if (clip.transition === 'flash') transIcon = '<i class="fa-solid fa-bolt text-[10px] text-yellow-300"></i>';
+            else if (clip.transition === 'wipe') transIcon = '<i class="fa-solid fa-table-columns text-[10px] text-emerald-400"></i>';
+
+            transBtn.innerHTML = transIcon;
+            safeOn(transBtn, 'click', (e) => {
+              e.stopPropagation();
+              openTransitionModal(idx);
+            });
+            videoTrack.appendChild(transBtn);
+          }
+
+          accumX += clipWidth;
+        });
+      }
+
+      // 3. PISTA V2 (SUPERPOSICIÓN PiP / B-ROLL)
+      if (pipTrack) {
+        pipTrack.innerHTML = '';
+        APP_STATE.clipsV2.forEach(pip => {
+          const left = pip.start * pps;
+          const width = pip.duration * pps;
+          const isSelected = APP_STATE.selectedTrackType === 'v2' && APP_STATE.selectedItemId === pip.id;
+
+          const pipEl = document.createElement('div');
+          pipEl.className = `track-item touch-btn absolute top-1 bottom-1 rounded-md bg-purple-950/80 border border-purple-500/60 px-1.5 py-0.5 flex items-center justify-between overflow-hidden cursor-pointer shadow ${isSelected ? 'is-active' : ''}`;
+          pipEl.style.left = `${left}px`;
+          pipEl.style.width = `${Math.max(width, 24)}px`;
+
+          pipEl.innerHTML = `
+            <div class="flex items-center gap-1 truncate text-[9px] font-bold text-purple-200">
+              <i class="fa-solid fa-layer-group text-[8px] text-purple-400"></i>
+              <span class="truncate">${pip.name || 'PiP'}</span>
+            </div>
+            <button class="pip-del-btn touch-btn w-3.5 h-3.5 rounded bg-rose-600 text-white flex items-center justify-center text-[7px] shrink-0">✕</button>
+          `;
+
+          const pipDel = pipEl.querySelector('.pip-del-btn');
+          safeOn(pipDel, 'click', (e) => {
+            e.stopPropagation();
+            deleteV2Pip(pip.id);
+          });
+
+          safeOn(pipEl, 'click', (e) => {
+            e.stopPropagation();
+            APP_STATE.selectedTrackType = 'v2';
+            APP_STATE.selectedItemId = pip.id;
+            renderTimeline();
+            updatePipActionControls(pip);
+          });
+
+          pipTrack.appendChild(pipEl);
+        });
+      }
+
+      // 4. PISTA TEXTO / TÍTULOS
+      if (textTrack) {
+        textTrack.innerHTML = '';
+        APP_STATE.textItems.forEach(txt => {
+          const left = txt.start * pps;
+          const width = txt.duration * pps;
+          const isSelected = APP_STATE.selectedTrackType === 'text' && APP_STATE.selectedItemId === txt.id;
+
+          const txtEl = document.createElement('div');
+          txtEl.className = `track-item touch-btn absolute top-0.5 bottom-0.5 rounded-md bg-amber-950/80 border border-amber-500/60 px-1.5 flex items-center justify-between overflow-hidden cursor-pointer shadow ${isSelected ? 'is-active' : ''}`;
+          txtEl.style.left = `${left}px`;
+          txtEl.style.width = `${Math.max(width, 24)}px`;
+
+          txtEl.innerHTML = `
+            <div class="flex items-center gap-1 truncate text-[8px] font-bold text-amber-200">
+              <i class="fa-solid fa-font text-[7px] text-amber-400"></i>
+              <span class="truncate">${txt.text}</span>
+            </div>
+            <button class="txt-del-btn touch-btn w-3.5 h-3.5 rounded bg-rose-600 text-white flex items-center justify-center text-[7px] shrink-0">✕</button>
+          `;
+
+          const txtDel = txtEl.querySelector('.txt-del-btn');
+          safeOn(txtDel, 'click', (e) => {
+            e.stopPropagation();
+            deleteTextItem(txt.id);
+          });
+
+          safeOn(txtEl, 'click', (e) => {
+            e.stopPropagation();
+            APP_STATE.selectedTrackType = 'text';
+            APP_STATE.selectedItemId = txt.id;
+            renderTimeline();
+            updateTextActionControls(txt);
+          });
+
+          textTrack.appendChild(txtEl);
+        });
+      }
+
+      // 5. PISTA AUDIO (A1)
+      if (audioTrack) {
+        audioTrack.innerHTML = '';
+        APP_STATE.audioClips.forEach(aud => {
+          const left = aud.start * pps;
+          const width = aud.duration * pps;
+          const isSelected = APP_STATE.selectedTrackType === 'audio' && APP_STATE.selectedItemId === aud.id;
+
+          const audEl = document.createElement('div');
+          audEl.className = `track-item touch-btn absolute top-1 bottom-1 rounded-md bg-emerald-950/80 border border-emerald-500/60 px-1.5 flex items-center justify-between overflow-hidden cursor-pointer shadow ${isSelected ? 'is-active' : ''}`;
+          audEl.style.left = `${left}px`;
+          audEl.style.width = `${Math.max(width, 24)}px`;
+
+          audEl.innerHTML = `
+            <div class="flex items-center gap-1 truncate text-[8px] font-bold text-emerald-200">
+              <i class="fa-solid fa-music text-[7px] text-emerald-400"></i>
+              <span class="truncate">${aud.name || 'Audio'}</span>
+            </div>
+            <button class="aud-del-btn touch-btn w-3.5 h-3.5 rounded bg-rose-600 text-white flex items-center justify-center text-[7px] shrink-0">✕</button>
+          `;
+
+          const audDel = audEl.querySelector('.aud-del-btn');
+          safeOn(audDel, 'click', (e) => {
+            e.stopPropagation();
+            deleteAudioClip(aud.id);
+          });
+
+          safeOn(audEl, 'click', (e) => {
+            e.stopPropagation();
+            APP_STATE.selectedTrackType = 'audio';
+            APP_STATE.selectedItemId = aud.id;
+            renderTimeline();
+            updateAudioActionControls(aud);
+          });
+
+          audioTrack.appendChild(audEl);
+        });
+      }
+
+      updatePlayheadUI();
+      updateTimecodeUI();
+      updateClipActionLabels();
+    }
+
+    function updateClipActionLabels() {
+      const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+      if (selected) {
+        const selDur = document.getElementById('selectedClipDur');
+        if (selDur) selDur.textContent = `${selected.duration.toFixed(2)}s`;
+        const spd = selected.speed || 1.0;
+        const spdDisp = document.getElementById('clipSpeedDisplay');
+        if (spdDisp) spdDisp.textContent = `${spd}x`;
+        document.querySelectorAll('.clip-spd-btn').forEach(btn => {
+          if (parseFloat(btn.dataset.spd) === spd) {
+            btn.className = "clip-spd-btn touch-btn h-7 bg-cyan-500 border border-cyan-400 text-black font-extrabold rounded text-[10px] font-mono";
+          } else {
+            btn.className = "clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300";
+          }
+        });
+      }
+    }
+
+    function updatePipActionControls(pip) {
+      const posSel = document.getElementById('pipPosSelect');
+      if (posSel) posSel.value = pip.position || 'bottom-right';
+      const scaleR = document.getElementById('pipScaleRange');
+      if (scaleR) scaleR.value = (pip.scale || 0.35) * 100;
+      const scaleV = document.getElementById('pipScaleVal');
+      if (scaleV) scaleV.textContent = `${Math.floor((pip.scale || 0.35) * 100)}%`;
+      const opR = document.getElementById('pipOpacityRange');
+      if (opR) opR.value = (pip.opacity !== undefined ? pip.opacity : 0.95) * 100;
+      const opV = document.getElementById('pipOpacityVal');
+      if (opV) opV.textContent = `${Math.floor((pip.opacity !== undefined ? pip.opacity : 0.95) * 100)}%`;
+    }
+
+    function updateTextActionControls(txt) {
+      const ti = document.getElementById('titleInput');
+      if (ti) ti.value = txt.text || '';
+      const tc = document.getElementById('titleColorInput');
+      if (tc) tc.value = txt.color || '#00f0ff';
+      const tf = document.getElementById('titleFontSelect');
+      if (tf) tf.value = txt.font || "'Plus Jakarta Sans', sans-serif";
+      const tp = document.getElementById('titlePosSelect');
+      if (tp) tp.value = txt.position || 'bottom';
+      const ts = document.getElementById('titleStrokeToggle');
+      if (ts) ts.checked = !!txt.stroke;
+      const tb = document.getElementById('titleBgToggle');
+      if (tb) tb.checked = !!txt.bg;
+    }
+
+    function updateAudioActionControls(aud) {
+      const an = document.getElementById('activeAudioName');
+      if (an) an.textContent = `Pista: ${aud.name || 'Audio'}`;
+      const avs = document.getElementById('audioVolumeSlider');
+      if (avs) avs.value = (aud.volume || 1.0) * 100;
+      const avd = document.getElementById('activeAudioVolDisplay');
+      if (avd) avd.textContent = `${Math.floor((aud.volume || 1.0) * 100)}%`;
+      const afi = document.getElementById('audioFadeInSlider');
+      if (afi) afi.value = aud.fadeIn || 1.0;
+      const afiv = document.getElementById('audioFadeInVal');
+      if (afiv) afiv.textContent = `${aud.fadeIn || 1.0}s`;
+      const afo = document.getElementById('audioFadeOutSlider');
+      if (afo) afo.value = aud.fadeOut || 1.5;
+      const afov = document.getElementById('audioFadeOutVal');
+      if (afov) afov.textContent = `${aud.fadeOut || 1.5}s`;
+    }
+
+    function updatePlayheadUI() {
+      if (!playhead) return;
+      const pps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+      playhead.style.left = `${APP_STATE.currentTime * pps + 32}px`;
+    }
+
+    function updateTimecodeUI() {
+      if (currentTimeDisplay) currentTimeDisplay.textContent = formatTime(APP_STATE.currentTime);
+      if (totalTimeDisplay) totalTimeDisplay.textContent = formatTime(getProjectDuration());
+    }
+
+    function setTimelineTimeByTouch(clientX) {
+      if (!timelineContent) return;
+      const rect = timelineContent.getBoundingClientRect();
+      const pps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+      const offsetX = clientX - rect.left - 32;
+      const totalDur = getProjectDuration();
+      const targetTime = Math.max(0, Math.min(offsetX / pps, totalDur));
+
+      seekTimeline(targetTime);
+    }
+
+    let isTouchScrubbing = false;
+    safeOn(playheadThumb, 'touchstart', () => {
+      isTouchScrubbing = true;
+      pauseVideo();
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (isTouchScrubbing && e.touches.length > 0) {
+        setTimelineTimeByTouch(e.touches[0].clientX);
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', () => isTouchScrubbing = false);
+
+    safeOn(timelineScrollContainer, 'click', (e) => {
+      if (e.target.closest('.track-item') || e.target.closest('button')) return;
+      setTimelineTimeByTouch(e.clientX);
+    });
+
+    /* ========================================================
+       10. OPERACIONES DE EDICIÓN MULTIPISTA CON UNDO/REDO
+       ======================================================== */
+    function splitAtPlayhead() {
+      const match = getV1ClipAt(APP_STATE.currentTime);
+      if (!match) return showMobileToast("Ubica el cabezal sobre un clip de V1");
+
+      const { clip, localTime } = match;
+      if (localTime < 0.2 || (clip.duration - localTime) < 0.2) {
+        return showMobileToast("Corte muy cercano al extremo");
+      }
+
+      pushHistoryState("Dividir (Split)");
+
+      const clipSpeed = clip.speed || 1.0;
+      const splitPoint = clip.startInSource + (localTime * clipSpeed);
+      const idx = APP_STATE.clipsV1.findIndex(c => c.id === clip.id);
+
+      const partA = {
+        id: 'clip-' + Date.now() + '-a',
+        startInSource: clip.startInSource,
+        endInSource: splitPoint,
+        duration: Number((localTime).toFixed(2)),
+        speed: clipSpeed,
+        grad: clip.grad,
+        transition: 'none',
+        transitionDuration: 0.6
+      };
+
+      const partB = {
+        id: 'clip-' + Date.now() + '-b',
+        startInSource: splitPoint,
+        endInSource: clip.endInSource,
+        duration: Number((clip.duration - localTime).toFixed(2)),
+        speed: clipSpeed,
+        grad: 'from-amber-600 to-rose-700',
+        transition: clip.transition || 'none',
+        transitionDuration: clip.transitionDuration || 0.6
+      };
+
+      APP_STATE.clipsV1.splice(idx, 1, partA, partB);
+      APP_STATE.selectedTrackType = 'v1';
+      APP_STATE.selectedItemId = partB.id;
+      renderTimeline();
+      showMobileToast("Segmento dividido");
+    }
+
+    function copyClip() {
+      if (APP_STATE.selectedTrackType === 'v1') {
+        const target = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+        if (!target) return showMobileToast("Selecciona un clip primero");
+        APP_STATE.copiedClip = { ...target };
+        showMobileToast("Clip V1 copiado");
+      }
+    }
+
+    function pasteClip() {
+      if (!APP_STATE.copiedClip) return showMobileToast("Portapapeles vacío");
+      pushHistoryState("Pegar segmento");
+
+      const clone = {
+        ...APP_STATE.copiedClip,
+        id: 'clip-' + Date.now(),
+        grad: 'from-emerald-600 to-cyan-700'
+      };
+      const idx = APP_STATE.clipsV1.findIndex(c => c.id === APP_STATE.selectedItemId);
+      if (idx !== -1) {
+        APP_STATE.clipsV1.splice(idx + 1, 0, clone);
+      } else {
+        APP_STATE.clipsV1.push(clone);
+      }
+      APP_STATE.selectedTrackType = 'v1';
+      APP_STATE.selectedItemId = clone.id;
+      renderTimeline();
+      showMobileToast("Clip pegado");
+    }
+
+    function duplicateClip() {
+      copyClip();
+      pasteClip();
+    }
+
+    function deleteV1Clip(clipId) {
+      if (APP_STATE.clipsV1.length <= 1) {
+        return showMobileToast("Conserva al menos un clip o vacía la pista");
+      }
+      pushHistoryState("Eliminar clip V1");
+
+      const idx = APP_STATE.clipsV1.findIndex(c => c.id === clipId);
+      if (idx !== -1) {
+        APP_STATE.clipsV1.splice(idx, 1);
+        APP_STATE.selectedItemId = APP_STATE.clipsV1[Math.max(0, idx - 1)].id;
+        
+        const totalDur = getProjectDuration();
+        if (APP_STATE.currentTime > totalDur) {
+          APP_STATE.currentTime = totalDur;
+          syncPlayback(APP_STATE.currentTime);
+        }
+
+        renderTimeline();
+        showMobileToast("Clip V1 eliminado");
+      }
+    }
+
+    function deleteV2Pip(pipId) {
+      pushHistoryState("Eliminar PiP V2");
+      APP_STATE.clipsV2 = APP_STATE.clipsV2.filter(p => p.id !== pipId);
+      if (APP_STATE.selectedItemId === pipId) APP_STATE.selectedItemId = null;
+      renderTimeline();
+      renderCurrentFrame();
+      showMobileToast("Capa PiP eliminada");
+    }
+
+    function deleteTextItem(txtId) {
+      pushHistoryState("Eliminar Título");
+      APP_STATE.textItems = APP_STATE.textItems.filter(t => t.id !== txtId);
+      if (APP_STATE.selectedItemId === txtId) APP_STATE.selectedItemId = null;
+      renderTimeline();
+      renderCurrentFrame();
+      showMobileToast("Título eliminado");
+    }
+
+    function deleteAudioClip(audId) {
+      pushHistoryState("Eliminar Pista de Audio");
+      APP_STATE.audioClips = APP_STATE.audioClips.filter(a => a.id !== audId);
+      if (APP_STATE.selectedItemId === audId) APP_STATE.selectedItemId = null;
+      renderTimeline();
+      showMobileToast("Audio eliminado");
+    }
+
+    safeOn(btnOpenClearSheet, 'click', () => clearTimelineSheet?.classList.remove('hidden'));
+    safeOn(quickClearTimelineBtn, 'click', () => clearTimelineSheet?.classList.remove('hidden'));
+    safeOn(btnCloseClearSheet, 'click', () => clearTimelineSheet?.classList.add('hidden'));
+
+    safeOn(btnActionClearAll, 'click', () => {
+      clearTimelineSheet?.classList.add('hidden');
+      pauseVideo();
+      pushHistoryState("Vaciar Proyecto Completo");
+
+      APP_STATE.clipsV1 = [];
+      APP_STATE.clipsV2 = [];
+      APP_STATE.textItems = [];
+      APP_STATE.audioClips = [];
+      APP_STATE.selectedItemId = null;
+      APP_STATE.currentTime = 0;
+      APP_STATE.activeClipId = null;
+
+      renderTimeline();
+      syncPlayback(0);
+      showMobileToast("Línea de tiempo vaciada por completo");
+    });
+
+    safeOn(btnActionClearV1, 'click', () => {
+      clearTimelineSheet?.classList.add('hidden');
+      pauseVideo();
+      pushHistoryState("Vaciar Pista Principal V1");
+      APP_STATE.clipsV1 = [];
+      renderTimeline();
+      showMobileToast("Pista V1 vaciada");
+    });
+
+    safeOn(btnActionClearV2, 'click', () => {
+      clearTimelineSheet?.classList.add('hidden');
+      pushHistoryState("Vaciar PiP V2");
+      APP_STATE.clipsV2 = [];
+      renderTimeline();
+      renderCurrentFrame();
+      showMobileToast("Pista PiP V2 vaciada");
+    });
+
+    function setClipSpeed(clipId, newSpeed) {
+      const clip = APP_STATE.clipsV1.find(c => c.id === clipId);
+      if (!clip) return;
+      pushHistoryState(`Velocidad ${newSpeed}x`);
+
+      clip.speed = newSpeed;
+      const originalSourceDur = clip.endInSource - clip.startInSource;
+      clip.duration = Number((originalSourceDur / newSpeed).toFixed(2));
+
+      renderTimeline();
+      updateClipActionLabels();
+      syncPlayback(APP_STATE.currentTime);
+      showMobileToast(`Velocidad ajustada: ${newSpeed}x`);
+    }
+
+    document.querySelectorAll('.clip-spd-btn').forEach(btn => {
+      safeOn(btn, 'click', () => {
+        if (!APP_STATE.selectedItemId || APP_STATE.selectedTrackType !== 'v1') {
+          return showMobileToast("Selecciona un clip de V1 primero");
+        }
+        setClipSpeed(APP_STATE.selectedItemId, parseFloat(btn.dataset.spd));
+      });
+    });
+
+    safeOn('quickSplitBtn', 'click', splitAtPlayhead);
+    safeOn('quickCopyBtn', 'click', copyClip);
+    safeOn('quickPasteBtn', 'click', pasteClip);
+    safeOn('quickDeleteBtn', 'click', () => {
+      if (APP_STATE.selectedTrackType === 'v1' && APP_STATE.selectedItemId) deleteV1Clip(APP_STATE.selectedItemId);
+      else if (APP_STATE.selectedTrackType === 'v2' && APP_STATE.selectedItemId) deleteV2Pip(APP_STATE.selectedItemId);
+      else if (APP_STATE.selectedTrackType === 'text' && APP_STATE.selectedItemId) deleteTextItem(APP_STATE.selectedItemId);
+      else if (APP_STATE.selectedTrackType === 'audio' && APP_STATE.selectedItemId) deleteAudioClip(APP_STATE.selectedItemId);
+    });
+
+    safeOn('editSplitBtn', 'click', splitAtPlayhead);
+    safeOn('editCopyBtn', 'click', copyClip);
+    safeOn('editPasteBtn', 'click', pasteClip);
+    safeOn('editDuplicateBtn', 'click', duplicateClip);
+    safeOn('editDeleteBtn', 'click', () => {
+      if (APP_STATE.selectedItemId) deleteV1Clip(APP_STATE.selectedItemId);
+    });
+
+    safeOn('editResetClipsBtn', 'click', () => {
+      if (!APP_STATE.sourceLoaded) return;
+      pushHistoryState("Restaurar clips V1");
+      APP_STATE.clipsV1 = [{
+        id: 'clip-' + Date.now(),
+        startInSource: 0,
+        endInSource: APP_STATE.sourceDuration,
+        duration: APP_STATE.sourceDuration,
+        speed: 1.0,
+        grad: 'from-cyan-600 to-blue-700',
+        transition: 'none',
+        transitionDuration: 0.6
+      }];
+      APP_STATE.selectedItemId = APP_STATE.clipsV1[0].id;
+      renderTimeline();
+      showMobileToast("Pistas restablecidas");
+    });
+
+    safeOn('btnNudgeLeft', 'click', () => {
+      const clip = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+      if (clip && clip.duration > 0.6) {
+        pushHistoryState("Recortar -0.5s");
+        clip.duration = Number((clip.duration - 0.5).toFixed(2));
+        clip.endInSource = clip.startInSource + (clip.duration * (clip.speed || 1.0));
+        renderTimeline();
+      }
+    });
+
+    safeOn('btnNudgeRight', 'click', () => {
+      const clip = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+      if (clip) {
+        pushHistoryState("Extender +0.5s");
+        clip.duration = Number((clip.duration + 0.5).toFixed(2));
+        clip.endInSource = clip.startInSource + (clip.duration * (clip.speed || 1.0));
+        renderTimeline();
+      }
+    });
+
+    safeOn('addPipBtn', 'click', () => {
+      const newPip = {
+        id: 'pip-' + Date.now(),
+        name: 'PiP Demo',
+        start: APP_STATE.currentTime,
+        duration: 4.0,
+        scale: 0.35,
+        opacity: 0.95,
+        position: 'bottom-right',
+        thumbUrl: ''
+      };
+      pushHistoryState("Añadir capa PiP (V2)");
+      APP_STATE.clipsV2.push(newPip);
+      APP_STATE.selectedTrackType = 'v2';
+      APP_STATE.selectedItemId = newPip.id;
+      renderTimeline();
+      renderCurrentFrame();
+      showMobileToast("Capa PiP añadida en cursor");
+    });
+
+    safeOn('pipPosSelect', 'change', (e) => {
+      const pip = APP_STATE.clipsV2.find(p => p.id === APP_STATE.selectedItemId);
+      if (pip) {
+        pip.position = e.target.value;
+        renderCurrentFrame();
+      }
+    });
+
+    safeOn('pipScaleRange', 'input', (e) => {
+      const pip = APP_STATE.clipsV2.find(p => p.id === APP_STATE.selectedItemId);
+      if (pip) {
+        pip.scale = parseInt(e.target.value) / 100;
+        const valEl = document.getElementById('pipScaleVal');
+        if (valEl) valEl.textContent = `${e.target.value}%`;
+        renderCurrentFrame();
+      }
+    });
+
+    safeOn('pipOpacityRange', 'input', (e) => {
+      const pip = APP_STATE.clipsV2.find(p => p.id === APP_STATE.selectedItemId);
+      if (pip) {
+        pip.opacity = parseInt(e.target.value) / 100;
+        const valEl = document.getElementById('pipOpacityVal');
+        if (valEl) valEl.textContent = `${e.target.value}%`;
+        renderCurrentFrame();
+      }
+    });
+
+    safeOn(zoomRange, 'input', (e) => {
+      APP_STATE.zoom = parseFloat(e.target.value);
+      renderTimeline();
+    });
+    safeOn('zoomOutBtn', 'click', () => {
+      APP_STATE.zoom = Math.max(0.5, APP_STATE.zoom - 0.2);
+      if (zoomRange) zoomRange.value = APP_STATE.zoom;
+      renderTimeline();
+    });
+    safeOn('zoomInBtn', 'click', () => {
+      APP_STATE.zoom = Math.min(3.0, APP_STATE.zoom + 0.2);
+      if (zoomRange) zoomRange.value = APP_STATE.zoom;
+      renderTimeline();
+    });
+
+    /* ========================================================
+       11. GESTIÓN DE TÍTULOS Y TEXTOS ESTILIZADOS
+       ======================================================== */
+    safeOn('addNewTextBtn', 'click', () => {
+      const newTxt = {
+        id: 'txt-' + Date.now(),
+        text: 'Nuevo Título',
+        start: APP_STATE.currentTime,
+        duration: 3.5,
+        font: "'Plus Jakarta Sans', sans-serif",
+        color: '#00f0ff',
+        position: 'bottom',
+        stroke: true,
+        bg: true
+      };
+      pushHistoryState("Añadir Título");
+      APP_STATE.textItems.push(newTxt);
+      APP_STATE.selectedTrackType = 'text';
+      APP_STATE.selectedItemId = newTxt.id;
+      renderTimeline();
+      renderCurrentFrame();
+      showMobileToast("Título añadido al Timeline");
+    });
+
+    function syncTextInputs() {
+      const curTxt = APP_STATE.textItems.find(t => t.id === APP_STATE.selectedItemId) || APP_STATE.textItems[0];
+      if (!curTxt) return;
+      const ti = document.getElementById('titleInput');
+      if (ti) curTxt.text = ti.value;
+      const tf = document.getElementById('titleFontSelect');
+      if (tf) curTxt.font = tf.value;
+      const tp = document.getElementById('titlePosSelect');
+      if (tp) curTxt.position = tp.value;
+      const tc = document.getElementById('titleColorInput');
+      if (tc) curTxt.color = tc.value;
+      const ts = document.getElementById('titleStrokeToggle');
+      if (ts) curTxt.stroke = ts.checked;
+      const tb = document.getElementById('titleBgToggle');
+      if (tb) curTxt.bg = tb.checked;
+      renderTimeline();
+      renderCurrentFrame();
+    }
+
+    ['titleInput', 'titleFontSelect', 'titlePosSelect', 'titleColorInput', 'titleStrokeToggle', 'titleBgToggle'].forEach(id => {
+      safeOn(id, 'input', syncTextInputs);
+      safeOn(id, 'change', syncTextInputs);
+    });
+
+    /* ========================================================
+       12. GESTIÓN DE AUDIO (A1) Y MEZCLA
+       ======================================================== */
+    function addSyntheticAudioToTimeline(name = "Cyber Synth Beat") {
+      const wavBlob = synthesizeWavMusic('cyber');
+      const blobUrl = URL.createObjectURL(wavBlob);
+      const newAud = {
+        id: 'aud-' + Date.now(),
+        name: name,
+        start: APP_STATE.currentTime,
+        duration: 6.0,
+        volume: 1.0,
+        fadeIn: 1.0,
+        fadeOut: 1.5,
+        muted: false,
+        blobUrl: blobUrl
+      };
+      pushHistoryState(`Añadir pista "${name}"`);
+      APP_STATE.audioClips.push(newAud);
+      APP_STATE.selectedTrackType = 'audio';
+      APP_STATE.selectedItemId = newAud.id;
+      renderTimeline();
+      showMobileToast(`"${name}" añadida a la pista A1`);
+    }
+
+    safeOn('addPresetMusicBtn', 'click', () => addSyntheticAudioToTimeline());
+
+    safeOn('audioVolumeSlider', 'input', (e) => {
+      const aud = APP_STATE.audioClips.find(a => a.id === APP_STATE.selectedItemId);
+      if (aud) {
+        aud.volume = parseInt(e.target.value) / 100;
+        const disp = document.getElementById('activeAudioVolDisplay');
+        if (disp) disp.textContent = `${e.target.value}%`;
+      }
+    });
+
+    safeOn('audioFadeInSlider', 'input', (e) => {
+      const aud = APP_STATE.audioClips.find(a => a.id === APP_STATE.selectedItemId);
+      if (aud) {
+        aud.fadeIn = parseFloat(e.target.value);
+        const disp = document.getElementById('audioFadeInVal');
+        if (disp) disp.textContent = `${e.target.value}s`;
+      }
+    });
+
+    safeOn('audioFadeOutSlider', 'input', (e) => {
+      const aud = APP_STATE.audioClips.find(a => a.id === APP_STATE.selectedItemId);
+      if (aud) {
+        aud.fadeOut = parseFloat(e.target.value);
+        const disp = document.getElementById('audioFadeOutVal');
+        if (disp) disp.textContent = `${e.target.value}s`;
+      }
+    });
+
+    /* ========================================================
+       13. BIBLIOTECA DE MEDIOS (MEDIA POOL) PERSISTENTE
+       ======================================================== */
+    const libraryGrid = document.getElementById('libraryGrid');
+    const emptyLibraryNotice = document.getElementById('emptyLibraryNotice');
+    const mediaCountBadge = document.getElementById('mediaCountBadge');
+    const libraryFileInput = document.getElementById('libraryFileInput');
+    const saveCurrentToLibBtn = document.getElementById('saveCurrentToLibBtn');
+    let activeMediaFilter = 'all';
+
+    document.querySelectorAll('.lib-filter-btn').forEach(btn => {
+      safeOn(btn, 'click', () => {
+        document.querySelectorAll('.lib-filter-btn').forEach(b => {
+          b.className = "lib-filter-btn touch-btn px-2.5 py-0.5 rounded-full text-[9px] font-semibold bg-[#181a27] text-gray-300 border border-[#272b3d]";
+        });
+        btn.className = "lib-filter-btn touch-btn px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-cyan-500 text-black";
+        activeMediaFilter = btn.dataset.filter;
+        renderLibraryUI();
+      });
+    });
+
+    async function renderLibraryUI() {
+      if (!libraryGrid) return;
+      const items = await dbGetAllMediaItems();
+      const filtered = activeMediaFilter === 'all' ? items : items.filter(it => it.type === activeMediaFilter);
+      if (mediaCountBadge) mediaCountBadge.textContent = `${items.length} medio${items.length === 1 ? '' : 's'}`;
+
+      if (filtered.length === 0) {
+        libraryGrid.innerHTML = '';
+        if (emptyLibraryNotice) emptyLibraryNotice.classList.remove('hidden');
+        return;
+      }
+
+      if (emptyLibraryNotice) emptyLibraryNotice.classList.add('hidden');
+      libraryGrid.innerHTML = '';
+
+      filtered.forEach((item) => {
+        const card = document.createElement('div');
+        card.className = "bg-[#141622] border border-[#232738] rounded-xl overflow-hidden p-2 space-y-1.5 shadow-md flex flex-col justify-between";
+        
+        let typeIcon = '<i class="fa-solid fa-film text-cyan-400"></i>';
+        if (item.type === 'image') typeIcon = '<i class="fa-solid fa-image text-purple-400"></i>';
+        if (item.type === 'audio') typeIcon = '<i class="fa-solid fa-music text-emerald-400"></i>';
+
+        card.innerHTML = `
+          <div class="relative w-full aspect-video bg-black rounded-lg overflow-hidden border border-white/10 flex items-center justify-center">
+            ${item.thumbnail ? `<img src="${item.thumbnail}" class="w-full h-full object-cover">` : `<div class="text-2xl">${typeIcon}</div>`}
+            <span class="absolute bottom-1 right-1 bg-black/85 font-mono text-[8px] text-cyan-300 px-1 py-0.2 rounded font-bold">
+              ${formatTime(item.duration)}
+            </span>
+          </div>
+          <div>
+            <div class="flex items-center gap-1">
+              <span class="text-[9px]">${typeIcon}</span>
+              <h5 class="text-[10px] font-bold text-white truncate" title="${item.name}">${item.name}</h5>
+            </div>
+            <span class="text-[8px] text-gray-400 font-mono">${item.sizeStr || ''} • ${item.dateStr || ''}</span>
+          </div>
+          <div class="grid grid-cols-2 gap-1 pt-1">
+            <button class="lib-add-v1-btn touch-btn h-6 bg-cyan-950/80 border border-cyan-700/80 text-cyan-300 text-[8px] font-bold rounded flex items-center justify-center gap-1">
+              + V1
+            </button>
+            <button class="lib-add-v2-btn touch-btn h-6 bg-purple-950/80 border border-purple-700/80 text-purple-300 text-[8px] font-bold rounded flex items-center justify-center gap-1">
+              + PiP V2
+            </button>
+            <button class="lib-load-btn touch-btn h-6 bg-[#1e2233] text-gray-200 border border-[#2b3046] rounded flex items-center justify-center text-[8px]" title="Cargar como fuente principal">
+              <i class="fa-solid fa-play mr-1"></i> Abrir
+            </button>
+            <button class="lib-del-btn touch-btn h-6 bg-rose-950/80 text-rose-300 border border-rose-800 rounded flex items-center justify-center text-[8px]" title="Eliminar de biblioteca">
+              <i class="fa-solid fa-trash-can mr-1"></i> Borrar
+            </button>
+          </div>
+        `;
+
+        const v1Btn = card.querySelector('.lib-add-v1-btn');
+        safeOn(v1Btn, 'click', () => addItemToV1(item));
+
+        const v2Btn = card.querySelector('.lib-add-v2-btn');
+        safeOn(v2Btn, 'click', () => addItemToV2(item));
+
+        const loadBtn = card.querySelector('.lib-load-btn');
+        safeOn(loadBtn, 'click', () => {
+          if (item.blob) {
+            const url = URL.createObjectURL(item.blob);
+            loadVideoMedia(url, item.name, item.blob);
+          }
+        });
+
+        const delBtn = card.querySelector('.lib-del-btn');
+        safeOn(delBtn, 'click', async () => {
+          await dbDeleteMediaItem(item.id);
+          renderLibraryUI();
+          showMobileToast("Medio eliminado de la biblioteca");
+        });
+
+        libraryGrid.appendChild(card);
+      });
+    }
+
+    function addItemToV1(item) {
+      pushHistoryState(`Añadir "${item.name}" a V1`);
+      const dur = Number((item.duration || 6).toFixed(2));
+      const newClip = {
+        id: 'clip-' + Date.now(),
+        startInSource: 0,
+        endInSource: dur,
+        duration: dur,
+        speed: 1.0,
+        grad: 'from-blue-600 to-indigo-700',
+        transition: 'none',
+        transitionDuration: 0.6
+      };
+      APP_STATE.clipsV1.push(newClip);
+      APP_STATE.selectedTrackType = 'v1';
+      APP_STATE.selectedItemId = newClip.id;
+
+      if (!APP_STATE.sourceLoaded && item.type === 'video' && item.blob) {
+        const url = URL.createObjectURL(item.blob);
+        loadVideoMedia(url, item.name, item.blob);
+      } else {
+        renderTimeline();
+        showMobileToast(`"${item.name}" añadido a pista V1`);
+      }
+    }
+
+    function addItemToV2(item) {
+      pushHistoryState(`Añadir "${item.name}" a PiP (V2)`);
+      const dur = Number((item.duration || 4).toFixed(2));
+      const newPip = {
+        id: 'pip-' + Date.now(),
+        name: item.name,
+        start: APP_STATE.currentTime,
+        duration: dur,
+        scale: 0.35,
+        opacity: 0.95,
+        position: 'bottom-right',
+        thumbUrl: item.thumbnail || ''
+      };
+      APP_STATE.clipsV2.push(newPip);
+      APP_STATE.selectedTrackType = 'v2';
+      APP_STATE.selectedItemId = newPip.id;
+      renderTimeline();
+      renderCurrentFrame();
+      showMobileToast(`"${item.name}" superpuesto en V2`);
+    }
+
+    safeOn('synthMusicBtn', 'click', async () => {
+      showMobileToast("Sintetizando música con Web Audio API...");
+      const wavBlob = synthesizeWavMusic('cyber');
+      const item = {
+        id: 'media-' + Date.now(),
+        name: `Cyber Beat ${new Date().toLocaleTimeString().slice(0,5)}`,
+        type: 'audio',
+        blob: wavBlob,
+        thumbnail: '',
+        duration: 6.0,
+        sizeStr: `${(wavBlob.size / 1024).toFixed(0)} KB`,
+        dateStr: new Date().toLocaleDateString()
+      };
+      await dbSaveMediaItem(item);
+      renderLibraryUI();
+      showMobileToast("Pista sintetizada guardada en biblioteca");
+    });
+
+    safeOn(libraryFileInput, 'change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      showMobileToast("Procesando y guardando en Media Pool...");
+      const isVideo = file.type.startsWith('video');
+      const isImage = file.type.startsWith('image');
+      const isAudio = file.type.startsWith('audio');
+      const url = URL.createObjectURL(file);
+
+      if (isVideo) {
+        const tempVideo = document.createElement('video');
+        tempVideo.src = url;
+        tempVideo.playsInline = true;
+        tempVideo.muted = true;
+        tempVideo.onloadeddata = async () => {
+          const tc = document.createElement('canvas');
+          tc.width = 160; tc.height = 90;
+          tc.getContext('2d').drawImage(tempVideo, 0, 0, 160, 90);
+          const thumb = tc.toDataURL('image/jpeg', 0.7);
+
+          const item = {
+            id: 'media-' + Date.now(),
+            name: file.name,
+            type: 'video',
+            blob: file,
+            thumbnail: thumb,
+            duration: tempVideo.duration || 8,
+            sizeStr: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+            dateStr: new Date().toLocaleDateString()
+          };
+          await dbSaveMediaItem(item);
+          renderLibraryUI();
+          showMobileToast(`"${file.name}" guardado en Biblioteca`);
+          URL.revokeObjectURL(url);
+        };
+      } else if (isImage) {
+        const img = new Image();
+        img.src = url;
+        img.onload = async () => {
+          const tc = document.createElement('canvas');
+          tc.width = 160; tc.height = 90;
+          tc.getContext('2d').drawImage(img, 0, 0, 160, 90);
+          const thumb = tc.toDataURL('image/jpeg', 0.8);
+
+          const item = {
+            id: 'media-' + Date.now(),
+            name: file.name,
+            type: 'image',
+            blob: file,
+            thumbnail: thumb,
+            duration: 4.0,
+            sizeStr: `${(file.size / 1024).toFixed(0)} KB`,
+            dateStr: new Date().toLocaleDateString()
+          };
+          await dbSaveMediaItem(item);
+          renderLibraryUI();
+          showMobileToast(`"${file.name}" guardado en Biblioteca`);
+          URL.revokeObjectURL(url);
+        };
+      } else if (isAudio) {
+        const item = {
+          id: 'media-' + Date.now(),
+          name: file.name,
+          type: 'audio',
+          blob: file,
+          thumbnail: '',
+          duration: 6.0,
+          sizeStr: `${(file.size / 1024).toFixed(0)} KB`,
+          dateStr: new Date().toLocaleDateString()
+        };
+        await dbSaveMediaItem(item);
+        renderLibraryUI();
+        showMobileToast(`"${file.name}" guardado en Biblioteca`);
+        URL.revokeObjectURL(url);
+      }
+    });
+
+    safeOn(saveCurrentToLibBtn, 'click', async () => {
+      if (!APP_STATE.sourceLoaded || !hiddenVideo || !hiddenVideo.src) {
+        return showMobileToast("No hay video cargado para guardar");
+      }
+      showMobileToast("Guardando video actual...");
+
+      let blobToSave = null;
+      try {
+        const resp = await fetch(hiddenVideo.src);
+        blobToSave = await resp.blob();
+      } catch (err) {
+        return showMobileToast("No se pudo extraer el blob del video actual");
+      }
+
+      const tc = document.createElement('canvas');
+      tc.width = 160; tc.height = 90;
+      tc.getContext('2d').drawImage(hiddenVideo, 0, 0, 160, 90);
+      const thumb = tc.toDataURL('image/jpeg', 0.7);
+
+      const item = {
+        id: 'media-' + Date.now(),
+        name: APP_STATE.sourceName || 'Video Proyecto',
+        type: 'video',
+        blob: blobToSave,
+        thumbnail: thumb,
+        duration: APP_STATE.sourceDuration || 8,
+        sizeStr: `${(blobToSave.size / (1024 * 1024)).toFixed(1)} MB`,
+        dateStr: new Date().toLocaleDateString()
+      };
+      await dbSaveMediaItem(item);
+      renderLibraryUI();
+      showMobileToast("Guardado en Biblioteca con éxito");
+    });
+
+    /* ========================================================
+       14. MODAL DE TRANSICIÓN ENTRE CLIPS V1
+       ======================================================== */
+    function openTransitionModal(clipIdx) {
+      activeTransitionClipIndex = clipIdx;
+      const clip = APP_STATE.clipsV1[clipIdx];
+      const subTitle = document.getElementById('transitionModalSubtitle');
+      if (subTitle) subTitle.textContent = `Clip #${clipIdx + 1} ➔ Clip #${clipIdx + 2}`;
+      
+      const currentTrans = clip ? (clip.transition || 'none') : 'none';
+      const curDur = clip ? (clip.transitionDuration || 0.6) : 0.6;
+      if (transDurSlider) transDurSlider.value = curDur;
+      if (transDurDisplay) transDurDisplay.textContent = `${curDur}s`;
+
+      if (transitionOptionsContainer) {
+        transitionOptionsContainer.innerHTML = '';
+        TRANSITIONS_CATALOG.forEach(t => {
+          const isSelected = currentTrans === t.type;
+          const btn = document.createElement('button');
+          btn.className = `touch-btn w-full p-2.5 rounded-xl border text-left flex items-center gap-3 transition-all ${isSelected ? 'bg-cyan-950/80 border-cyan-400 text-white shadow-md shadow-cyan-500/20' : 'bg-[#161824] border-[#252a3d] text-gray-300 hover:border-gray-500'}`;
+          btn.innerHTML = `
+            <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0 ${isSelected ? 'bg-cyan-400 text-black font-extrabold' : 'bg-[#1e2233] ' + t.color}">
+              <i class="fa-solid ${t.icon}"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-white truncate">${t.label}</span>
+                ${isSelected ? '<span class="text-[9px] font-mono text-cyan-400 font-bold bg-cyan-950 px-1 py-0.2 rounded border border-cyan-800">ACTIVA</span>' : ''}
+              </div>
+              <p class="text-[9px] text-gray-400 truncate mt-0.5">${t.desc}</p>
+            </div>
+          `;
+          safeOn(btn, 'click', () => {
+            const dur = transDurSlider ? parseFloat(transDurSlider.value) : 0.6;
+            applyTransition(clipIdx, t.type, dur);
+            openTransitionModal(clipIdx);
+          });
+          transitionOptionsContainer.appendChild(btn);
+        });
+      }
+
+      if (transitionModal) transitionModal.classList.remove('hidden');
+    }
+
+    function applyTransition(clipIdx, type, duration) {
+      if (clipIdx === null || clipIdx < 0 || clipIdx >= APP_STATE.clipsV1.length) return;
+      pushHistoryState(`Transición ${type}`);
+      const clip = APP_STATE.clipsV1[clipIdx];
+      clip.transition = type;
+      clip.transitionDuration = duration;
+      renderTimeline();
+      renderCurrentFrame();
+    }
+
+    safeOn(closeTransitionModalBtn, 'click', () => transitionModal?.classList.add('hidden'));
+    safeOn(btnApplyTransition, 'click', () => {
+      transitionModal?.classList.add('hidden');
+      showMobileToast("Transición aplicada");
+    });
+    safeOn(btnRemoveTransition, 'click', () => {
+      if (activeTransitionClipIndex !== null) {
+        applyTransition(activeTransitionClipIndex, 'none', 0.6);
+        transitionModal?.classList.add('hidden');
+        showMobileToast("Transición eliminada");
+      }
+    });
+
+    safeOn(transDurSlider, 'input', (e) => {
+      if (transDurDisplay) transDurDisplay.textContent = `${e.target.value}s`;
+      if (activeTransitionClipIndex !== null && APP_STATE.clipsV1[activeTransitionClipIndex]) {
+        const c = APP_STATE.clipsV1[activeTransitionClipIndex];
+        c.transitionDuration = parseFloat(e.target.value);
+        renderCurrentFrame();
+      }
+    });
+
+    /* ========================================================
+       15. CARGA DE VIDEO Y GENERADOR DEMO DINÁMICO
+       ======================================================== */
+    function prepareVideoElement(video) {
+      if (!video) return;
+      video.playsInline = true;
+      video.muted = true;
+      video.preload = 'auto';
+      video.crossOrigin = 'anonymous';
+      video.setAttribute('playsinline', 'true');
+      video.setAttribute('webkit-playsinline', 'true');
+      video.setAttribute('muted', '');
+      video.setAttribute('preload', 'auto');
+      video.setAttribute('crossorigin', 'anonymous');
+    }
+
+    function applyAdaptiveCanvasResolution(vw, vh) {
+      if (!vw || !vh || !glCanvas || !overlayCanvas) return;
+      const aspectRatio = vw / vh;
+      const MAX_DIM = 720; // Limitador estricto de resolución en memoria para GPU móvil
+      let targetW, targetH;
+
+      if (aspectRatio >= 1) {
+        targetW = Math.min(MAX_DIM, vw);
+        targetH = Math.round(targetW / aspectRatio);
+      } else {
+        targetH = Math.min(MAX_DIM, vh);
+        targetW = Math.round(targetH * aspectRatio);
+      }
+
+      // Asegurar números pares para GPU y alineación de decodificadores
+      if (targetW % 2 !== 0) targetW += 1;
+      if (targetH % 2 !== 0) targetH += 1;
+
+      glCanvas.width = targetW;
+      glCanvas.height = targetH;
+      overlayCanvas.width = targetW;
+      overlayCanvas.height = targetH;
+
+      if (playerFrame) {
+        if (aspectRatio < 0.8) {
+          APP_STATE.currentRatio = '9:16';
+          if (ratioLabel) ratioLabel.textContent = '9:16';
+          const menuLbl = document.getElementById('menuRatioLabel');
+          if (menuLbl) menuLbl.textContent = '9:16';
+          playerFrame.classList.remove('aspect-video');
+          playerFrame.classList.add('aspect-[9/16]');
+        } else if (aspectRatio > 1.2) {
+          APP_STATE.currentRatio = '16:9';
+          if (ratioLabel) ratioLabel.textContent = '16:9';
+          const menuLbl = document.getElementById('menuRatioLabel');
+          if (menuLbl) menuLbl.textContent = '16:9';
+          playerFrame.classList.remove('aspect-[9/16]');
+          playerFrame.classList.add('aspect-video');
+        }
+      }
+
+      if (shaderEngine && shaderEngine.gl) {
+        shaderEngine.gl.viewport(0, 0, targetW, targetH);
+      }
+    }
+
+    async function loadVideoMedia(url, name = "Video", blob = null) {
+      if (APP_STATE.sourceUrl && APP_STATE.sourceUrl.startsWith('blob:') && APP_STATE.sourceUrl !== url) {
+        try { URL.revokeObjectURL(APP_STATE.sourceUrl); } catch(e) {}
+      }
+      APP_STATE.sourceUrl = url;
+      APP_STATE.sourceName = name;
+
+      if (!hiddenVideo) return;
+      pauseVideo();
+      prepareVideoElement(hiddenVideo);
+
+      // Esperar estrictamente a que onloadedmetadata y oncanplay estén listos con dimensiones reales > 0
+      await new Promise((resolve) => {
+        let metaReady = false;
+        let canPlayReady = false;
+
+        const checkReady = () => {
+          if (hiddenVideo.videoWidth > 0 && hiddenVideo.videoHeight > 0 && (metaReady || hiddenVideo.readyState >= 1) && (canPlayReady || hiddenVideo.readyState >= 2)) {
+            cleanup();
+            resolve();
+          }
+        };
+
+        const onMeta = () => {
+          metaReady = true;
+          checkReady();
+        };
+
+        const onCanPlay = () => {
+          canPlayReady = true;
+          checkReady();
+        };
+
+        const cleanup = () => {
+          hiddenVideo.removeEventListener('loadedmetadata', onMeta);
+          hiddenVideo.removeEventListener('canplay', onCanPlay);
+          hiddenVideo.removeEventListener('loadeddata', checkReady);
+        };
+
+        hiddenVideo.addEventListener('loadedmetadata', onMeta);
+        hiddenVideo.addEventListener('canplay', onCanPlay);
+        hiddenVideo.addEventListener('loadeddata', checkReady);
+
+        hiddenVideo.src = url;
+        hiddenVideo.load();
+
+        if (hiddenVideo.readyState >= 2 && hiddenVideo.videoWidth > 0) {
+          cleanup();
+          resolve();
+        }
+      });
+
+      // Resolución de renderizado adaptativa sin lag (máx 720px)
+      applyAdaptiveCanvasResolution(hiddenVideo.videoWidth, hiddenVideo.videoHeight);
+
+      APP_STATE.sourceDuration = hiddenVideo.duration || 8;
+      APP_STATE.sourceLoaded = true;
+
+      const d = Number(APP_STATE.sourceDuration.toFixed(2));
+      const half = Number((d / 2).toFixed(2));
+
+      APP_STATE.clipsV1 = [
+        { id: 'clip-1', startInSource: 0, endInSource: half, duration: half, speed: 1.0, grad: 'from-cyan-600 to-blue-700', transition: 'fade-black', transitionDuration: 0.6 },
+        { id: 'clip-2', startInSource: half, endInSource: d, duration: Number((d - half).toFixed(2)), speed: 1.0, grad: 'from-purple-600 to-pink-700', transition: 'none', transitionDuration: 0.6 }
+      ];
+
+      APP_STATE.selectedTrackType = 'v1';
+      APP_STATE.selectedItemId = APP_STATE.clipsV1[0].id;
+      APP_STATE.currentTime = 0;
+      APP_STATE.activeClipId = APP_STATE.clipsV1[0].id;
+
+      pushHistoryState(`Cargar "${name}"`);
+      renderTimeline();
+      seekTimeline(0);
+      showMobileToast(`"${name}" cargado`);
+
+      if (blob) {
+        setTimeout(() => {
+          const tc = document.createElement('canvas');
+          const vAspect = (hiddenVideo.videoWidth && hiddenVideo.videoHeight) ? (hiddenVideo.videoWidth / hiddenVideo.videoHeight) : (16 / 9);
+          tc.width = 160;
+          tc.height = Math.round(160 / vAspect);
+          const tCtx = tc.getContext('2d');
+          if (tCtx) {
+            tCtx.fillStyle = '#000000';
+            tCtx.fillRect(0, 0, tc.width, tc.height);
+            tCtx.drawImage(hiddenVideo, 0, 0, tc.width, tc.height);
+          }
+          dbSaveMediaItem({
+            id: 'media-' + Date.now(),
+            name: name,
+            type: 'video',
+            blob: blob,
+            thumbnail: tc.toDataURL('image/jpeg', 0.7),
+            duration: d,
+            sizeStr: `${(blob.size / (1024 * 1024)).toFixed(1)} MB`,
+            dateStr: new Date().toLocaleDateString()
+          }).then(() => renderLibraryUI());
+        }, 200);
+      }
+    }
+
+    safeOn(videoFileInput, 'change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        loadVideoMedia(url, file.name, file);
+      }
+    });
+
+    safeOn('menuVideoFileInput', 'change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const url = URL.createObjectURL(file);
+        loadVideoMedia(url, file.name, file);
+      }
+      closeHeaderMenu();
+    });
+
+    function generateMobileDemoVideo() {
+      const demoC = document.createElement('canvas');
+      demoC.width = 640;
+      demoC.height = 360;
+      const dCtx = demoC.getContext('2d');
+
+      let stream = null;
+      if (demoC.captureStream) {
+        stream = demoC.captureStream(30);
+      } else if (demoC.mozCaptureStream) {
+        stream = demoC.mozCaptureStream(30);
+      }
+
+      if (!stream || typeof MediaRecorder === 'undefined') {
+        // Fallback inmediato si no hay soporte de grabación de canvas
+        APP_STATE.clipsV1 = [
+          { id: 'clip-1', startInSource: 0, endInSource: 4, duration: 4, speed: 1.0, grad: 'from-cyan-600 to-blue-700', transition: 'fade-black', transitionDuration: 0.6 },
+          { id: 'clip-2', startInSource: 4, endInSource: 8, duration: 4, speed: 1.0, grad: 'from-purple-600 to-pink-700', transition: 'none', transitionDuration: 0.6 }
+        ];
+        APP_STATE.sourceDuration = 8;
+        APP_STATE.sourceLoaded = true;
+        renderTimeline();
+        renderCurrentFrame();
+        return;
+      }
+
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+      } catch (e) {
+        try {
+          recorder = new MediaRecorder(stream);
+        } catch (e2) {
+          return;
+        }
+      }
+
+      const chunks = [];
+      let frame = 0;
+      const timer = setInterval(() => {
+        frame++;
+        const t = frame / 30;
+
+        const grad = dCtx.createLinearGradient(0, 0, 640, 360);
+        grad.addColorStop(0, `hsl(${(t * 40) % 360}, 85%, 20%)`);
+        grad.addColorStop(1, `hsl(${((t * 40) + 130) % 360}, 90%, 10%)`);
+        dCtx.fillStyle = grad;
+        dCtx.fillRect(0, 0, 640, 360);
+
+        for (let i = 0; i < 4; i++) {
+          const x = 320 + Math.sin(t * 2 + i * 1.5) * (180 - i * 30);
+          const y = 180 + Math.cos(t * 2.2 + i * 1.5) * (90 - i * 15);
+          dCtx.beginPath();
+          dCtx.arc(x, y, 26 + i * 6, 0, Math.PI * 2);
+          dCtx.fillStyle = `hsla(${((i * 80) + t * 50) % 360}, 95%, 65%, 0.85)`;
+          dCtx.fill();
+        }
+
+        dCtx.fillStyle = '#ffffff';
+        dCtx.font = 'bold 24px sans-serif';
+        dCtx.textAlign = 'center';
+        dCtx.fillText('AVS MOBILE STUDIO PRO', 320, 160);
+
+        dCtx.fillStyle = '#00f0ff';
+        dCtx.font = 'bold 15px monospace';
+        dCtx.fillText(`T = ${t.toFixed(1)}s | MULTI-TRACK GPU`, 320, 195);
+      }, 1000 / 30);
+
+      recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+      recorder.onstop = () => {
+        clearInterval(timer);
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        loadVideoMedia(URL.createObjectURL(blob), "Demo Android GPU", blob);
+      };
+
+      try {
+        recorder.start();
+        setTimeout(() => {
+          if (recorder.state !== 'inactive') recorder.stop();
+        }, 8000);
+      } catch (err) {
+        clearInterval(timer);
+      }
+    }
+
+    /* ========================================================
+       15. CONTROL DE NUEVO PROYECTO Y SISTEMA DE TEMAS
+       ======================================================== */
+    function createNewProject(showToast = true) {
+      pauseVideo();
+      if (APP_STATE.sourceUrl && APP_STATE.sourceUrl.startsWith('blob:')) {
+        try { URL.revokeObjectURL(APP_STATE.sourceUrl); } catch(e) {}
+      }
+      APP_STATE.sourceUrl = null;
+      APP_STATE.sourceName = 'Proyecto Limpio';
+      APP_STATE.sourceDuration = 0;
+      APP_STATE.sourceLoaded = false;
+      APP_STATE.currentTime = 0;
+      APP_STATE.selectedItemId = null;
+      APP_STATE.activeClipId = null;
+      APP_STATE.clipsV1 = [];
+      APP_STATE.clipsV2 = [];
+      APP_STATE.textItems = [];
+      APP_STATE.audioClips = [];
+      APP_STATE.effects = {
+        wave: false, waveAmp: 16,
+        fisheye: false, fisheyeStrength: 1.8,
+        sepia: false, sepiaVal: 0.8,
+        glitch: false, glitchShift: 12,
+        pixelate: false, pixelSize: 14,
+        bw: false, invert: false, vignette: false
+      };
+      
+      if (hiddenVideo) {
+        hiddenVideo.pause();
+        hiddenVideo.removeAttribute('src');
+        hiddenVideo.load();
+      }
+
+      const gl = shaderEngine.gl;
+      if (gl) {
+        gl.clearColor(0.02, 0.03, 0.05, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+      }
+      if (overlayCanvas) {
+        const oCtx = overlayCanvas.getContext('2d');
+        if (oCtx) oCtx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
+      }
+
+      pushHistoryState("Nuevo Proyecto");
+      renderTimeline();
+      updatePlayheadUI(0);
+      if (showToast) {
+        showMobileToast("Nuevo proyecto creado. Memoria liberada.");
+      }
+    }
+
+    safeOn(btnNewProject, 'click', () => {
+      newProjectModal?.classList.remove('hidden');
+    });
+
+    safeOn(cancelNewProjectBtn, 'click', () => {
+      newProjectModal?.classList.add('hidden');
+    });
+
+    safeOn(confirmNewProjectBtn, 'click', () => {
+      newProjectModal?.classList.add('hidden');
+      createNewProject(true);
+    });
+
+    // SISTEMA REACTIVO DE TEMAS: MODO CLARO / MODO OSCURO
+    function applyAppTheme(theme) {
+      if (theme === 'light') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        iconThemeDark?.classList.add('hidden');
+        iconThemeLight?.classList.remove('hidden');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
+        iconThemeDark?.classList.remove('hidden');
+        iconThemeLight?.classList.add('hidden');
+      }
+      try {
+        localStorage.setItem('avs_app_theme', theme);
+      } catch(e) {}
+    }
+
+    const savedTheme = (() => {
+      try { return localStorage.getItem('avs_app_theme') || 'dark'; } catch(e) { return 'dark'; }
+    })();
+    applyAppTheme(savedTheme);
+
+    safeOn(btnThemeToggle, 'click', () => {
+      const isCurrentLight = document.documentElement.getAttribute('data-theme') === 'light';
+      const nextTheme = isCurrentLight ? 'dark' : 'light';
+      applyAppTheme(nextTheme);
+      showMobileToast(nextTheme === 'light' ? 'Modo Claro activado' : 'Modo Oscuro activado');
+    });
+
+    /* ========================================================
+       16. CONTROLADORES DE EFECTOS SHADER GPU
+       ======================================================== */
+    safeOn('fxWaveToggle', 'change', e => { APP_STATE.effects.wave = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxWaveSlider', 'input', e => {
+      APP_STATE.effects.waveAmp = parseInt(e.target.value);
+      const val = document.getElementById('waveVal');
+      if (val) val.textContent = e.target.value + 'px';
+      renderCurrentFrame();
+    });
+
+    safeOn('fxFisheyeToggle', 'change', e => { APP_STATE.effects.fisheye = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxFisheyeSlider', 'input', e => {
+      APP_STATE.effects.fisheyeStrength = parseFloat(e.target.value);
+      const val = document.getElementById('fishVal');
+      if (val) val.textContent = e.target.value;
+      renderCurrentFrame();
+    });
+
+    safeOn('fxSepiaToggle', 'change', e => { APP_STATE.effects.sepia = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxSepiaSlider', 'input', e => {
+      APP_STATE.effects.sepiaVal = parseInt(e.target.value) / 100;
+      const val = document.getElementById('sepiaVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+
+    safeOn('fxGlitchToggle', 'change', e => { APP_STATE.effects.glitch = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxGlitchSlider', 'input', e => {
+      APP_STATE.effects.glitchShift = parseInt(e.target.value);
+      const val = document.getElementById('glitchVal');
+      if (val) val.textContent = e.target.value + 'px';
+      renderCurrentFrame();
+    });
+
+    safeOn('fxPixelateToggle', 'change', e => { APP_STATE.effects.pixelate = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxPixelSlider', 'input', e => {
+      APP_STATE.effects.pixelSize = parseInt(e.target.value);
+      const val = document.getElementById('pixelVal');
+      if (val) val.textContent = e.target.value + 'px';
+      renderCurrentFrame();
+    });
+
+    safeOn('fxBwToggle', 'change', e => { APP_STATE.effects.bw = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxInvertToggle', 'change', e => { APP_STATE.effects.invert = e.target.checked; renderCurrentFrame(); });
+    safeOn('fxVignetteToggle', 'change', e => { APP_STATE.effects.vignette = e.target.checked; renderCurrentFrame(); });
+
+    safeOn('resetAllFxBtn', 'click', () => {
+      Object.keys(APP_STATE.effects).forEach(k => {
+        if (typeof APP_STATE.effects[k] === 'boolean') APP_STATE.effects[k] = false;
+      });
+      document.querySelectorAll('#panel-effects input[type="checkbox"]').forEach(c => c.checked = false);
+      renderCurrentFrame();
+      showMobileToast("Efectos GPU restablecidos");
+    });
+
+    /* ========================================================
+       17. EXPORTACIÓN MULTIPISTA REAL (V1 + V2 + TEXTOS + AUDIO)
+       ======================================================== */
+    let mediaExportRecorder = null;
+    let exportLoopTimer = null;
+
+    safeOn(exportBtn, 'click', () => {
+      if (getProjectDuration() === 0) {
+        return showMobileToast("Carga y organiza clips en el timeline primero");
+      }
+      startMultiTrackExport();
+    });
+
+    function startMultiTrackExport() {
+      pauseVideo();
+      if (exportModal) exportModal.classList.remove('hidden');
+      const recHud = document.getElementById('recordingHud');
+      if (recHud) recHud.classList.remove('hidden');
+
+      APP_STATE.currentTime = 0;
+      syncPlayback(0);
+
+      const totalDur = getProjectDuration();
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = glCanvas ? glCanvas.width : 720;
+      exportCanvas.height = glCanvas ? glCanvas.height : 404;
+      const expCtx = exportCanvas.getContext('2d');
+
+      let canvasStream = null;
+      if (exportCanvas.captureStream) canvasStream = exportCanvas.captureStream(30);
+      else if (exportCanvas.mozCaptureStream) canvasStream = exportCanvas.mozCaptureStream(30);
+
+      if (!canvasStream || typeof MediaRecorder === 'undefined') {
+        if (exportModal) exportModal.classList.add('hidden');
+        if (recHud) recHud.classList.add('hidden');
+        return showMobileToast("Navegador no soporta MediaRecorder");
+      }
+
+      let options = { mimeType: 'video/webm' };
+      const chunks = [];
+
+      try {
+        mediaExportRecorder = new MediaRecorder(canvasStream, options);
+      } catch (err) {
+        try {
+          mediaExportRecorder = new MediaRecorder(canvasStream);
+        } catch (err2) {
+          if (exportModal) exportModal.classList.add('hidden');
+          return showMobileToast("Error inicializando grabación");
+        }
+      }
+
+      mediaExportRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
+
+      mediaExportRecorder.onstop = () => {
+        clearInterval(exportLoopTimer);
+        if (exportModal) exportModal.classList.add('hidden');
+        if (recHud) recHud.classList.add('hidden');
+
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `AVS_Studio_Pro_${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+        showMobileToast("¡Video exportado y descargado con éxito!");
+      };
+
+      mediaExportRecorder.start(100);
+
+      exportLoopTimer = setInterval(() => {
+        APP_STATE.currentTime += 0.033;
+        const progress = Math.min((APP_STATE.currentTime / totalDur) * 100, 100);
+        if (exportProgressBar) exportProgressBar.style.width = `${progress}%`;
+        if (exportProgressText) exportProgressText.textContent = `${Math.floor(progress)}%`;
+
+        syncPlayback(APP_STATE.currentTime);
+        updatePlayheadUI();
+        updateTimecodeUI();
+
+        if (glCanvas) expCtx.drawImage(glCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+        if (overlayCanvas) expCtx.drawImage(overlayCanvas, 0, 0, exportCanvas.width, exportCanvas.height);
+
+        if (APP_STATE.currentTime >= totalDur) {
+          clearInterval(exportLoopTimer);
+          if (mediaExportRecorder.state !== 'inactive') mediaExportRecorder.stop();
+        }
+      }, 33);
+    }
+
+    safeOn(cancelExportBtn, 'click', () => {
+      if (mediaExportRecorder && mediaExportRecorder.state !== 'inactive') {
+        mediaExportRecorder.stop();
+      }
+      clearInterval(exportLoopTimer);
+      if (exportModal) exportModal.classList.add('hidden');
+      const recHud = document.getElementById('recordingHud');
+      if (recHud) recHud.classList.add('hidden');
+      showMobileToast("Exportación cancelada");
+    });
+
+    /* ========================================================
+       18. INICIALIZACIÓN AUTOMÁTICA SEGURA Y MENÚ MÓVIL (⋮)
+       ======================================================== */
+    const btnHeaderMenu = document.getElementById('btnHeaderMenu');
+    const headerDropdownMenu = document.getElementById('headerDropdownMenu');
+    const menuItemNewProject = document.getElementById('menuItemNewProject');
+    const menuItemExport = document.getElementById('menuItemExport');
+    const menuItemClearTimeline = document.getElementById('menuItemClearTimeline');
+    const menuItemPwa = document.getElementById('menuItemPwa');
+
+    function closeHeaderMenu() {
+      if (headerDropdownMenu) headerDropdownMenu.classList.add('hidden');
+    }
+
+    safeOn(btnHeaderMenu, 'click', (e) => {
+      e.stopPropagation();
+      if (headerDropdownMenu) {
+        headerDropdownMenu.classList.toggle('hidden');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (headerDropdownMenu && !headerDropdownMenu.contains(e.target) && e.target !== btnHeaderMenu) {
+        closeHeaderMenu();
+      }
+    });
+
+    safeOn(menuItemNewProject, 'click', () => {
+      closeHeaderMenu();
+      if (btnNewProject) btnNewProject.click();
+    });
+
+    safeOn(menuItemExport, 'click', () => {
+      closeHeaderMenu();
+      if (exportBtn) exportBtn.click();
+    });
+
+    safeOn(menuItemClearTimeline, 'click', () => {
+      closeHeaderMenu();
+      if (btnOpenClearSheet) btnOpenClearSheet.click();
+    });
+
+    safeOn(menuItemPwa, 'click', () => {
+      closeHeaderMenu();
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+      } else {
+        showMobileToast("Instalación PWA lista en tu navegador");
+      }
+    });
+
+    async function startApp() {
+      try {
+        prepareVideoElement(hiddenVideo);
+        await initIndexedDB();
+        await renderLibraryUI();
+        const items = await dbGetAllMediaItems();
+        if (items && items.length > 0 && items[0].blob) {
+          const url = URL.createObjectURL(items[0].blob);
+          await loadVideoMedia(url, items[0].name, items[0].blob);
+        } else {
+          generateMobileDemoVideo();
+        }
+      } catch (err) {
+        console.warn("IndexedDB init warning:", err);
+        generateMobileDemoVideo();
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', startApp);
+    } else {
+      startApp();
+    }
+  </script>
+</body>
+</html>

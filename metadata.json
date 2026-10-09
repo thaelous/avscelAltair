@@ -1,0 +1,8 @@
+{
+  "name": "Remix AVS Mobile Studio Pro",
+  "description": "Editor de video móvil profesional multipista con aceleración WebGL por hardware, biblioteca persistente IndexedDB, control dinámico de velocidad y soporte PWA offline.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

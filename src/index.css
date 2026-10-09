@@ -1,0 +1,92 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    -webkit-user-select: none;
+    box-sizing: border-box;
+  }
+
+  html, body, #root {
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    background-color: #07080b;
+    color: #f1f5f9;
+  }
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* Scroll touch horizontal y vertical sin barras visibles */
+.scroll-touch-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scroll-touch-x::-webkit-scrollbar,
+.scroll-touch-y::-webkit-scrollbar {
+  display: none;
+}
+
+.scroll-touch-y {
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.touch-btn:active {
+  transform: scale(0.94);
+  opacity: 0.88;
+}
+
+/* Clip activo resaltado en timeline */
+.clip-card.is-active {
+  border: 2px solid #00f0ff !important;
+  box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+}
+
+/* Sliders personalizados */
+input[type=range] {
+  -webkit-appearance: none;
+  background: transparent;
+  height: 22px;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 16px;
+  width: 16px;
+  border-radius: 50%;
+  background: #00f0ff;
+  cursor: pointer;
+  margin-top: -5px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  border: 2px solid #ffffff;
+}
+input[type=range]::-webkit-slider-runnable-track {
+  width: 100%;
+  height: 6px;
+  cursor: pointer;
+  background: #252839;
+  border-radius: 9999px;
+}
+
+#bottomDrawer {
+  transition: max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.pb-safe {
+  padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
+}
+.pt-safe {
+  padding-top: max(8px, env(safe-area-inset-top, 8px));
+}

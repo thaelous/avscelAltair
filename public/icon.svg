@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#07080b"/>
+  <circle cx="256" cy="256" r="200" fill="#10121a" stroke="#00f0ff" stroke-width="12" stroke-dasharray="16 8"/>
+  <defs>
+    <linearGradient id="avsGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#00f0ff"/>
+      <stop offset="100%" stop-color="#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <!-- Tijeras estilizadas de edición -->
+  <circle cx="180" cy="340" r="44" fill="none" stroke="url(#avsGrad)" stroke-width="22"/>
+  <circle cx="332" cy="340" r="44" fill="none" stroke="url(#avsGrad)" stroke-width="22"/>
+  <line x1="212" y1="310" x2="330" y2="170" stroke="url(#avsGrad)" stroke-width="22" stroke-linecap="round"/>
+  <line x1="300" y1="310" x2="182" y2="170" stroke="url(#avsGrad)" stroke-width="22" stroke-linecap="round"/>
+  <circle cx="256" cy="240" r="14" fill="#ffffff"/>
+  <!-- Texto AVS PRO -->
+  <text x="256" y="440" font-family="'Plus Jakarta Sans', sans-serif" font-weight="900" font-size="40" fill="#ffffff" text-anchor="middle" letter-spacing="4">AVS PRO</text>
+</svg>
