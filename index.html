@@ -244,7 +244,7 @@
       <label class="touch-btn shrink-0 h-8 px-2.5 bg-[#171a26] border border-[#272b3d] text-gray-200 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer shadow-sm">
         <i class="fa-solid fa-folder-open text-cyan-400 text-xs"></i>
         <span class="text-[11px]">Abrir</span>
-        <input type="file" id="videoFileInput" accept="video/*" class="hidden">
+        <input type="file" id="filePicker" accept="video/*" class="hidden">
       </label>
 
       <!-- Botón Bottom Sheet Vaciar Timeline -->
@@ -1665,7 +1665,8 @@
     const playheadThumb = document.getElementById('playheadThumb');
     const zoomRange = document.getElementById('zoomRange');
 
-    const videoFileInput = document.getElementById('videoFileInput');
+    const filePicker = document.getElementById('filePicker') || document.getElementById('videoFileInput');
+    const videoFileInput = filePicker;
     const btnNewProject = document.getElementById('btnNewProject');
     const newProjectModal = document.getElementById('newProjectModal');
     const confirmNewProjectBtn = document.getElementById('confirmNewProjectBtn');
@@ -3126,24 +3127,24 @@
     function addItemToV1(item) {
       pushHistoryState(`Añadir "${item.name}" a V1`);
       const dur = Number((item.duration || 6).toFixed(2));
-      const newClip = {
-        id: 'clip-' + Date.now(),
-        startInSource: 0,
-        endInSource: dur,
-        duration: dur,
-        speed: 1.0,
-        grad: 'from-blue-600 to-indigo-700',
-        transition: 'none',
-        transitionDuration: 0.6
-      };
-      APP_STATE.clipsV1.push(newClip);
-      APP_STATE.selectedTrackType = 'v1';
-      APP_STATE.selectedItemId = newClip.id;
 
       if (!APP_STATE.sourceLoaded && item.type === 'video' && item.blob) {
         const url = URL.createObjectURL(item.blob);
         loadVideoMedia(url, item.name, item.blob);
       } else {
+        const newClip = {
+          id: 'clip-' + Date.now(),
+          startInSource: 0,
+          endInSource: dur,
+          duration: dur,
+          speed: 1.0,
+          grad: 'from-blue-600 to-indigo-700',
+          transition: 'none',
+          transitionDuration: 0.6
+        };
+        APP_STATE.clipsV1.push(newClip);
+        APP_STATE.selectedTrackType = 'v1';
+        APP_STATE.selectedItemId = newClip.id;
         renderTimeline();
         showMobileToast(`"${item.name}" añadido a pista V1`);
       }
@@ -3451,40 +3452,44 @@
 
       // Esperar estrictamente a que onloadedmetadata y oncanplay estén listos con dimensiones reales > 0
       await new Promise((resolve) => {
-        let metaReady = false;
-        let canPlayReady = false;
+        let resolved = false;
 
         const checkReady = () => {
-          if (hiddenVideo.videoWidth > 0 && hiddenVideo.videoHeight > 0 && (metaReady || hiddenVideo.readyState >= 1) && (canPlayReady || hiddenVideo.readyState >= 2)) {
+          if (resolved) return;
+          if (
+            hiddenVideo.videoWidth > 0 &&
+            hiddenVideo.videoHeight > 0 &&
+            hiddenVideo.duration > 0 &&
+            !isNaN(hiddenVideo.duration) &&
+            hiddenVideo.readyState >= 2
+          ) {
+            resolved = true;
             cleanup();
             resolve();
           }
         };
 
-        const onMeta = () => {
-          metaReady = true;
-          checkReady();
-        };
-
-        const onCanPlay = () => {
-          canPlayReady = true;
-          checkReady();
-        };
-
         const cleanup = () => {
-          hiddenVideo.removeEventListener('loadedmetadata', onMeta);
-          hiddenVideo.removeEventListener('canplay', onCanPlay);
+          hiddenVideo.removeEventListener('loadedmetadata', checkReady);
+          hiddenVideo.removeEventListener('canplay', checkReady);
           hiddenVideo.removeEventListener('loadeddata', checkReady);
         };
 
-        hiddenVideo.addEventListener('loadedmetadata', onMeta);
-        hiddenVideo.addEventListener('canplay', onCanPlay);
+        hiddenVideo.addEventListener('loadedmetadata', checkReady);
+        hiddenVideo.addEventListener('canplay', checkReady);
         hiddenVideo.addEventListener('loadeddata', checkReady);
 
         hiddenVideo.src = url;
         hiddenVideo.load();
 
-        if (hiddenVideo.readyState >= 2 && hiddenVideo.videoWidth > 0) {
+        if (
+          hiddenVideo.videoWidth > 0 &&
+          hiddenVideo.videoHeight > 0 &&
+          hiddenVideo.duration > 0 &&
+          !isNaN(hiddenVideo.duration) &&
+          hiddenVideo.readyState >= 2
+        ) {
+          resolved = true;
           cleanup();
           resolve();
         }
@@ -3493,21 +3498,27 @@
       // Resolución de renderizado adaptativa sin lag (máx 720px)
       applyAdaptiveCanvasResolution(hiddenVideo.videoWidth, hiddenVideo.videoHeight);
 
-      APP_STATE.sourceDuration = hiddenVideo.duration || 8;
+      const dur = Number((hiddenVideo.duration || 1).toFixed(2));
+      APP_STATE.sourceDuration = dur;
       APP_STATE.sourceLoaded = true;
 
-      const d = Number(APP_STATE.sourceDuration.toFixed(2));
-      const half = Number((d / 2).toFixed(2));
+      // Asignar exactamente UN SOLO clip que abarca la totalidad del archivo (evita duplicación)
+      const singleClip = {
+        id: 'clip-' + Date.now(),
+        startInSource: 0,
+        endInSource: dur,
+        duration: dur,
+        speed: 1.0,
+        grad: 'from-cyan-600 to-blue-700',
+        transition: 'none',
+        transitionDuration: 0.6
+      };
 
-      APP_STATE.clipsV1 = [
-        { id: 'clip-1', startInSource: 0, endInSource: half, duration: half, speed: 1.0, grad: 'from-cyan-600 to-blue-700', transition: 'fade-black', transitionDuration: 0.6 },
-        { id: 'clip-2', startInSource: half, endInSource: d, duration: Number((d - half).toFixed(2)), speed: 1.0, grad: 'from-purple-600 to-pink-700', transition: 'none', transitionDuration: 0.6 }
-      ];
-
+      APP_STATE.clipsV1 = [singleClip];
       APP_STATE.selectedTrackType = 'v1';
-      APP_STATE.selectedItemId = APP_STATE.clipsV1[0].id;
+      APP_STATE.selectedItemId = singleClip.id;
       APP_STATE.currentTime = 0;
-      APP_STATE.activeClipId = APP_STATE.clipsV1[0].id;
+      APP_STATE.activeClipId = singleClip.id;
 
       pushHistoryState(`Cargar "${name}"`);
       renderTimeline();
@@ -3532,7 +3543,7 @@
             type: 'video',
             blob: blob,
             thumbnail: tc.toDataURL('image/jpeg', 0.7),
-            duration: d,
+            duration: dur,
             sizeStr: `${(blob.size / (1024 * 1024)).toFixed(1)} MB`,
             dateStr: new Date().toLocaleDateString()
           }).then(() => renderLibraryUI());
@@ -3540,21 +3551,57 @@
       }
     }
 
-    safeOn(videoFileInput, 'change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
+    // Bandera de control de ciclo de vida de importación para evitar llamadas duplicadas
+    let isImporting = false;
+
+    async function handleUserVideoFileImport(file) {
+      if (!file) return;
+      if (isImporting) return; // Debounce / control de concurrencia
+      isImporting = true;
+
+      try {
+        pauseVideo();
+
+        // 1. Reseteo explícito del arreglo global de clips antes de procesar el archivo
+        APP_STATE.clipsV1 = [];
+        APP_STATE.activeClipId = null;
+        APP_STATE.selectedItemId = null;
+        APP_STATE.currentTime = 0;
+        renderTimeline();
+
+        // 2. Limpieza de memoria para URLs previas antes de asignar la nueva
+        if (hiddenVideo && hiddenVideo.src && hiddenVideo.src.startsWith('blob:')) {
+          try { URL.revokeObjectURL(hiddenVideo.src); } catch (e) {}
+        }
+        if (APP_STATE.sourceUrl && APP_STATE.sourceUrl.startsWith('blob:')) {
+          try { URL.revokeObjectURL(APP_STATE.sourceUrl); } catch (e) {}
+        }
+
         const url = URL.createObjectURL(file);
-        loadVideoMedia(url, file.name, file);
+        await loadVideoMedia(url, file.name, file);
+      } catch (err) {
+        console.error("Error importando video:", err);
+        showMobileToast("Error al importar el archivo");
+      } finally {
+        isImporting = false;
+      }
+    }
+
+    safeOn(filePicker, 'change', async (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        await handleUserVideoFileImport(file);
+        e.target.value = ''; // Permite volver a abrir el mismo archivo
       }
     });
 
-    safeOn('menuVideoFileInput', 'change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        loadVideoMedia(url, file.name, file);
-      }
+    safeOn('menuVideoFileInput', 'change', async (e) => {
       closeHeaderMenu();
+      const file = e.target.files && e.target.files[0];
+      if (file) {
+        await handleUserVideoFileImport(file);
+        e.target.value = '';
+      }
     });
 
     function generateMobileDemoVideo() {
@@ -3573,8 +3620,7 @@
       if (!stream || typeof MediaRecorder === 'undefined') {
         // Fallback inmediato si no hay soporte de grabación de canvas
         APP_STATE.clipsV1 = [
-          { id: 'clip-1', startInSource: 0, endInSource: 4, duration: 4, speed: 1.0, grad: 'from-cyan-600 to-blue-700', transition: 'fade-black', transitionDuration: 0.6 },
-          { id: 'clip-2', startInSource: 4, endInSource: 8, duration: 4, speed: 1.0, grad: 'from-purple-600 to-pink-700', transition: 'none', transitionDuration: 0.6 }
+          { id: 'clip-1', startInSource: 0, endInSource: 8, duration: 8, speed: 1.0, grad: 'from-cyan-600 to-blue-700', transition: 'none', transitionDuration: 0.6 }
         ];
         APP_STATE.sourceDuration = 8;
         APP_STATE.sourceLoaded = true;
