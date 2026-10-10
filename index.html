@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>AVS Mobile Studio Pro</title>
+  <title>Remix AVS Mobile Studio Pro</title>
   <meta name="description" content="Editor de video móvil profesional multipista con aceleración WebGL por hardware, biblioteca persistente IndexedDB, control dinámico de velocidad y soporte PWA offline.">
+  <meta property="og:title" content="Remix AVS Mobile Studio Pro">
+  <meta property="og:description" content="Editor de video móvil profesional multipista con aceleración WebGL por hardware, biblioteca persistente IndexedDB, control dinámico de velocidad y soporte PWA offline.">
 
   <!-- PWA & Android Meta Tags -->
   <meta name="theme-color" content="#07080b">
@@ -168,6 +170,49 @@
       transition: max-height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    .trim-handle {
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
+      transition: background-color 0.15s ease, filter 0.15s ease;
+    }
+    .trim-handle:active {
+      filter: brightness(1.25);
+      z-index: 45;
+    }
+    .trim-handle-left {
+      border-top-left-radius: 6px;
+      border-bottom-left-radius: 6px;
+      box-shadow: 2px 0 6px rgba(0, 240, 255, 0.45);
+    }
+    .trim-handle-right {
+      border-top-right-radius: 6px;
+      border-bottom-right-radius: 6px;
+      box-shadow: -2px 0 6px rgba(251, 191, 36, 0.45);
+    }
+    .trim-floating-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(10, 12, 18, 0.95);
+      border: 1px solid #00f0ff;
+      color: #00f0ff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      pointer-events: none;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.75);
+      z-index: 60;
+    }
+    .trim-floating-tooltip.is-out {
+      border-color: #f59e0b;
+      color: #fbbf24;
+    }
+
     .pb-safe {
       padding-bottom: max(10px, env(safe-area-inset-bottom, 12px));
     }
@@ -311,8 +356,8 @@
         <!-- Canvas Overlay 2D para V2 (PiP / B-Roll) y títulos vectoriales nítidos -->
         <canvas id="overlayCanvas" width="720" height="404" class="absolute inset-0 w-full h-full object-contain pointer-events-none z-10"></canvas>
         
-        <!-- Configuración estricta de video para móviles: playsinline, webkit-playsinline, muted, preload auto -->
-        <video id="hiddenVideo" class="hidden" playsinline="true" webkit-playsinline="true" muted preload="auto" crossorigin="anonymous"></video>
+        <!-- Configuración estricta de video para móviles: playsinline, webkit-playsinline, preload auto -->
+        <video id="hiddenVideo" class="hidden" playsinline="true" webkit-playsinline="true" preload="auto" crossorigin="anonymous"></video>
 
         <!-- Botón circular Play/Pause central -->
         <button id="screenPlayBtn" class="touch-btn absolute inset-0 m-auto w-12 h-12 bg-black/60 border border-white/20 text-white rounded-full flex items-center justify-center transition-all shadow-xl z-20">
@@ -338,23 +383,34 @@
       </div>
     </div>
 
-    <!-- Barra de Transporte de Reproducción Ergonómica -->
-    <div class="w-full max-w-xs px-2 py-1 flex items-center justify-between text-xs shrink-0 mt-1">
-      <button id="btnJumpStart" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300" title="Al Inicio">
-        <i class="fa-solid fa-backward-step text-xs"></i>
-      </button>
-      <button id="btnPrevFrame" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300" title="Frame Anterior">
-        <i class="fa-solid fa-chevron-left text-xs"></i>
-      </button>
-      <button id="btnPlayPause" class="touch-btn w-13 h-8 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-black flex items-center justify-center shadow-lg shadow-cyan-400/20" title="Reproducir/Pausar">
-        <i id="playIcon" class="fa-solid fa-play ml-0.5 text-xs"></i>
-      </button>
-      <button id="btnNextFrame" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300" title="Frame Siguiente">
-        <i class="fa-solid fa-chevron-right text-xs"></i>
-      </button>
-      <button id="btnLoop" class="touch-btn w-9 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-400" title="Bucle">
-        <i class="fa-solid fa-repeat text-xs"></i>
-      </button>
+    <!-- Barra de Transporte de Reproducción Ergonómica + Control de Salida de Audio (dB) -->
+    <div class="w-full max-w-sm px-2 py-1 flex items-center justify-between text-xs shrink-0 mt-1 gap-1">
+      <div class="flex items-center gap-1">
+        <button id="btnJumpStart" class="touch-btn w-8 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300 hover:text-white" title="Al Inicio">
+          <i class="fa-solid fa-backward-step text-xs"></i>
+        </button>
+        <button id="btnPrevFrame" class="touch-btn w-8 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300 hover:text-white" title="Frame Anterior">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+        </button>
+        <button id="btnPlayPause" class="touch-btn w-12 h-8 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-black flex items-center justify-center shadow-lg shadow-cyan-400/20 active:scale-95" title="Reproducir/Pausar">
+          <i id="playIcon" class="fa-solid fa-play ml-0.5 text-xs"></i>
+        </button>
+        <button id="btnNextFrame" class="touch-btn w-8 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-300 hover:text-white" title="Frame Siguiente">
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </button>
+        <button id="btnLoop" class="touch-btn w-8 h-8 rounded-lg bg-[#131520] border border-[#212435] flex items-center justify-center text-gray-400 hover:text-white" title="Bucle">
+          <i class="fa-solid fa-repeat text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Control Deslizable de Salida de Audio con Decibelios (dB) -->
+      <div class="flex items-center gap-1.5 bg-[#121420] border border-[#222538] px-2 py-1 rounded-xl shadow-inner ml-auto">
+        <button id="btnMasterMute" class="touch-btn text-cyan-400 hover:text-cyan-300 text-xs w-4 flex items-center justify-center" title="Silenciar / Activar sonido">
+          <i id="masterVolIcon" class="fa-solid fa-volume-high"></i>
+        </button>
+        <input type="range" id="masterVolumeSlider" min="0" max="100" value="100" class="w-16 accent-cyan-400 h-1.5 bg-[#252839] rounded-lg cursor-pointer" title="Control de decibelios de salida">
+        <span id="masterVolumeDb" class="font-mono text-[9px] text-cyan-300 font-bold min-w-[34px] text-right">0.0 dB</span>
+      </div>
     </div>
   </main>
 
@@ -611,6 +667,123 @@
             <i class="fa-solid fa-arrows-rotate text-purple-400 text-xs"></i>
             <span class="text-[10px] font-semibold">Restaurar</span>
           </button>
+        </div>
+
+        <!-- CONTROL DE SALIDA DE AUDIO Y DECIBELIOS (dB) -->
+        <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[11px] font-semibold text-gray-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-volume-high text-cyan-400"></i> Salida de Audio Principal (dB)
+            </span>
+            <span id="editMasterVolumeDb" class="font-mono text-cyan-400 text-[11px] font-bold bg-cyan-950 px-1.5 py-0.2 rounded border border-cyan-800">100% (0.0 dB)</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button id="editBtnMute" class="touch-btn w-8 h-7 bg-[#1c2033] hover:bg-[#282d47] border border-[#2a3048] rounded-lg text-cyan-400 text-xs flex items-center justify-center" title="Silenciar / Desmutear">
+              <i id="editMuteIcon" class="fa-solid fa-volume-high"></i>
+            </button>
+            <input type="range" id="editMasterVolumeSlider" min="0" max="100" value="100" class="flex-1 accent-cyan-400 h-2 bg-[#252839] rounded-lg cursor-pointer">
+            <button id="btnResetMasterVol" class="touch-btn px-2.5 h-7 bg-[#1a1d2c] hover:bg-[#262a40] border border-[#262a3d] text-cyan-300 text-[10px] font-mono font-bold rounded-lg" title="Restablecer a 100% (0 dB)">
+              0 dB
+            </button>
+          </div>
+        </div>
+
+        <!-- HERRAMIENTA DE RECORTE DE PRECISIÓN (PRECISION TRIM TOOL) -->
+        <div id="precisionTrimSection" class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-[11px] font-semibold text-gray-200 flex items-center gap-1.5">
+              <i class="fa-solid fa-arrows-left-right-to-line text-cyan-400"></i> Recorte de Precisión (Trim)
+            </span>
+            <div class="flex items-center gap-1.5">
+              <span id="trimClipNameDisplay" class="text-[10px] text-gray-400 font-medium truncate max-w-[100px]">Clip #1</span>
+              <span id="trimClipDurationDisplay" class="font-mono text-cyan-400 text-[11px] font-bold bg-cyan-950 px-1.5 py-0.2 rounded border border-cyan-800">0.00s</span>
+            </div>
+          </div>
+
+          <!-- Tira visual interactiva de recorte con tiradores de arrastre -->
+          <div class="bg-[#0b0d14] border border-[#202436] rounded-lg p-2 space-y-1">
+            <div class="flex items-center justify-between text-[9px] text-gray-400 font-mono">
+              <span id="trimSourceStartLbl">0.00s</span>
+              <span class="text-[8px] text-gray-400 uppercase tracking-wider font-sans font-bold flex items-center gap-1">
+                <i class="fa-solid fa-hand-pointer text-[8px] text-cyan-400"></i> Arrastra los tiradores para recortar
+              </span>
+              <span id="trimSourceEndLbl">8.00s</span>
+            </div>
+            <div id="trimInteractiveTrack" class="relative h-9 bg-[#131522] rounded-md overflow-visible select-none border border-[#262b3e] touch-none">
+              <!-- Zona recortada izquierda (sombreada) -->
+              <div id="trimLeftMask" class="absolute top-0 bottom-0 left-0 bg-black/75 border-r border-dashed border-cyan-500/80 z-10 pointer-events-none rounded-l"></div>
+              <!-- Rango activo del clip -->
+              <div id="trimActiveSpan" class="absolute top-0 bottom-0 bg-gradient-to-r from-cyan-950/70 via-blue-900/50 to-amber-950/70 border-y-2 border-cyan-400/90 flex items-center justify-center overflow-hidden">
+                <div class="absolute inset-0 flex items-center justify-around opacity-25 pointer-events-none">
+                  <div class="w-0.5 h-4 bg-white rounded-full"></div>
+                  <div class="w-0.5 h-4 bg-white rounded-full"></div>
+                  <div class="w-0.5 h-4 bg-white rounded-full"></div>
+                  <div class="w-0.5 h-4 bg-white rounded-full"></div>
+                </div>
+                <span id="trimActiveSpanLabel" class="text-[9px] font-mono font-extrabold text-cyan-300 bg-black/70 px-1.5 py-0.2 rounded shadow z-10">4.00s</span>
+              </div>
+              <!-- Zona recortada derecha (sombreada) -->
+              <div id="trimRightMask" class="absolute top-0 bottom-0 right-0 bg-black/75 border-l border-dashed border-amber-500/80 z-10 pointer-events-none rounded-r"></div>
+              <!-- Tirador arrastrable izquierdo (In) -->
+              <div id="trimMiniLeftHandle" class="touch-btn absolute top-0 bottom-0 w-5 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black flex items-center justify-center cursor-ew-resize z-20 shadow-lg rounded-l select-none -ml-2.5 active:scale-105" title="Arrastra para ajustar inicio (In)">
+                <i class="fa-solid fa-chevron-left text-[8px] pointer-events-none font-black"></i>
+              </div>
+              <!-- Tirador arrastrable derecho (Out) -->
+              <div id="trimMiniRightHandle" class="touch-btn absolute top-0 bottom-0 w-5 bg-gradient-to-l from-amber-400 to-amber-500 text-black flex items-center justify-center cursor-ew-resize z-20 shadow-lg rounded-r select-none -mr-2.5 active:scale-105" title="Arrastra para ajustar fin (Out)">
+                <i class="fa-solid fa-chevron-right text-[8px] pointer-events-none font-black"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selector de In y Out con micro-pasos de precisión -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            <!-- Ajuste Punto de Inicio (In-Point) -->
+            <div class="bg-[#191c2b] p-2 rounded-lg border border-[#262b3e] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-300 flex items-center gap-1">
+                  <i class="fa-solid fa-arrow-right-to-bracket text-cyan-400 text-[9px]"></i> Inicio (In)
+                </span>
+                <span id="trimInDisplay" class="font-mono text-cyan-300 text-[10px] font-bold">0.00s</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button id="trimInMinus05" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-gray-200 font-bold">-0.5s</button>
+                <button id="trimInMinus01" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-gray-200 font-bold">-0.1s</button>
+                <button id="trimInPlus01" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-cyan-300 font-bold">+0.1s</button>
+                <button id="trimInPlus05" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-cyan-300 font-bold">+0.5s</button>
+              </div>
+              <input type="range" id="trimInSlider" min="0" max="10" step="0.05" value="0" class="w-full">
+            </div>
+
+            <!-- Ajuste Punto de Fin (Out-Point) -->
+            <div class="bg-[#191c2b] p-2 rounded-lg border border-[#262b3e] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-gray-300 flex items-center gap-1">
+                  <i class="fa-solid fa-arrow-right-from-bracket text-amber-400 text-[9px]"></i> Fin (Out)
+                </span>
+                <span id="trimOutDisplay" class="font-mono text-amber-300 text-[10px] font-bold">0.00s</span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button id="trimOutMinus05" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-amber-300 font-bold">-0.5s</button>
+                <button id="trimOutMinus01" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-amber-300 font-bold">-0.1s</button>
+                <button id="trimOutPlus01" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-gray-200 font-bold">+0.1s</button>
+                <button id="trimOutPlus05" class="touch-btn flex-1 h-6 bg-[#131522] hover:bg-[#202538] border border-[#2c324a] rounded text-[9px] font-mono text-gray-200 font-bold">+0.5s</button>
+              </div>
+              <input type="range" id="trimOutSlider" min="0" max="10" step="0.05" value="10" class="w-full">
+            </div>
+          </div>
+
+          <!-- Acciones de cabezal y restablecer -->
+          <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+            <button id="trimInToPlayheadBtn" class="touch-btn h-7 bg-[#1c2033] hover:bg-[#262b44] border border-[#2c3350] rounded-lg text-[9px] font-bold text-cyan-300 flex items-center justify-center gap-1" title="Alinear punto de inicio con el cabezal actual">
+              <i class="fa-solid fa-chevron-left text-[8px]"></i> In a Cabezal
+            </button>
+            <button id="trimOutToPlayheadBtn" class="touch-btn h-7 bg-[#1c2033] hover:bg-[#262b44] border border-[#2c3350] rounded-lg text-[9px] font-bold text-amber-300 flex items-center justify-center gap-1" title="Alinear punto de fin con el cabezal actual">
+              Out a Cabezal <i class="fa-solid fa-chevron-right text-[8px]"></i>
+            </button>
+            <button id="trimResetBtn" class="touch-btn h-7 bg-[#1c2033] hover:bg-[#262b44] border border-[#2c3350] rounded-lg text-[9px] font-bold text-gray-300 flex items-center justify-center gap-1" title="Restablecer recorte a la duración completa del archivo">
+              <i class="fa-solid fa-arrows-rotate text-[8px]"></i> Restaurar
+            </button>
+          </div>
         </div>
 
         <!-- CONTROL DINÁMICO DE VELOCIDAD POR CLIP (SPEED RAMPING) -->
@@ -955,6 +1128,105 @@
     </div>
   </div>
 
+  <!-- MODAL INFERIOR (BOTTOM SHEET) PARA INSERCIÓN CON DESPLAZAMIENTO MAGNÉTICO (RIPPLE INSERT) -->
+  <div id="insertBottomSheet" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 hidden">
+    <div class="bg-[#12141f] border border-[#252a3d] rounded-2xl w-full max-w-sm p-4 space-y-3 shadow-2xl">
+      <div class="flex items-center justify-between pb-1.5 border-b border-[#1f2334]">
+        <div class="flex items-center gap-2.5">
+          <div id="insertModalIconBox" class="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-plus"></i>
+          </div>
+          <div>
+            <h4 id="insertModalTitle" class="text-xs font-bold text-white uppercase tracking-wider">Insertar Elemento</h4>
+            <p id="insertModalSubtitle" class="text-[10px] text-cyan-400 font-mono font-medium">Pista V1 Principal • Inserción Ripple</p>
+          </div>
+        </div>
+        <button id="closeInsertBottomSheetBtn" class="touch-btn w-7 h-7 rounded-lg bg-[#1a1d2b] text-gray-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+
+      <!-- Opciones Principales de Inserción -->
+      <div id="insertMainOptionsContainer" class="space-y-2">
+        <!-- 1. Desde la Biblioteca -->
+        <button id="btnInsertFromLibrary" class="touch-btn w-full p-2.5 bg-[#181b28] hover:bg-[#202538] border border-[#272b3d] rounded-xl text-left flex items-center justify-between text-gray-200 group transition-all">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-cyan-950 text-cyan-400 border border-cyan-800/60 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-photo-film"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold block text-white group-hover:text-cyan-300">Desde la Biblioteca</span>
+              <span id="insertLibBadge" class="text-[9px] text-gray-400">Ver medios guardados en el proyecto</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-cyan-400"></i>
+        </button>
+
+        <!-- 2. Importar Nuevo Archivo -->
+        <button id="btnInsertImportNew" class="touch-btn w-full p-2.5 bg-[#181b28] hover:bg-[#202538] border border-[#272b3d] rounded-xl text-left flex items-center justify-between text-gray-200 group transition-all">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800/60 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold block text-white group-hover:text-emerald-300">Importar Nuevo Archivo</span>
+              <span class="text-[9px] text-gray-400">Cargar desde tu dispositivo local</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-emerald-400"></i>
+        </button>
+
+        <!-- 3. Nuevo Bloque de Título (Específico de Texto) -->
+        <button id="btnInsertNewTitle" class="touch-btn w-full p-2.5 bg-[#181b28] hover:bg-[#202538] border border-[#272b3d] rounded-xl text-left flex items-center justify-between text-gray-200 group transition-all hidden">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-amber-950 text-amber-400 border border-amber-800/60 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-font"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold block text-white group-hover:text-amber-300">Nuevo Bloque de Título</span>
+              <span class="text-[9px] text-gray-400">Crear un título vectorial editable</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-amber-400"></i>
+        </button>
+
+        <!-- 4. Pista de Audio Sintético (Específico de Audio) -->
+        <button id="btnInsertSynthAudio" class="touch-btn w-full p-2.5 bg-[#181b28] hover:bg-[#202538] border border-[#272b3d] rounded-xl text-left flex items-center justify-between text-gray-200 group transition-all hidden">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-950 text-emerald-400 border border-emerald-800/60 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-music"></i>
+            </div>
+            <div>
+              <span class="text-xs font-bold block text-white group-hover:text-emerald-300">Música Sintética Cyber Wave</span>
+              <span class="text-[9px] text-gray-400">Generar pista de sintetizador Web Audio</span>
+            </div>
+          </div>
+          <i class="fa-solid fa-chevron-right text-xs text-gray-500 group-hover:text-emerald-400"></i>
+        </button>
+      </div>
+
+      <!-- Contenedor desplegable para seleccionar desde la biblioteca -->
+      <div id="insertLibraryMediaList" class="hidden space-y-2 border-t border-[#1f2334] pt-2">
+        <div class="flex items-center justify-between">
+          <span class="text-[10px] font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-boxes-stacked text-cyan-400"></i> Archivos en Biblioteca
+          </span>
+          <button id="btnBackToInsertOptions" class="text-[10px] text-cyan-400 hover:underline font-bold">« Opciones</button>
+        </div>
+        <div id="insertLibraryItemsContainer" class="max-h-48 overflow-y-auto scroll-touch-y space-y-1.5 pr-0.5">
+          <!-- Renderizado dinámico de medios de IndexedDB -->
+        </div>
+      </div>
+
+      <!-- Input file dedicado para este modal -->
+      <input type="file" id="insertModalFileInput" class="hidden">
+
+      <button id="btnCancelInsertSheet" class="touch-btn w-full h-9 bg-[#1b1e2c] text-gray-300 text-xs font-bold rounded-xl border border-[#272b3d]">
+        Cancelar
+      </button>
+    </div>
+  </div>
+
   <!-- TOAST DE NOTIFICACIÓN FLOTANTE -->
   <div id="mobileToast" class="fixed top-15 left-1/2 -translate-x-1/2 bg-[#141624]/95 border border-cyan-400/60 text-white text-xs px-3.5 py-2 rounded-full shadow-2xl opacity-0 pointer-events-none transition-all duration-200 z-50 flex items-center gap-1.5 max-w-[90vw] truncate font-medium backdrop-blur-md">
     <i class="fa-solid fa-circle-check text-cyan-400 text-xs"></i>
@@ -1133,6 +1405,30 @@
           resolve(item);
         }
       });
+    }
+
+    async function dbGetMediaItem(id) {
+      if (!id) return null;
+      if (!dbInstance) await initIndexedDB();
+      if (!dbInstance) return null;
+      return new Promise((resolve) => {
+        try {
+          const tx = dbInstance.transaction(STORE_NAME, 'readonly');
+          const store = tx.objectStore(STORE_NAME);
+          const req = store.get(id);
+          req.onsuccess = () => resolve(req.result || null);
+          req.onerror = () => resolve(null);
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    }
+
+    async function dbGetMediaBlob(id) {
+      if (!id) return null;
+      const item = await dbGetMediaItem(id);
+      if (item && item.blob) return item.blob;
+      return null;
     }
 
     async function dbGetAllMediaItems() {
@@ -1514,6 +1810,8 @@
         }
       ],
       audioClips: [],
+      masterVolume: 1.0,
+      isMuted: false,
       effects: {
         wave: false,
         waveAmp: 16,
@@ -1702,6 +2000,31 @@
     const navTabs = document.querySelectorAll('.nav-tab');
     const drawerPanels = document.querySelectorAll('.drawer-panel');
 
+    // Elementos de control de volumen maestro y medidor dB
+    const masterVolumeSlider = document.getElementById('masterVolumeSlider');
+    const masterVolumeDb = document.getElementById('masterVolumeDb');
+    const btnMasterMute = document.getElementById('btnMasterMute');
+    const masterVolIcon = document.getElementById('masterVolIcon');
+    const editMasterVolumeSlider = document.getElementById('editMasterVolumeSlider');
+    const editMasterVolumeDb = document.getElementById('editMasterVolumeDb');
+    const editBtnMute = document.getElementById('editBtnMute');
+    const editMuteIcon = document.getElementById('editMuteIcon');
+    const btnResetMasterVol = document.getElementById('btnResetMasterVol');
+
+    // Elementos del Modal Bottom Sheet para inserción magnética Ripple
+    const insertBottomSheet = document.getElementById('insertBottomSheet');
+    const closeInsertBottomSheetBtn = document.getElementById('closeInsertBottomSheetBtn');
+    const btnCancelInsertSheet = document.getElementById('btnCancelInsertSheet');
+    const btnInsertFromLibrary = document.getElementById('btnInsertFromLibrary');
+    const btnInsertImportNew = document.getElementById('btnInsertImportNew');
+    const btnInsertNewTitle = document.getElementById('btnInsertNewTitle');
+    const btnInsertSynthAudio = document.getElementById('btnInsertSynthAudio');
+    const insertLibraryMediaList = document.getElementById('insertLibraryMediaList');
+    const insertLibraryItemsContainer = document.getElementById('insertLibraryItemsContainer');
+    const btnBackToInsertOptions = document.getElementById('btnBackToInsertOptions');
+    const insertModalFileInput = document.getElementById('insertModalFileInput');
+    let currentInsertContext = null;
+
     function showMobileToast(msg) {
       if (!mobileToast || !toastMessage) return;
       toastMessage.textContent = msg;
@@ -1780,6 +2103,21 @@
 
         if (targetId === 'panel-library') {
           renderLibraryUI();
+        } else if (targetId === 'panel-edit') {
+          if (!APP_STATE.selectedItemId || APP_STATE.selectedTrackType !== 'v1') {
+            const match = getV1ClipAt(APP_STATE.currentTime);
+            if (match) {
+              APP_STATE.selectedTrackType = 'v1';
+              APP_STATE.selectedItemId = match.clip.id;
+            } else if (APP_STATE.clipsV1.length > 0) {
+              APP_STATE.selectedTrackType = 'v1';
+              APP_STATE.selectedItemId = APP_STATE.clipsV1[0].id;
+            }
+          }
+          updateClipActionLabels();
+          updatePrecisionTrimUI();
+        } else if (targetId === 'panel-timeline') {
+          renderTimeline();
         }
       });
     });
@@ -1818,10 +2156,11 @@
     });
 
     /* ========================================================
-       6. MOTOR DE AUDIO WEB AUDIO API (A1 + FADES)
+       6. MOTOR DE AUDIO WEB AUDIO API (A1 + FADES + VOLUMEN GENERAL dB)
        ======================================================== */
     let audioCtx = null;
     let audioGainNode = null;
+    let audioTrackElement = null;
 
     function getAudioContext() {
       if (!audioCtx) {
@@ -1834,16 +2173,127 @@
       return audioCtx;
     }
 
+    function getAudioTrackElement() {
+      if (!audioTrackElement) {
+        audioTrackElement = new Audio();
+        audioTrackElement.preload = 'auto';
+      }
+      return audioTrackElement;
+    }
+
+    // Regulación de volumen maestro con escala de decibelios (dB)
+    function setMasterVolume(val, updateInputs = true) {
+      const vol = Math.max(0, Math.min(val, 1.0));
+      APP_STATE.masterVolume = vol;
+      if (vol === 0) APP_STATE.isMuted = true;
+      else if (APP_STATE.isMuted && vol > 0) APP_STATE.isMuted = false;
+
+      const effectiveVol = APP_STATE.isMuted ? 0 : vol;
+
+      if (hiddenVideo) {
+        hiddenVideo.muted = APP_STATE.isMuted;
+        if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+        hiddenVideo.volume = effectiveVol;
+      }
+      const trackElem = getAudioTrackElement();
+      if (trackElem) {
+        trackElem.volume = effectiveVol;
+      }
+      if (audioGainNode) {
+        audioGainNode.gain.value = effectiveVol;
+      }
+
+      // Cálculo de Decibelios: 20 * log10(volumen)
+      let dbText = "0.0 dB";
+      if (APP_STATE.isMuted || vol <= 0.005) {
+        dbText = "-∞ dB";
+      } else {
+        const db = 20 * Math.log10(vol);
+        dbText = `${db.toFixed(1)} dB`;
+      }
+
+      if (masterVolumeDb) masterVolumeDb.textContent = dbText;
+      if (editMasterVolumeDb) editMasterVolumeDb.textContent = `${Math.round(vol * 100)}% (${dbText})`;
+
+      const iconClass = (APP_STATE.isMuted || vol === 0)
+        ? "fa-solid fa-volume-xmark text-rose-400"
+        : (vol < 0.5 ? "fa-solid fa-volume-low text-cyan-400" : "fa-solid fa-volume-high text-cyan-400");
+      if (masterVolIcon) masterVolIcon.className = iconClass;
+      if (editMuteIcon) editMuteIcon.className = iconClass;
+
+      if (updateInputs) {
+        if (masterVolumeSlider) masterVolumeSlider.value = Math.round(vol * 100);
+        if (editMasterVolumeSlider) editMasterVolumeSlider.value = Math.round(vol * 100);
+      }
+    }
+
+    function toggleMasterMute() {
+      if (APP_STATE.isMuted) {
+        APP_STATE.isMuted = false;
+        if (APP_STATE.masterVolume === 0) APP_STATE.masterVolume = 1.0;
+        setMasterVolume(APP_STATE.masterVolume);
+        showMobileToast(`Audio activado (${masterVolumeDb ? masterVolumeDb.textContent : '0.0 dB'})`);
+      } else {
+        APP_STATE.isMuted = true;
+        setMasterVolume(APP_STATE.masterVolume);
+        showMobileToast("Audio silenciado");
+      }
+    }
+
+    // Inicialización y reactivación del contexto en la primera interacción del usuario (touch o click)
+    const unlockAudioOnGesture = () => {
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
+      if (hiddenVideo && !APP_STATE.isMuted) {
+        hiddenVideo.muted = false;
+        hiddenVideo.removeAttribute('muted');
+        hiddenVideo.volume = APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0;
+      }
+    };
+    window.addEventListener('click', unlockAudioOnGesture, { passive: true });
+    window.addEventListener('touchstart', unlockAudioOnGesture, { passive: true });
+
+    // Listeners interactivos para sliders de volumen
+    safeOn(masterVolumeSlider, 'input', (e) => {
+      unlockAudioOnGesture();
+      setMasterVolume(parseInt(e.target.value) / 100, false);
+      if (editMasterVolumeSlider) editMasterVolumeSlider.value = e.target.value;
+    });
+    safeOn(btnMasterMute, 'click', () => {
+      unlockAudioOnGesture();
+      toggleMasterMute();
+    });
+    safeOn(editMasterVolumeSlider, 'input', (e) => {
+      unlockAudioOnGesture();
+      setMasterVolume(parseInt(e.target.value) / 100, false);
+      if (masterVolumeSlider) masterVolumeSlider.value = e.target.value;
+    });
+    safeOn(editBtnMute, 'click', () => {
+      unlockAudioOnGesture();
+      toggleMasterMute();
+    });
+    safeOn(btnResetMasterVol, 'click', () => {
+      unlockAudioOnGesture();
+      setMasterVolume(1.0, true);
+      showMobileToast("Volumen restablecido a 100% (0.0 dB)");
+    });
+
     function updateAudioPlaybackVolume(currentTime) {
-      if (!audioGainNode || APP_STATE.audioClips.length === 0) return;
+      const trackElem = getAudioTrackElement();
+      if (APP_STATE.audioClips.length === 0) {
+        if (trackElem && !trackElem.paused) trackElem.pause();
+        return;
+      }
       const actClip = APP_STATE.audioClips.find(c => currentTime >= c.start && currentTime <= c.start + c.duration);
-      if (!actClip || actClip.muted) {
-        audioGainNode.gain.value = 0;
+      if (!actClip || actClip.muted || APP_STATE.isMuted) {
+        if (trackElem && !trackElem.paused) trackElem.pause();
         return;
       }
 
       const localTime = currentTime - actClip.start;
-      const baseVol = actClip.volume || 1.0;
+      const baseVol = (actClip.volume !== undefined ? actClip.volume : 1.0) * (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
       let gain = baseVol;
 
       if (actClip.fadeIn > 0 && localTime < actClip.fadeIn) {
@@ -1854,7 +2304,24 @@
         gain = baseVol * (remaining / actClip.fadeOut);
       }
 
-      audioGainNode.gain.value = Math.max(0, Math.min(gain, 2.0));
+      if (trackElem) {
+        trackElem.volume = Math.max(0, Math.min(gain, 1.0));
+        if (actClip.blobUrl && trackElem.src !== actClip.blobUrl && !trackElem.src.endsWith(actClip.blobUrl)) {
+          trackElem.src = actClip.blobUrl;
+        }
+        if (Math.abs(trackElem.currentTime - localTime) > 0.25) {
+          try { trackElem.currentTime = localTime; } catch(e) {}
+        }
+        if (APP_STATE.isPlaying && trackElem.paused) {
+          trackElem.play().catch(() => {});
+        } else if (!APP_STATE.isPlaying && !trackElem.paused) {
+          trackElem.pause();
+        }
+      }
+
+      if (audioGainNode) {
+        audioGainNode.gain.value = Math.max(0, Math.min(gain, 2.0));
+      }
     }
 
     function synthesizeWavMusic(preset = 'cyber') {
@@ -2067,6 +2534,21 @@
       return null;
     }
 
+    function switchVideoSourceIfNeeded(targetSrc) {
+      if (!hiddenVideo || !targetSrc) return;
+      if (hiddenVideo.src !== targetSrc && !hiddenVideo.src.endsWith(targetSrc)) {
+        const wasPlaying = APP_STATE.isPlaying;
+        hiddenVideo.src = targetSrc;
+        hiddenVideo.muted = APP_STATE.isMuted;
+        if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+        hiddenVideo.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
+        hiddenVideo.load();
+        if (wasPlaying) {
+          hiddenVideo.play().catch(() => {});
+        }
+      }
+    }
+
     function syncPlayback(targetTime) {
       if (!APP_STATE.sourceLoaded || !hiddenVideo) return;
       const match = getV1ClipAt(targetTime);
@@ -2074,6 +2556,11 @@
         const clip = match.clip;
         const activeSpeed = clip.speed || 1.0;
         const sourcePos = clip.startInSource + (match.localTime * activeSpeed);
+        const clipSourceDur = clip.sourceDuration || APP_STATE.sourceDuration || 8;
+
+        if (clip.mediaSrc) {
+          switchVideoSourceIfNeeded(clip.mediaSrc);
+        }
         
         if (Math.abs(hiddenVideo.playbackRate - activeSpeed) > 0.05) {
           hiddenVideo.playbackRate = activeSpeed;
@@ -2090,7 +2577,10 @@
 
         if (APP_STATE.activeClipId !== clip.id || Math.abs(hiddenVideo.currentTime - sourcePos) > 0.15) {
           APP_STATE.activeClipId = clip.id;
-          hiddenVideo.currentTime = Math.min(sourcePos, APP_STATE.sourceDuration);
+          hiddenVideo.currentTime = Math.min(sourcePos, clipSourceDur);
+          hiddenVideo.muted = APP_STATE.isMuted;
+          if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+          hiddenVideo.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
         }
       }
     }
@@ -2105,14 +2595,24 @@
           const clip = match.clip;
           const activeSpeed = clip.speed || 1.0;
           const sourcePos = clip.startInSource + (match.localTime * activeSpeed);
+          const clipSourceDur = clip.sourceDuration || APP_STATE.sourceDuration || 8;
           APP_STATE.activeClipId = clip.id;
+
+          if (clip.mediaSrc) {
+            switchVideoSourceIfNeeded(clip.mediaSrc);
+          }
+
           if (Math.abs(hiddenVideo.playbackRate - activeSpeed) > 0.05) {
             hiddenVideo.playbackRate = activeSpeed;
           }
-          hiddenVideo.currentTime = Math.min(sourcePos, APP_STATE.sourceDuration);
+          hiddenVideo.currentTime = Math.min(sourcePos, clipSourceDur);
+          hiddenVideo.muted = APP_STATE.isMuted;
+          if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+          hiddenVideo.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
         }
       }
 
+      updateAudioPlaybackVolume(APP_STATE.currentTime);
       updatePlayheadUI();
       updateTimecodeUI();
       requestAnimationFrame(renderCurrentFrame);
@@ -2138,12 +2638,15 @@
         const speed = clip.speed || 1.0;
         const curVTime = hiddenVideo.currentTime;
 
-        // Comprobar fin de segmento o transición al próximo clip en el corte
+        // Comprobar fin de segmento o transición al próximo clip en el corte continuo
         if (curVTime >= clip.endInSource - 0.03) {
           const nextTime = match.offset + clip.duration;
           if (nextTime >= totalDur) {
             if (APP_STATE.isLooping && totalDur > 0) {
               seekTimeline(0);
+              hiddenVideo.muted = APP_STATE.isMuted;
+              if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+              hiddenVideo.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
               hiddenVideo.play().catch(() => {});
             } else {
               pauseVideo();
@@ -2152,10 +2655,13 @@
             }
           } else {
             seekTimeline(nextTime);
+            hiddenVideo.muted = APP_STATE.isMuted;
+            if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+            hiddenVideo.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
             hiddenVideo.play().catch(() => {});
           }
         } else {
-          // El decodificador avanza fluidamente sin saltos de currentTime
+          // El decodificador avanza fluidamente dentro del clip activo
           const localElapsed = Math.max(0, (curVTime - clip.startInSource) / speed);
           APP_STATE.currentTime = Math.min(match.offset + localElapsed, totalDur);
           updatePlayheadUI();
@@ -2172,6 +2678,7 @@
         }
       }
 
+      updateAudioPlaybackVolume(APP_STATE.currentTime);
       renderCurrentFrame();
 
       // Programar la lectura del siguiente frame decodificado por hardware
@@ -2215,27 +2722,43 @@
       }
       APP_STATE.isPlaying = true;
       
-      getAudioContext();
+      const ctx = getAudioContext();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume().catch(() => {});
+      }
       if (playIcon) playIcon.className = "fa-solid fa-pause";
       if (screenPlayIcon) screenPlayIcon.className = "fa-solid fa-pause text-base ml-0 text-cyan-400";
       
       const match = getV1ClipAt(APP_STATE.currentTime);
       if (match && hiddenVideo) {
         const clip = match.clip;
+        if (clip.mediaSrc) {
+          switchVideoSourceIfNeeded(clip.mediaSrc);
+        }
         const targetRate = clip.speed || 1.0;
         if (Math.abs(hiddenVideo.playbackRate - targetRate) > 0.05) {
           hiddenVideo.playbackRate = targetRate;
         }
         const sourcePos = clip.startInSource + (match.localTime * targetRate);
+        const clipSourceDur = clip.sourceDuration || APP_STATE.sourceDuration || 8;
         if (Math.abs(hiddenVideo.currentTime - sourcePos) > 0.15) {
-          hiddenVideo.currentTime = sourcePos;
+          hiddenVideo.currentTime = Math.min(sourcePos, clipSourceDur);
         }
       }
 
       if (hiddenVideo) {
-        hiddenVideo.play().catch(() => {});
+        hiddenVideo.muted = APP_STATE.isMuted;
+        if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
+        hiddenVideo.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
+        const playPromise = hiddenVideo.play();
+        if (playPromise !== undefined) {
+          playPromise.catch((err) => {
+            console.warn("Video play error / autoplay policy:", err);
+          });
+        }
       }
       
+      updateAudioPlaybackVolume(APP_STATE.currentTime);
       lastTimeLoop = performance.now();
 
       if (hasRVFC && hiddenVideo) {
@@ -2253,6 +2776,10 @@
           hiddenVideo.cancelVideoFrameCallback(videoCallbackHandle);
           videoCallbackHandle = null;
         }
+      }
+      const trackElem = getAudioTrackElement();
+      if (trackElem && !trackElem.paused) {
+        trackElem.pause();
       }
       if (rafPlaybackHandle !== null) {
         cancelAnimationFrame(rafPlaybackHandle);
@@ -2315,29 +2842,43 @@
         videoTrack.innerHTML = '';
         let accumX = 0;
 
+        if (APP_STATE.clipsV1.length === 0) {
+          const emptyV1Btn = document.createElement('button');
+          emptyV1Btn.className = 'touch-btn absolute z-25 left-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-cyan-950/90 hover:bg-cyan-400 hover:text-black border border-cyan-400 text-cyan-300 flex items-center justify-center text-xs font-black shadow-lg transition-all active:scale-125';
+          emptyV1Btn.title = 'Añadir primer clip a Pista V1';
+          emptyV1Btn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+          safeOn(emptyV1Btn, 'click', (e) => {
+            e.stopPropagation();
+            openInsertBottomSheet({ trackType: 'v1', insertIndex: 0, insertTime: 0, label: 'Inicio de Pista V1' });
+          });
+          videoTrack.appendChild(emptyV1Btn);
+        }
+
         APP_STATE.clipsV1.forEach((clip, idx) => {
           const clipWidth = clip.duration * pps;
           const isSelected = APP_STATE.selectedTrackType === 'v1' && APP_STATE.selectedItemId === clip.id;
+          const clipGrad = clip.grad || clip.color || 'from-cyan-600 to-blue-700';
+          const clipName = clip.name || `Clip #${idx + 1}`;
           
           const clipEl = document.createElement('div');
-          clipEl.className = `track-item touch-btn absolute top-1 bottom-1 rounded-lg bg-gradient-to-r ${clip.grad} border border-white/20 px-2 py-0.5 flex flex-col justify-between overflow-hidden cursor-pointer shadow ${isSelected ? 'is-active' : ''}`;
+          clipEl.className = `track-item touch-btn absolute top-1 bottom-1 rounded-lg bg-gradient-to-r ${clipGrad} border border-white/20 px-2 py-0.5 flex flex-col justify-between overflow-hidden cursor-pointer shadow ${isSelected ? 'is-active ring-2 ring-cyan-400 ring-offset-1 ring-offset-[#08090f]' : ''}`;
           clipEl.style.left = `${accumX}px`;
           clipEl.style.width = `${Math.max(clipWidth, 26)}px`;
 
           const speedBadge = clip.speed && clip.speed !== 1.0 ? `<span class="font-mono text-[8px] bg-amber-400 text-black px-1 rounded font-extrabold mr-0.5">${clip.speed}x</span>` : '';
 
           clipEl.innerHTML = `
-            <div class="flex items-center justify-between text-[9px] font-bold text-white truncate w-full gap-1">
-              <span class="truncate">#${idx + 1}</span>
-              <div class="flex items-center gap-1 shrink-0">
+            <div class="flex items-center justify-between text-[9px] font-bold text-white truncate w-full gap-1 z-10 pointer-events-none">
+              <span class="truncate" title="${clipName}">#${idx + 1} ${clipName}</span>
+              <div class="flex items-center gap-1 shrink-0 pointer-events-auto">
                 ${speedBadge}
-                <span class="font-mono text-[8px] bg-black/50 px-1 py-0.2 rounded text-cyan-300">${clip.duration.toFixed(1)}s</span>
+                <span class="clip-dur-badge font-mono text-[8px] bg-black/50 px-1 py-0.2 rounded text-cyan-300 pointer-events-none">${clip.duration.toFixed(1)}s</span>
                 <button class="clip-del-btn touch-btn w-4 h-4 rounded bg-rose-600/90 text-white flex items-center justify-center text-[8px] shadow" title="Eliminar clip">
                   <i class="fa-solid fa-xmark"></i>
                 </button>
               </div>
             </div>
-            <div class="h-1 flex items-end gap-0.5 opacity-40 overflow-hidden pointer-events-none">
+            <div class="h-1 flex items-end gap-0.5 opacity-40 overflow-hidden pointer-events-none z-10">
               ${Array.from({length: Math.min(Math.floor(clipWidth / 5), 24)}).map((_, i) => `<div class="w-0.5 bg-white rounded-full" style="height: ${(i % 4) + 2}px"></div>`).join('')}
             </div>
           `;
@@ -2348,21 +2889,72 @@
             deleteV1Clip(clip.id);
           });
 
+          const durBadge = clipEl.querySelector('.clip-dur-badge');
+
+          // Tiradores de arrastre interactivo (drag handles) para recortar In/Out en el timeline
+          if (isSelected) {
+            const leftHandle = document.createElement('div');
+            leftHandle.className = 'trim-handle trim-handle-left absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-cyan-400 to-cyan-500 text-black flex items-center justify-center cursor-ew-resize z-30 touch-none shadow-lg select-none hover:brightness-110 active:brightness-125';
+            leftHandle.title = 'Arrastra para recortar punto de inicio (In)';
+            leftHandle.innerHTML = '<i class="fa-solid fa-chevron-left text-[8px] pointer-events-none opacity-90 font-bold"></i>';
+
+            const rightHandle = document.createElement('div');
+            rightHandle.className = 'trim-handle trim-handle-right absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-amber-400 to-amber-500 text-black flex items-center justify-center cursor-ew-resize z-30 touch-none shadow-lg select-none hover:brightness-110 active:brightness-125';
+            rightHandle.title = 'Arrastra para recortar punto final (Out)';
+            rightHandle.innerHTML = '<i class="fa-solid fa-chevron-right text-[8px] pointer-events-none opacity-90 font-bold"></i>';
+
+            attachTrimHandleEvents(leftHandle, clip, 'in', clipEl, durBadge);
+            attachTrimHandleEvents(rightHandle, clip, 'out', clipEl, durBadge);
+
+            clipEl.appendChild(leftHandle);
+            clipEl.appendChild(rightHandle);
+          }
+
           safeOn(clipEl, 'click', (e) => {
             e.stopPropagation();
             APP_STATE.selectedTrackType = 'v1';
             APP_STATE.selectedItemId = clip.id;
+            if (clip.mediaSrc) {
+              switchVideoSourceIfNeeded(clip.mediaSrc);
+            }
             renderTimeline();
             updateClipActionLabels();
+            updatePrecisionTrimUI();
           });
 
           videoTrack.appendChild(clipEl);
+
+          // Botón circular '+' de inserción Ripple entre segmentos o al final
+          const insertBtn = document.createElement('button');
+          insertBtn.className = 'touch-btn v1-insert-btn absolute z-25 w-5 h-5 rounded-full bg-[#131726] hover:bg-cyan-400 hover:text-black border border-cyan-400/80 text-cyan-300 flex items-center justify-center text-[9px] font-black shadow-lg transition-transform active:scale-125';
+          if (idx < APP_STATE.clipsV1.length - 1) {
+            insertBtn.style.top = '4px';
+            insertBtn.style.left = `${accumX + clipWidth}px`;
+            insertBtn.style.transform = 'translateX(-50%)';
+            insertBtn.title = `Insertar medio entre Clip #${idx + 1} y #${idx + 2} (Ripple)`;
+          } else {
+            insertBtn.style.top = '50%';
+            insertBtn.style.left = `${accumX + clipWidth + 14}px`;
+            insertBtn.style.transform = 'translate(-50%, -50%)';
+            insertBtn.title = 'Insertar medio al final de Pista V1 (Ripple)';
+          }
+          insertBtn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+          safeOn(insertBtn, 'click', (e) => {
+            e.stopPropagation();
+            openInsertBottomSheet({
+              trackType: 'v1',
+              insertIndex: idx + 1,
+              insertTime: accumX + clipWidth,
+              label: idx < APP_STATE.clipsV1.length - 1 ? `Entre Clip #${idx + 1} y #${idx + 2}` : 'Final de Pista V1'
+            });
+          });
+          videoTrack.appendChild(insertBtn);
 
           // Icono interactivo de Transición
           if (idx < APP_STATE.clipsV1.length - 1) {
             const transBtn = document.createElement('button');
             const isTransActive = clip.transition && clip.transition !== 'none';
-            transBtn.className = `touch-btn absolute top-1/2 -translate-y-1/2 -translate-x-1/2 z-20 w-6 h-6 rounded-md flex items-center justify-center border shadow-md transition-all ${isTransActive ? 'bg-[#0b0e18] border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(0,240,255,0.45)]' : 'bg-[#141624]/90 border-gray-600/60 text-gray-400 hover:border-gray-400'}`;
+            transBtn.className = `touch-btn absolute bottom-1 -translate-x-1/2 z-20 w-5 h-5 rounded-md flex items-center justify-center border shadow-md transition-all ${isTransActive ? 'bg-[#0b0e18] border-cyan-400 text-cyan-300 shadow-[0_0_10px_rgba(0,240,255,0.45)]' : 'bg-[#141624]/90 border-gray-600/60 text-gray-400 hover:border-gray-400'}`;
             transBtn.style.left = `${accumX + clipWidth}px`;
             transBtn.title = `Transición hacia Clip #${idx + 2}`;
 
@@ -2387,9 +2979,12 @@
       // 3. PISTA V2 (SUPERPOSICIÓN PiP / B-ROLL)
       if (pipTrack) {
         pipTrack.innerHTML = '';
+        let maxV2End = 0;
         APP_STATE.clipsV2.forEach(pip => {
           const left = pip.start * pps;
           const width = pip.duration * pps;
+          const clipEnd = pip.start + pip.duration;
+          if (clipEnd > maxV2End) maxV2End = clipEnd;
           const isSelected = APP_STATE.selectedTrackType === 'v2' && APP_STATE.selectedItemId === pip.id;
 
           const pipEl = document.createElement('div');
@@ -2420,15 +3015,50 @@
           });
 
           pipTrack.appendChild(pipEl);
+
+          // Botón circular '+' después de este segmento PiP
+          const insertPipBtn = document.createElement('button');
+          insertPipBtn.className = 'touch-btn absolute z-25 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-[#1c142e] hover:bg-purple-400 hover:text-black border border-purple-400/80 text-purple-300 flex items-center justify-center text-[8px] font-black shadow-md transition-transform active:scale-125';
+          insertPipBtn.style.left = `${clipEnd * pps + 8}px`;
+          insertPipBtn.title = `Insertar PiP tras "${pip.name}" (Ripple)`;
+          insertPipBtn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+          safeOn(insertPipBtn, 'click', (e) => {
+            e.stopPropagation();
+            openInsertBottomSheet({
+              trackType: 'v2',
+              insertTime: clipEnd,
+              label: `Superposición tras "${pip.name}"`
+            });
+          });
+          pipTrack.appendChild(insertPipBtn);
         });
+
+        // Botón circular '+' al final de la pista V2 (o inicio si está vacía)
+        const finalV2Btn = document.createElement('button');
+        finalV2Btn.className = 'touch-btn absolute z-25 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-[#1c142e] hover:bg-purple-400 hover:text-black border border-purple-400/80 text-purple-300 flex items-center justify-center text-[8px] font-black shadow-md transition-transform active:scale-125';
+        finalV2Btn.style.left = `${APP_STATE.clipsV2.length > 0 ? (maxV2End * pps + 26) : 6}px`;
+        finalV2Btn.title = 'Insertar al final de PiP V2';
+        finalV2Btn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+        safeOn(finalV2Btn, 'click', (e) => {
+          e.stopPropagation();
+          openInsertBottomSheet({
+            trackType: 'v2',
+            insertTime: maxV2End,
+            label: APP_STATE.clipsV2.length > 0 ? `Final de V2 (${formatTime(maxV2End)})` : 'Inicio de V2'
+          });
+        });
+        pipTrack.appendChild(finalV2Btn);
       }
 
       // 4. PISTA TEXTO / TÍTULOS
       if (textTrack) {
         textTrack.innerHTML = '';
+        let maxTxtEnd = 0;
         APP_STATE.textItems.forEach(txt => {
           const left = txt.start * pps;
           const width = txt.duration * pps;
+          const clipEnd = txt.start + txt.duration;
+          if (clipEnd > maxTxtEnd) maxTxtEnd = clipEnd;
           const isSelected = APP_STATE.selectedTrackType === 'text' && APP_STATE.selectedItemId === txt.id;
 
           const txtEl = document.createElement('div');
@@ -2459,15 +3089,50 @@
           });
 
           textTrack.appendChild(txtEl);
+
+          // Botón circular '+' después de este segmento de texto
+          const insertTxtBtn = document.createElement('button');
+          insertTxtBtn.className = 'touch-btn absolute z-25 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-[#291e10] hover:bg-amber-400 hover:text-black border border-amber-400/80 text-amber-300 flex items-center justify-center text-[8px] font-black shadow-md transition-transform active:scale-125';
+          insertTxtBtn.style.left = `${clipEnd * pps + 8}px`;
+          insertTxtBtn.title = `Insertar Título tras "${txt.text}" (Ripple)`;
+          insertTxtBtn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+          safeOn(insertTxtBtn, 'click', (e) => {
+            e.stopPropagation();
+            openInsertBottomSheet({
+              trackType: 'text',
+              insertTime: clipEnd,
+              label: `Título tras "${txt.text}"`
+            });
+          });
+          textTrack.appendChild(insertTxtBtn);
         });
+
+        // Botón circular '+' al final de la pista de texto
+        const finalTxtBtn = document.createElement('button');
+        finalTxtBtn.className = 'touch-btn absolute z-25 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-[#291e10] hover:bg-amber-400 hover:text-black border border-amber-400/80 text-amber-300 flex items-center justify-center text-[8px] font-black shadow-md transition-transform active:scale-125';
+        finalTxtBtn.style.left = `${APP_STATE.textItems.length > 0 ? (maxTxtEnd * pps + 26) : 6}px`;
+        finalTxtBtn.title = 'Insertar al final de la pista de texto';
+        finalTxtBtn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+        safeOn(finalTxtBtn, 'click', (e) => {
+          e.stopPropagation();
+          openInsertBottomSheet({
+            trackType: 'text',
+            insertTime: maxTxtEnd,
+            label: APP_STATE.textItems.length > 0 ? `Final de Texto (${formatTime(maxTxtEnd)})` : 'Inicio de Texto'
+          });
+        });
+        textTrack.appendChild(finalTxtBtn);
       }
 
       // 5. PISTA AUDIO (A1)
       if (audioTrack) {
         audioTrack.innerHTML = '';
+        let maxAudEnd = 0;
         APP_STATE.audioClips.forEach(aud => {
           const left = aud.start * pps;
           const width = aud.duration * pps;
+          const clipEnd = aud.start + aud.duration;
+          if (clipEnd > maxAudEnd) maxAudEnd = clipEnd;
           const isSelected = APP_STATE.selectedTrackType === 'audio' && APP_STATE.selectedItemId === aud.id;
 
           const audEl = document.createElement('div');
@@ -2498,7 +3163,39 @@
           });
 
           audioTrack.appendChild(audEl);
+
+          // Botón circular '+' después de este segmento de audio
+          const insertAudBtn = document.createElement('button');
+          insertAudBtn.className = 'touch-btn absolute z-25 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-[#102919] hover:bg-emerald-400 hover:text-black border border-emerald-400/80 text-emerald-300 flex items-center justify-center text-[8px] font-black shadow-md transition-transform active:scale-125';
+          insertAudBtn.style.left = `${clipEnd * pps + 8}px`;
+          insertAudBtn.title = `Insertar Audio tras "${aud.name}" (Ripple)`;
+          insertAudBtn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+          safeOn(insertAudBtn, 'click', (e) => {
+            e.stopPropagation();
+            openInsertBottomSheet({
+              trackType: 'audio',
+              insertTime: clipEnd,
+              label: `Audio tras "${aud.name}"`
+            });
+          });
+          audioTrack.appendChild(insertAudBtn);
         });
+
+        // Botón circular '+' al final de la pista de audio
+        const finalAudBtn = document.createElement('button');
+        finalAudBtn.className = 'touch-btn absolute z-25 top-1/2 -translate-y-1/2 w-4.5 h-4.5 rounded-full bg-[#102919] hover:bg-emerald-400 hover:text-black border border-emerald-400/80 text-emerald-300 flex items-center justify-center text-[8px] font-black shadow-md transition-transform active:scale-125';
+        finalAudBtn.style.left = `${APP_STATE.audioClips.length > 0 ? (maxAudEnd * pps + 26) : 6}px`;
+        finalAudBtn.title = 'Insertar al final de la pista de audio';
+        finalAudBtn.innerHTML = '<i class="fa-solid fa-plus pointer-events-none"></i>';
+        safeOn(finalAudBtn, 'click', (e) => {
+          e.stopPropagation();
+          openInsertBottomSheet({
+            trackType: 'audio',
+            insertTime: maxAudEnd,
+            label: APP_STATE.audioClips.length > 0 ? `Final de Audio (${formatTime(maxAudEnd)})` : 'Inicio de Audio'
+          });
+        });
+        audioTrack.appendChild(finalAudBtn);
       }
 
       updatePlayheadUI();
@@ -2521,6 +3218,603 @@
             btn.className = "clip-spd-btn touch-btn h-7 bg-[#1a1d2c] border border-[#272c3e] rounded text-[10px] font-mono text-gray-300";
           }
         });
+      }
+      updatePrecisionTrimUI();
+    }
+
+    /* ========================================================
+       9.1. MODAL BOTTOM SHEET & INSERCIÓN MAGNÉTICA RIPPLE
+       ======================================================== */
+    async function openInsertBottomSheet(context) {
+      currentInsertContext = context;
+      if (!insertBottomSheet) return;
+
+      const title = document.getElementById('insertModalTitle');
+      const subtitle = document.getElementById('insertModalSubtitle');
+      const iconBox = document.getElementById('insertModalIconBox');
+      const btnNewTitle = document.getElementById('btnInsertNewTitle');
+      const btnSynthAudio = document.getElementById('btnInsertSynthAudio');
+      const listContainer = document.getElementById('insertLibraryMediaList');
+      const mainOptions = document.getElementById('insertMainOptionsContainer');
+      const fileInput = document.getElementById('insertModalFileInput');
+
+      if (listContainer) listContainer.classList.add('hidden');
+      if (mainOptions) mainOptions.classList.remove('hidden');
+
+      let trackName = "Pista V1 Principal";
+      let accept = "video/*";
+      let icon = '<i class="fa-solid fa-film"></i>';
+
+      if (context.trackType === 'v1') {
+        trackName = "Pista Principal (V1)";
+        accept = "video/*";
+        icon = '<i class="fa-solid fa-film"></i>';
+        if (btnNewTitle) btnNewTitle.classList.add('hidden');
+        if (btnSynthAudio) btnSynthAudio.classList.add('hidden');
+      } else if (context.trackType === 'v2') {
+        trackName = "Superposición PiP (V2)";
+        accept = "video/*,image/*";
+        icon = '<i class="fa-solid fa-layer-group text-purple-400"></i>';
+        if (btnNewTitle) btnNewTitle.classList.add('hidden');
+        if (btnSynthAudio) btnSynthAudio.classList.add('hidden');
+      } else if (context.trackType === 'text') {
+        trackName = "Capa de Texto (TXT)";
+        accept = "";
+        icon = '<i class="fa-solid fa-font text-amber-400"></i>';
+        if (btnNewTitle) btnNewTitle.classList.remove('hidden');
+        if (btnSynthAudio) btnSynthAudio.classList.add('hidden');
+      } else if (context.trackType === 'audio') {
+        trackName = "Pista de Audio (A1)";
+        accept = "audio/*,video/*";
+        icon = '<i class="fa-solid fa-music text-emerald-400"></i>';
+        if (btnNewTitle) btnNewTitle.classList.add('hidden');
+        if (btnSynthAudio) btnSynthAudio.classList.remove('hidden');
+      }
+
+      if (fileInput) fileInput.accept = accept;
+      if (title) title.textContent = `Insertar en ${trackName}`;
+      if (subtitle) subtitle.textContent = `${context.label || 'Posición Ripple'} • Desplazamiento Magnético`;
+      if (iconBox) iconBox.innerHTML = icon;
+
+      const libItems = await dbGetAllMediaItems();
+      const badge = document.getElementById('insertLibBadge');
+      if (badge) {
+        badge.textContent = `${libItems.length} medio${libItems.length === 1 ? '' : 's'} disponible${libItems.length === 1 ? '' : 's'} en biblioteca`;
+      }
+
+      insertBottomSheet.classList.remove('hidden');
+    }
+
+    function closeInsertBottomSheet() {
+      if (insertBottomSheet) insertBottomSheet.classList.add('hidden');
+      currentInsertContext = null;
+    }
+
+    async function showInsertLibraryMediaList() {
+      const mainOptions = document.getElementById('insertMainOptionsContainer');
+      const listContainer = document.getElementById('insertLibraryMediaList');
+      const itemsContainer = document.getElementById('insertLibraryItemsContainer');
+      if (!itemsContainer || !currentInsertContext) return;
+
+      const allItems = await dbGetAllMediaItems();
+      let filtered = allItems;
+      if (currentInsertContext.trackType === 'v1') {
+        filtered = allItems.filter(i => i.type === 'video');
+      } else if (currentInsertContext.trackType === 'v2') {
+        filtered = allItems.filter(i => i.type === 'video' || i.type === 'image');
+      } else if (currentInsertContext.trackType === 'audio') {
+        filtered = allItems.filter(i => i.type === 'audio' || i.type === 'video');
+      }
+
+      itemsContainer.innerHTML = '';
+      if (filtered.length === 0) {
+        itemsContainer.innerHTML = `
+          <div class="p-3 text-center bg-[#0d0f18] rounded-xl border border-[#1e2233] space-y-1">
+            <p class="text-[10px] text-gray-400">No hay archivos compatibles en la biblioteca offline.</p>
+            <p class="text-[9px] text-cyan-400">Usa "Importar Nuevo Archivo" para agregar desde tu dispositivo.</p>
+          </div>
+        `;
+      } else {
+        filtered.forEach(it => {
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between p-2 bg-[#171a27] hover:bg-[#202538] border border-[#262c3e] rounded-xl cursor-pointer transition-all active:scale-[0.99]";
+          
+          let icon = '<i class="fa-solid fa-film text-cyan-400"></i>';
+          if (it.type === 'image') icon = '<i class="fa-solid fa-image text-purple-400"></i>';
+          if (it.type === 'audio') icon = '<i class="fa-solid fa-music text-emerald-400"></i>';
+
+          row.innerHTML = `
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-10 h-7 bg-black rounded border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
+                ${it.thumbnail ? `<img src="${it.thumbnail}" class="w-full h-full object-cover">` : `<span class="text-xs">${icon}</span>`}
+              </div>
+              <div class="min-w-0">
+                <span class="text-[10px] font-bold text-white block truncate max-w-[170px]">${it.name}</span>
+                <span class="text-[8px] font-mono text-gray-400">${formatTime(it.duration)} • ${it.type}</span>
+              </div>
+            </div>
+            <button class="touch-btn h-6 px-2.5 bg-cyan-500 hover:bg-cyan-400 text-black font-extrabold text-[9px] rounded-lg shrink-0 flex items-center gap-1 shadow">
+              <i class="fa-solid fa-plus text-[8px]"></i> Insertar
+            </button>
+          `;
+          safeOn(row, 'click', async () => {
+            await executeRippleInsertWithMediaItem(it, currentInsertContext);
+          });
+          itemsContainer.appendChild(row);
+        });
+      }
+
+      if (mainOptions) mainOptions.classList.add('hidden');
+      if (listContainer) listContainer.classList.remove('hidden');
+    }
+
+    async function executeRippleInsertWithMediaItem(item, ctx) {
+      if (!ctx || !item) return;
+      let blob = item.blob || null;
+      if (!blob && item.id) {
+        try {
+          blob = await dbGetMediaBlob(item.id);
+        } catch (e) {
+          blob = null;
+        }
+      }
+      if (blob && !item.blob) item.blob = blob;
+      const blobUrl = blob ? URL.createObjectURL(blob) : (item.mediaSrc || item.thumbnail || '');
+      item.mediaSrc = blobUrl;
+      const dur = Number((item.duration || 4.0).toFixed(2));
+
+      if (ctx.trackType === 'v1') {
+        insertItemToV1At(item, ctx.insertIndex, ctx.insertTime);
+      } else if (ctx.trackType === 'v2') {
+        const insTime = Number((ctx.insertTime || 0).toFixed(2));
+        pushHistoryState(`Insertar "${item.name}" en PiP V2 (Ripple)`);
+        // Ripple: desplazar hacia adelante todos los clips posteriores
+        APP_STATE.clipsV2.forEach(pip => {
+          if (pip.start >= insTime - 0.01) {
+            pip.start += dur;
+          }
+        });
+        const newPip = {
+          id: 'pip-' + Date.now(),
+          name: item.name || 'PiP',
+          start: insTime,
+          duration: dur,
+          scale: 0.35,
+          position: 'bottom-right',
+          opacity: 0.95,
+          thumbUrl: item.thumbnail || blobUrl,
+          blobUrl: blobUrl
+        };
+        APP_STATE.clipsV2.push(newPip);
+        APP_STATE.clipsV2.sort((a, b) => a.start - b.start);
+        APP_STATE.selectedTrackType = 'v2';
+        APP_STATE.selectedItemId = newPip.id;
+        renderTimeline();
+        seekTimeline(insTime);
+        showMobileToast(`"${newPip.name}" insertado con Ripple en V2`);
+      } else if (ctx.trackType === 'audio') {
+        const insTime = Number((ctx.insertTime || 0).toFixed(2));
+        pushHistoryState(`Insertar "${item.name}" en A1 (Ripple)`);
+        // Ripple: desplazar hacia adelante todos los audios posteriores
+        APP_STATE.audioClips.forEach(aud => {
+          if (aud.start >= insTime - 0.01) {
+            aud.start += dur;
+          }
+        });
+        const newAud = {
+          id: 'aud-' + Date.now(),
+          name: item.name || 'Audio',
+          start: insTime,
+          duration: dur,
+          volume: 1.0,
+          fadeIn: 0.5,
+          fadeOut: 1.0,
+          muted: false,
+          blobUrl: blobUrl
+        };
+        APP_STATE.audioClips.push(newAud);
+        APP_STATE.audioClips.sort((a, b) => a.start - b.start);
+        APP_STATE.selectedTrackType = 'audio';
+        APP_STATE.selectedItemId = newAud.id;
+        renderTimeline();
+        seekTimeline(insTime);
+        showMobileToast(`"${newAud.name}" insertado con Ripple en A1`);
+      }
+      closeInsertBottomSheet();
+    }
+
+    function insertItemToV1At(item, insertIndex, insertTime) {
+      pushHistoryState(`Insertar "${item.name}" en V1 (Ripple)`);
+      const dur = Number((item.duration || 6).toFixed(2));
+      const blobUrl = item.blob ? URL.createObjectURL(item.blob) : (item.mediaSrc || '');
+      const gradColor = V1_CLIP_GRADIENTS[insertIndex % V1_CLIP_GRADIENTS.length];
+
+      const newClip = {
+        id: 'clip-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        mediaId: String(item.id || ('media-' + Date.now())),
+        mediaSrc: blobUrl,
+        name: item.name || `Clip #${(insertIndex || 0) + 1}`,
+        duration: dur,
+        inPoint: 0,
+        outPoint: dur,
+        startInSource: 0,
+        endInSource: dur,
+        speed: 1.0,
+        color: gradColor,
+        grad: gradColor,
+        transition: 'none',
+        transitionDuration: 0.6
+      };
+
+      if (!APP_STATE.sourceLoaded && (item.type === 'video' || blobUrl)) {
+        APP_STATE.sourceLoaded = true;
+        APP_STATE.sourceDuration = dur;
+        APP_STATE.sourceUrl = blobUrl;
+        APP_STATE.sourceName = item.name;
+        if (hiddenVideo) {
+          hiddenVideo.src = blobUrl;
+          hiddenVideo.currentTime = 0;
+        }
+      }
+
+      const idx = (insertIndex !== undefined && insertIndex >= 0 && insertIndex <= APP_STATE.clipsV1.length)
+        ? insertIndex
+        : APP_STATE.clipsV1.length;
+
+      APP_STATE.clipsV1.splice(idx, 0, newClip);
+      APP_STATE.selectedTrackType = 'v1';
+      APP_STATE.selectedItemId = newClip.id;
+
+      renderTimeline();
+      updateClipActionLabels();
+      updatePrecisionTrimUI();
+      seekTimeline(insertTime !== undefined ? insertTime : 0);
+      showMobileToast(`"${newClip.name}" insertado con Ripple en V1`);
+    }
+
+    function executeRippleInsertWithText(ctx) {
+      if (!ctx) return;
+      const insTime = Number((ctx.insertTime || 0).toFixed(2));
+      const dur = 3.0;
+      pushHistoryState("Nuevo Bloque de Título (Ripple)");
+      // Ripple: empujar hacia adelante los títulos posteriores
+      APP_STATE.textItems.forEach(txt => {
+        if (txt.start >= insTime - 0.01) {
+          txt.start += dur;
+        }
+      });
+      const newTxt = {
+        id: 'txt-' + Date.now(),
+        text: 'Nuevo Título',
+        start: insTime,
+        duration: dur,
+        font: "'Plus Jakarta Sans', sans-serif",
+        color: '#00f0ff',
+        position: 'bottom',
+        stroke: true,
+        bg: true
+      };
+      APP_STATE.textItems.push(newTxt);
+      APP_STATE.textItems.sort((a, b) => a.start - b.start);
+      APP_STATE.selectedTrackType = 'text';
+      APP_STATE.selectedItemId = newTxt.id;
+      renderTimeline();
+      renderCurrentFrame();
+      seekTimeline(insTime);
+      showMobileToast("Título insertado con Ripple");
+      closeInsertBottomSheet();
+    }
+
+    function executeRippleInsertWithSynth(ctx) {
+      if (!ctx) return;
+      const insTime = Number((ctx.insertTime || 0).toFixed(2));
+      const dur = 6.0;
+      const wavBlob = synthesizeWavMusic('cyber');
+      const blobUrl = URL.createObjectURL(wavBlob);
+      pushHistoryState("Insertar Synth Beat en A1 (Ripple)");
+      // Ripple: empujar audios posteriores
+      APP_STATE.audioClips.forEach(aud => {
+        if (aud.start >= insTime - 0.01) {
+          aud.start += dur;
+        }
+      });
+      const newAud = {
+        id: 'aud-' + Date.now(),
+        name: `Cyber Synth Beat`,
+        start: insTime,
+        duration: dur,
+        volume: 1.0,
+        fadeIn: 0.5,
+        fadeOut: 1.0,
+        muted: false,
+        blobUrl: blobUrl
+      };
+      APP_STATE.audioClips.push(newAud);
+      APP_STATE.audioClips.sort((a, b) => a.start - b.start);
+      APP_STATE.selectedTrackType = 'audio';
+      APP_STATE.selectedItemId = newAud.id;
+      renderTimeline();
+      seekTimeline(insTime);
+      showMobileToast("Música sintetizada insertada con Ripple en A1");
+      closeInsertBottomSheet();
+    }
+
+    async function handleInsertFileInputChange(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !currentInsertContext) return;
+      showMobileToast("Importando archivo con desplazamiento magnético...");
+
+      const isVideo = file.type.startsWith('video');
+      const isImage = file.type.startsWith('image');
+      const isAudio = file.type.startsWith('audio');
+      const url = URL.createObjectURL(file);
+
+      if (isVideo) {
+        const tempVideo = document.createElement('video');
+        tempVideo.src = url;
+        tempVideo.playsInline = true;
+        tempVideo.muted = true;
+        tempVideo.onloadeddata = async () => {
+          const tc = document.createElement('canvas');
+          tc.width = 160; tc.height = 90;
+          tc.getContext('2d').drawImage(tempVideo, 0, 0, 160, 90);
+          const thumb = tc.toDataURL('image/jpeg', 0.7);
+          const dur = Number((tempVideo.duration || 6).toFixed(2));
+
+          const item = {
+            id: 'media-' + Date.now(),
+            name: file.name,
+            type: 'video',
+            blob: file,
+            thumbnail: thumb,
+            duration: dur,
+            sizeStr: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+            dateStr: new Date().toLocaleDateString()
+          };
+          await dbSaveMediaItem(item);
+          await renderLibraryUI();
+          await executeRippleInsertWithMediaItem(item, currentInsertContext);
+          URL.revokeObjectURL(url);
+        };
+      } else if (isImage) {
+        const img = new Image();
+        img.src = url;
+        img.onload = async () => {
+          const tc = document.createElement('canvas');
+          tc.width = 160; tc.height = 90;
+          tc.getContext('2d').drawImage(img, 0, 0, 160, 90);
+          const thumb = tc.toDataURL('image/jpeg', 0.8);
+
+          const item = {
+            id: 'media-' + Date.now(),
+            name: file.name,
+            type: 'image',
+            blob: file,
+            thumbnail: thumb,
+            duration: 4.0,
+            sizeStr: `${(file.size / 1024).toFixed(0)} KB`,
+            dateStr: new Date().toLocaleDateString()
+          };
+          await dbSaveMediaItem(item);
+          await renderLibraryUI();
+          await executeRippleInsertWithMediaItem(item, currentInsertContext);
+          URL.revokeObjectURL(url);
+        };
+      } else if (isAudio) {
+        const item = {
+          id: 'media-' + Date.now(),
+          name: file.name,
+          type: 'audio',
+          blob: file,
+          thumbnail: '',
+          duration: 6.0,
+          sizeStr: `${(file.size / 1024).toFixed(0)} KB`,
+          dateStr: new Date().toLocaleDateString()
+        };
+        await dbSaveMediaItem(item);
+        await renderLibraryUI();
+        await executeRippleInsertWithMediaItem(item, currentInsertContext);
+        URL.revokeObjectURL(url);
+      }
+      e.target.value = '';
+    }
+
+    // Listeners del modal Bottom Sheet
+    safeOn(closeInsertBottomSheetBtn, 'click', () => closeInsertBottomSheet());
+    safeOn(btnCancelInsertSheet, 'click', () => closeInsertBottomSheet());
+    safeOn(btnInsertFromLibrary, 'click', () => showInsertLibraryMediaList());
+    safeOn(btnBackToInsertOptions, 'click', () => {
+      const mainOptions = document.getElementById('insertMainOptionsContainer');
+      const listContainer = document.getElementById('insertLibraryMediaList');
+      if (mainOptions) mainOptions.classList.remove('hidden');
+      if (listContainer) listContainer.classList.add('hidden');
+    });
+    safeOn(btnInsertImportNew, 'click', () => {
+      if (insertModalFileInput) insertModalFileInput.click();
+    });
+    safeOn(insertModalFileInput, 'change', handleInsertFileInputChange);
+    safeOn(btnInsertNewTitle, 'click', () => executeRippleInsertWithText(currentInsertContext));
+    safeOn(btnInsertSynthAudio, 'click', () => executeRippleInsertWithSynth(currentInsertContext));
+
+    /* ========================================================
+       10. TIRADORES DE ARRASTRE Y RECORTE DE PRECISIÓN EN TIMELINE
+       ======================================================== */
+    function attachTrimHandleEvents(handleEl, clip, type, clipEl, durBadge) {
+      handleEl.addEventListener('pointerdown', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        try { handleEl.setPointerCapture(e.pointerId); } catch(err) {}
+
+        const startPointerX = e.clientX;
+        const initialStart = clip.startInSource;
+        const initialEnd = clip.endInSource;
+        const speed = clip.speed || 1.0;
+        const maxSourceDur = clip.sourceDuration || APP_STATE.sourceDuration || Math.max(initialEnd, 8);
+        let didChange = false;
+
+        // Tooltip flotante indicador de tiempo en tiempo real
+        const tooltip = document.createElement('div');
+        tooltip.className = `trim-floating-tooltip ${type === 'out' ? 'is-out' : ''}`;
+        tooltip.textContent = type === 'in' 
+          ? `In: ${clip.startInSource.toFixed(2)}s | Dur: ${clip.duration.toFixed(2)}s`
+          : `Fin: ${clip.endInSource.toFixed(2)}s | Dur: ${clip.duration.toFixed(2)}s`;
+        handleEl.appendChild(tooltip);
+
+        const onPointerMove = (ev) => {
+          const pps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+          const deltaX = ev.clientX - startPointerX;
+          const deltaTime = (deltaX / pps) * speed;
+
+          if (type === 'in') {
+            const newStart = Math.max(0, Math.min(initialEnd - 0.2, initialStart + deltaTime));
+            if (Math.abs(clip.startInSource - newStart) > 0.005) {
+              clip.startInSource = Number(newStart.toFixed(2));
+              clip.duration = Number(((clip.endInSource - clip.startInSource) / speed).toFixed(2));
+              didChange = true;
+              if (tooltip) {
+                tooltip.textContent = `In: ${clip.startInSource.toFixed(2)}s | Dur: ${clip.duration.toFixed(2)}s`;
+              }
+              if (durBadge) {
+                durBadge.textContent = `${clip.duration.toFixed(1)}s`;
+              }
+              if (clipEl) {
+                clipEl.style.width = `${Math.max(clip.duration * pps, 26)}px`;
+              }
+              if (hiddenVideo) {
+                hiddenVideo.currentTime = clip.startInSource;
+                renderCurrentFrame();
+              }
+              updatePrecisionTrimUI();
+            }
+          } else if (type === 'out') {
+            const newEnd = Math.max(initialStart + 0.2, Math.min(maxSourceDur, initialEnd + deltaTime));
+            if (Math.abs(clip.endInSource - newEnd) > 0.005) {
+              clip.endInSource = Number(newEnd.toFixed(2));
+              clip.duration = Number(((clip.endInSource - clip.startInSource) / speed).toFixed(2));
+              didChange = true;
+              if (tooltip) {
+                tooltip.textContent = `Fin: ${clip.endInSource.toFixed(2)}s | Dur: ${clip.duration.toFixed(2)}s`;
+              }
+              if (durBadge) {
+                durBadge.textContent = `${clip.duration.toFixed(1)}s`;
+              }
+              if (clipEl) {
+                clipEl.style.width = `${Math.max(clip.duration * pps, 26)}px`;
+              }
+              if (hiddenVideo) {
+                hiddenVideo.currentTime = clip.endInSource;
+                renderCurrentFrame();
+              }
+              updatePrecisionTrimUI();
+            }
+          }
+        };
+
+        const onPointerUp = (ev) => {
+          try { handleEl.releasePointerCapture(ev.pointerId); } catch(err) {}
+          if (tooltip && tooltip.parentNode) tooltip.parentNode.removeChild(tooltip);
+          window.removeEventListener('pointermove', onPointerMove);
+          window.removeEventListener('pointerup', onPointerUp);
+          window.removeEventListener('pointercancel', onPointerUp);
+
+          if (didChange) {
+            pushHistoryState(type === 'in' ? "Recortar inicio de clip" : "Recortar final de clip");
+            renderTimeline();
+            updatePrecisionTrimUI();
+            syncPlayback(APP_STATE.currentTime);
+            showMobileToast(type === 'in' ? `Inicio fijado: ${clip.startInSource.toFixed(2)}s` : `Fin fijado: ${clip.endInSource.toFixed(2)}s`);
+          }
+        };
+
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        window.addEventListener('pointercancel', onPointerUp);
+      });
+    }
+
+    function updatePrecisionTrimUI() {
+      const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+      const trimSec = document.getElementById('precisionTrimSection');
+      if (!trimSec) return;
+
+      if (!selected || APP_STATE.selectedTrackType !== 'v1') {
+        trimSec.classList.add('opacity-40', 'pointer-events-none');
+        return;
+      }
+
+      trimSec.classList.remove('opacity-40', 'pointer-events-none');
+
+      const maxSourceDur = selected.sourceDuration || APP_STATE.sourceDuration || Math.max(selected.endInSource, 8);
+
+      const nameDisp = document.getElementById('trimClipNameDisplay');
+      if (nameDisp) {
+        const idx = APP_STATE.clipsV1.findIndex(c => c.id === selected.id);
+        const clipTitle = selected.name ? `#${idx + 1} ${selected.name}` : `Clip #${idx >= 0 ? idx + 1 : 1}`;
+        nameDisp.textContent = clipTitle;
+      }
+
+      const durDisp = document.getElementById('trimClipDurationDisplay');
+      if (durDisp) durDisp.textContent = `${selected.duration.toFixed(2)}s`;
+
+      const inDisp = document.getElementById('trimInDisplay');
+      if (inDisp) inDisp.textContent = `${selected.startInSource.toFixed(2)}s`;
+
+      const outDisp = document.getElementById('trimOutDisplay');
+      if (outDisp) outDisp.textContent = `${selected.endInSource.toFixed(2)}s`;
+
+      const inSlider = document.getElementById('trimInSlider');
+      if (inSlider) {
+        inSlider.min = 0;
+        inSlider.max = Math.max(0.2, Number((selected.endInSource - 0.2).toFixed(2)));
+        inSlider.step = 0.05;
+        inSlider.value = selected.startInSource;
+      }
+
+      const outSlider = document.getElementById('trimOutSlider');
+      if (outSlider) {
+        outSlider.min = Number((selected.startInSource + 0.2).toFixed(2));
+        outSlider.max = maxSourceDur;
+        outSlider.step = 0.05;
+        outSlider.value = selected.endInSource;
+      }
+
+      // Sincronizar tira visual interactiva de recorte
+      const startLbl = document.getElementById('trimSourceStartLbl');
+      if (startLbl) startLbl.textContent = '0.00s';
+      const endLbl = document.getElementById('trimSourceEndLbl');
+      if (endLbl) endLbl.textContent = `${maxSourceDur.toFixed(2)}s`;
+
+      const activeSpan = document.getElementById('trimActiveSpan');
+      const leftMask = document.getElementById('trimLeftMask');
+      const rightMask = document.getElementById('trimRightMask');
+      const miniLeftH = document.getElementById('trimMiniLeftHandle');
+      const miniRightH = document.getElementById('trimMiniRightHandle');
+      const activeSpanLabel = document.getElementById('trimActiveSpanLabel');
+
+      if (maxSourceDur > 0) {
+        const leftPct = Math.max(0, Math.min(100, (selected.startInSource / maxSourceDur) * 100));
+        const rightPct = Math.max(0, Math.min(100, (selected.endInSource / maxSourceDur) * 100));
+        const widthPct = Math.max(0, rightPct - leftPct);
+
+        if (activeSpan) {
+          activeSpan.style.left = `${leftPct}%`;
+          activeSpan.style.width = `${widthPct}%`;
+        }
+        if (leftMask) {
+          leftMask.style.width = `${leftPct}%`;
+        }
+        if (rightMask) {
+          rightMask.style.width = `${Math.max(0, 100 - rightPct)}%`;
+        }
+        if (miniLeftH) {
+          miniLeftH.style.left = `${leftPct}%`;
+        }
+        if (miniRightH) {
+          miniRightH.style.left = `${rightPct}%`;
+        }
+        if (activeSpanLabel) {
+          activeSpanLabel.textContent = `${selected.duration.toFixed(2)}s`;
+        }
       }
     }
 
@@ -2630,10 +3924,17 @@
 
       const partA = {
         id: 'clip-' + Date.now() + '-a',
+        mediaId: clip.mediaId || '',
+        mediaSrc: clip.mediaSrc || '',
+        sourceDuration: clip.sourceDuration || APP_STATE.sourceDuration || 8,
+        name: (clip.name || 'Clip') + ' (A)',
         startInSource: clip.startInSource,
         endInSource: splitPoint,
+        inPoint: clip.startInSource,
+        outPoint: splitPoint,
         duration: Number((localTime).toFixed(2)),
         speed: clipSpeed,
+        color: clip.color || clip.grad,
         grad: clip.grad,
         transition: 'none',
         transitionDuration: 0.6
@@ -2641,10 +3942,17 @@
 
       const partB = {
         id: 'clip-' + Date.now() + '-b',
+        mediaId: clip.mediaId || '',
+        mediaSrc: clip.mediaSrc || '',
+        sourceDuration: clip.sourceDuration || APP_STATE.sourceDuration || 8,
+        name: (clip.name || 'Clip') + ' (B)',
         startInSource: splitPoint,
         endInSource: clip.endInSource,
+        inPoint: splitPoint,
+        outPoint: clip.endInSource,
         duration: Number((clip.duration - localTime).toFixed(2)),
         speed: clipSpeed,
+        color: 'from-amber-600 to-rose-700',
         grad: 'from-amber-600 to-rose-700',
         transition: clip.transition || 'none',
         transitionDuration: clip.transitionDuration || 0.6
@@ -2860,6 +4168,254 @@
       }
     });
 
+    /* ========================================================
+       CONFIGURACIÓN DE CONTROLES DE RECORTE DE PRECISIÓN EN PANEL
+       ======================================================== */
+    function setupPrecisionTrimControls() {
+      const inSlider = document.getElementById('trimInSlider');
+      const outSlider = document.getElementById('trimOutSlider');
+
+      if (inSlider) {
+        safeOn(inSlider, 'input', (e) => {
+          const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+          if (!selected) return;
+          const speed = selected.speed || 1.0;
+          const val = parseFloat(e.target.value);
+          selected.startInSource = Number(Math.min(selected.endInSource - 0.2, val).toFixed(2));
+          selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+          if (hiddenVideo) {
+            hiddenVideo.currentTime = selected.startInSource;
+            renderCurrentFrame();
+          }
+          updatePrecisionTrimUI();
+          renderTimeline();
+        });
+        safeOn(inSlider, 'change', () => {
+          pushHistoryState("Ajustar inicio de clip");
+          renderTimeline();
+          syncPlayback(APP_STATE.currentTime);
+        });
+      }
+
+      if (outSlider) {
+        safeOn(outSlider, 'input', (e) => {
+          const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+          if (!selected) return;
+          const speed = selected.speed || 1.0;
+          const val = parseFloat(e.target.value);
+          selected.endInSource = Number(Math.max(selected.startInSource + 0.2, val).toFixed(2));
+          selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+          if (hiddenVideo) {
+            hiddenVideo.currentTime = selected.endInSource;
+            renderCurrentFrame();
+          }
+          updatePrecisionTrimUI();
+          renderTimeline();
+        });
+        safeOn(outSlider, 'change', () => {
+          pushHistoryState("Ajustar fin de clip");
+          renderTimeline();
+          syncPlayback(APP_STATE.currentTime);
+        });
+      }
+
+      function stepIn(delta) {
+        const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+        if (!selected) return;
+        const speed = selected.speed || 1.0;
+        const newStart = Math.max(0, Math.min(selected.endInSource - 0.2, Number((selected.startInSource + delta).toFixed(2))));
+        if (Math.abs(newStart - selected.startInSource) < 0.001) return;
+        pushHistoryState(`Inicio ${delta > 0 ? '+' : ''}${delta}s`);
+        selected.startInSource = newStart;
+        selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+        if (hiddenVideo) {
+          hiddenVideo.currentTime = selected.startInSource;
+          renderCurrentFrame();
+        }
+        renderTimeline();
+        updatePrecisionTrimUI();
+        showMobileToast(`Inicio: ${selected.startInSource.toFixed(2)}s`);
+      }
+
+      function stepOut(delta) {
+        const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+        if (!selected) return;
+        const speed = selected.speed || 1.0;
+        const maxDur = APP_STATE.sourceDuration || Math.max(selected.endInSource, 8);
+        const newEnd = Math.max(selected.startInSource + 0.2, Math.min(maxDur, Number((selected.endInSource + delta).toFixed(2))));
+        if (Math.abs(newEnd - selected.endInSource) < 0.001) return;
+        pushHistoryState(`Fin ${delta > 0 ? '+' : ''}${delta}s`);
+        selected.endInSource = newEnd;
+        selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+        if (hiddenVideo) {
+          hiddenVideo.currentTime = selected.endInSource;
+          renderCurrentFrame();
+        }
+        renderTimeline();
+        updatePrecisionTrimUI();
+        showMobileToast(`Fin: ${selected.endInSource.toFixed(2)}s`);
+      }
+
+      safeOn('trimInMinus05', 'click', () => stepIn(-0.5));
+      safeOn('trimInMinus01', 'click', () => stepIn(-0.1));
+      safeOn('trimInPlus01', 'click', () => stepIn(0.1));
+      safeOn('trimInPlus05', 'click', () => stepIn(0.5));
+
+      safeOn('trimOutMinus05', 'click', () => stepOut(-0.5));
+      safeOn('trimOutMinus01', 'click', () => stepOut(-0.1));
+      safeOn('trimOutPlus01', 'click', () => stepOut(0.1));
+      safeOn('trimOutPlus05', 'click', () => stepOut(0.5));
+
+      safeOn('trimInToPlayheadBtn', 'click', () => {
+        const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+        if (!selected) return;
+        let offset = 0;
+        for (const c of APP_STATE.clipsV1) {
+          if (c.id === selected.id) break;
+          offset += c.duration;
+        }
+        const speed = selected.speed || 1.0;
+        const localTime = Math.max(0, APP_STATE.currentTime - offset);
+        const sourcePos = selected.startInSource + (localTime * speed);
+        const clampedIn = Math.max(0, Math.min(selected.endInSource - 0.2, Number(sourcePos.toFixed(2))));
+        pushHistoryState("Inicio alineado al cabezal");
+        selected.startInSource = clampedIn;
+        selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+        if (hiddenVideo) {
+          hiddenVideo.currentTime = selected.startInSource;
+          renderCurrentFrame();
+        }
+        renderTimeline();
+        updatePrecisionTrimUI();
+        showMobileToast(`Inicio a cabezal: ${selected.startInSource.toFixed(2)}s`);
+      });
+
+      safeOn('trimOutToPlayheadBtn', 'click', () => {
+        const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+        if (!selected) return;
+        let offset = 0;
+        for (const c of APP_STATE.clipsV1) {
+          if (c.id === selected.id) break;
+          offset += c.duration;
+        }
+        const speed = selected.speed || 1.0;
+        const localTime = Math.max(0, APP_STATE.currentTime - offset);
+        const sourcePos = selected.startInSource + (localTime * speed);
+        const maxDur = APP_STATE.sourceDuration || Math.max(selected.endInSource, 8);
+        const clampedOut = Math.max(selected.startInSource + 0.2, Math.min(maxDur, Number(sourcePos.toFixed(2))));
+        pushHistoryState("Fin alineado al cabezal");
+        selected.endInSource = clampedOut;
+        selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+        if (hiddenVideo) {
+          hiddenVideo.currentTime = selected.endInSource;
+          renderCurrentFrame();
+        }
+        renderTimeline();
+        updatePrecisionTrimUI();
+        showMobileToast(`Fin a cabezal: ${selected.endInSource.toFixed(2)}s`);
+      });
+
+      safeOn('trimResetBtn', 'click', () => {
+        const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+        if (!selected) return;
+        const maxDur = APP_STATE.sourceDuration || Math.max(selected.endInSource, 8);
+        const speed = selected.speed || 1.0;
+        pushHistoryState("Restaurar recorte de clip");
+        selected.startInSource = 0;
+        selected.endInSource = maxDur;
+        selected.duration = Number((maxDur / speed).toFixed(2));
+        if (hiddenVideo) {
+          hiddenVideo.currentTime = 0;
+          renderCurrentFrame();
+        }
+        renderTimeline();
+        updatePrecisionTrimUI();
+        showMobileToast("Recorte restaurado al clip completo");
+      });
+    }
+
+    function setupMiniTrimHandles() {
+      const track = document.getElementById('trimInteractiveTrack');
+      const leftH = document.getElementById('trimMiniLeftHandle');
+      const rightH = document.getElementById('trimMiniRightHandle');
+      if (!track || !leftH || !rightH) return;
+
+      function bindMiniHandle(handleEl, type) {
+        handleEl.addEventListener('pointerdown', (e) => {
+          const selected = APP_STATE.clipsV1.find(c => c.id === APP_STATE.selectedItemId);
+          if (!selected) return;
+
+          e.stopPropagation();
+          e.preventDefault();
+          try { handleEl.setPointerCapture(e.pointerId); } catch(err) {}
+
+          const rect = track.getBoundingClientRect();
+          const trackWidth = rect.width || 280;
+          const maxSourceDur = selected.sourceDuration || APP_STATE.sourceDuration || Math.max(selected.endInSource, 8);
+          const speed = selected.speed || 1.0;
+          let didChange = false;
+
+          const onPointerMove = (ev) => {
+            const relX = Math.max(0, Math.min(trackWidth, ev.clientX - rect.left));
+            const newTime = Number(((relX / trackWidth) * maxSourceDur).toFixed(2));
+
+            if (type === 'in') {
+              const clampedIn = Math.max(0, Math.min(selected.endInSource - 0.2, newTime));
+              if (Math.abs(selected.startInSource - clampedIn) > 0.005) {
+                selected.startInSource = clampedIn;
+                selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+                didChange = true;
+                if (hiddenVideo) {
+                  hiddenVideo.currentTime = selected.startInSource;
+                  renderCurrentFrame();
+                }
+                updatePrecisionTrimUI();
+                renderTimeline();
+              }
+            } else if (type === 'out') {
+              const clampedOut = Math.max(selected.startInSource + 0.2, Math.min(maxSourceDur, newTime));
+              if (Math.abs(selected.endInSource - clampedOut) > 0.005) {
+                selected.endInSource = clampedOut;
+                selected.duration = Number(((selected.endInSource - selected.startInSource) / speed).toFixed(2));
+                didChange = true;
+                if (hiddenVideo) {
+                  hiddenVideo.currentTime = selected.endInSource;
+                  renderCurrentFrame();
+                }
+                updatePrecisionTrimUI();
+                renderTimeline();
+              }
+            }
+          };
+
+          const onPointerUp = (ev) => {
+            try { handleEl.releasePointerCapture(ev.pointerId); } catch(err) {}
+            window.removeEventListener('pointermove', onPointerMove);
+            window.removeEventListener('pointerup', onPointerUp);
+            window.removeEventListener('pointercancel', onPointerUp);
+
+            if (didChange) {
+              pushHistoryState(type === 'in' ? "Recortar inicio (panel)" : "Recortar fin (panel)");
+              renderTimeline();
+              updatePrecisionTrimUI();
+              syncPlayback(APP_STATE.currentTime);
+              showMobileToast(type === 'in' ? `Inicio: ${selected.startInSource.toFixed(2)}s` : `Fin: ${selected.endInSource.toFixed(2)}s`);
+            }
+          };
+
+          window.addEventListener('pointermove', onPointerMove);
+          window.addEventListener('pointerup', onPointerUp);
+          window.addEventListener('pointercancel', onPointerUp);
+        });
+      }
+
+      bindMiniHandle(leftH, 'in');
+      bindMiniHandle(rightH, 'out');
+    }
+
+    setupPrecisionTrimControls();
+    setupMiniTrimHandles();
+
     safeOn('addPipBtn', 'click', () => {
       const newPip = {
         id: 'pip-' + Date.now(),
@@ -3063,20 +4619,24 @@
 
       filtered.forEach((item) => {
         const card = document.createElement('div');
-        card.className = "bg-[#141622] border border-[#232738] rounded-xl overflow-hidden p-2 space-y-1.5 shadow-md flex flex-col justify-between";
+        card.className = "bg-[#141622] border border-[#232738] rounded-xl overflow-hidden p-2 space-y-1.5 shadow-md flex flex-col justify-between cursor-pointer select-none transition-all duration-150 active:scale-[0.98] hover:border-cyan-500/50";
+        card.title = "Doble clic o doble toque para añadir al Timeline";
         
         let typeIcon = '<i class="fa-solid fa-film text-cyan-400"></i>';
         if (item.type === 'image') typeIcon = '<i class="fa-solid fa-image text-purple-400"></i>';
         if (item.type === 'audio') typeIcon = '<i class="fa-solid fa-music text-emerald-400"></i>';
 
         card.innerHTML = `
-          <div class="relative w-full aspect-video bg-black rounded-lg overflow-hidden border border-white/10 flex items-center justify-center">
+          <div class="relative w-full aspect-video bg-black rounded-lg overflow-hidden border border-white/10 flex items-center justify-center pointer-events-none">
             ${item.thumbnail ? `<img src="${item.thumbnail}" class="w-full h-full object-cover">` : `<div class="text-2xl">${typeIcon}</div>`}
             <span class="absolute bottom-1 right-1 bg-black/85 font-mono text-[8px] text-cyan-300 px-1 py-0.2 rounded font-bold">
               ${formatTime(item.duration)}
             </span>
+            <div class="absolute inset-0 bg-cyan-500/0 hover:bg-cyan-500/10 flex items-center justify-center transition-all opacity-0 hover:opacity-100">
+              <span class="bg-black/75 text-cyan-300 text-[8px] font-bold px-1.5 py-0.5 rounded border border-cyan-400/40">2x Tap + Timeline</span>
+            </div>
           </div>
-          <div>
+          <div class="pointer-events-none">
             <div class="flex items-center gap-1">
               <span class="text-[9px]">${typeIcon}</span>
               <h5 class="text-[10px] font-bold text-white truncate" title="${item.name}">${item.name}</h5>
@@ -3084,8 +4644,8 @@
             <span class="text-[8px] text-gray-400 font-mono">${item.sizeStr || ''} • ${item.dateStr || ''}</span>
           </div>
           <div class="grid grid-cols-2 gap-1 pt-1">
-            <button class="lib-add-v1-btn touch-btn h-6 bg-cyan-950/80 border border-cyan-700/80 text-cyan-300 text-[8px] font-bold rounded flex items-center justify-center gap-1">
-              + V1
+            <button class="lib-add-btn touch-btn h-6 bg-cyan-600 hover:bg-cyan-500 text-black font-extrabold text-[8px] rounded flex items-center justify-center gap-1 shadow-sm" title="Añadir al final del Timeline">
+              <i class="fa-solid fa-plus text-[7px]"></i> Añadir
             </button>
             <button class="lib-add-v2-btn touch-btn h-6 bg-purple-950/80 border border-purple-700/80 text-purple-300 text-[8px] font-bold rounded flex items-center justify-center gap-1">
               + PiP V2
@@ -3099,14 +4659,45 @@
           </div>
         `;
 
-        const v1Btn = card.querySelector('.lib-add-v1-btn');
-        safeOn(v1Btn, 'click', () => addItemToV1(item));
+        // Interacción Doble Clic (Escritorio)
+        card.addEventListener('dblclick', (e) => {
+          if (e.target.closest('button')) return;
+          card.classList.add('ring-2', 'ring-cyan-400', 'scale-[1.02]');
+          setTimeout(() => card.classList.remove('ring-2', 'ring-cyan-400', 'scale-[1.02]'), 300);
+          addItemToV1(item);
+        });
+
+        // Interacción Doble Toque Rápido (Móvil Android/iOS con debounce < 320ms)
+        let lastTapTime = 0;
+        card.addEventListener('touchend', (e) => {
+          if (e.target.closest('button')) return;
+          const now = Date.now();
+          if (now - lastTapTime < 320 && now - lastTapTime > 40) {
+            e.preventDefault();
+            card.classList.add('ring-2', 'ring-cyan-400', 'scale-[1.02]');
+            setTimeout(() => card.classList.remove('ring-2', 'ring-cyan-400', 'scale-[1.02]'), 300);
+            addItemToV1(item);
+            lastTapTime = 0;
+          } else {
+            lastTapTime = now;
+          }
+        }, { passive: false });
+
+        const addBtn = card.querySelector('.lib-add-btn');
+        safeOn(addBtn, 'click', (e) => {
+          e.stopPropagation();
+          addItemToV1(item);
+        });
 
         const v2Btn = card.querySelector('.lib-add-v2-btn');
-        safeOn(v2Btn, 'click', () => addItemToV2(item));
+        safeOn(v2Btn, 'click', (e) => {
+          e.stopPropagation();
+          addItemToV2(item);
+        });
 
         const loadBtn = card.querySelector('.lib-load-btn');
-        safeOn(loadBtn, 'click', () => {
+        safeOn(loadBtn, 'click', (e) => {
+          e.stopPropagation();
           if (item.blob) {
             const url = URL.createObjectURL(item.blob);
             loadVideoMedia(url, item.name, item.blob);
@@ -3114,7 +4705,8 @@
         });
 
         const delBtn = card.querySelector('.lib-del-btn');
-        safeOn(delBtn, 'click', async () => {
+        safeOn(delBtn, 'click', async (e) => {
+          e.stopPropagation();
           await dbDeleteMediaItem(item.id);
           renderLibraryUI();
           showMobileToast("Medio eliminado de la biblioteca");
@@ -3124,30 +4716,65 @@
       });
     }
 
+    const V1_CLIP_GRADIENTS = [
+      'from-cyan-600 to-blue-700',
+      'from-blue-600 to-indigo-700',
+      'from-violet-600 to-purple-700',
+      'from-emerald-600 to-teal-700',
+      'from-amber-600 to-orange-700',
+      'from-rose-600 to-pink-700'
+    ];
+
     function addItemToV1(item) {
-      pushHistoryState(`Añadir "${item.name}" a V1`);
+      pushHistoryState(`Añadir "${item.name}" al Timeline`);
       const dur = Number((item.duration || 6).toFixed(2));
+      const blobUrl = item.blob ? URL.createObjectURL(item.blob) : (item.mediaSrc || '');
+
+      let currentTotalOffset = 0;
+      for (const c of APP_STATE.clipsV1) {
+        currentTotalOffset += (c.duration || 0);
+      }
+      currentTotalOffset = Number(currentTotalOffset.toFixed(2));
+
+      const gradColor = V1_CLIP_GRADIENTS[APP_STATE.clipsV1.length % V1_CLIP_GRADIENTS.length];
+
+      const newClip = {
+        id: 'clip-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
+        mediaId: String(item.id || ('media-' + Date.now())),
+        mediaSrc: blobUrl,
+        name: item.name || 'Clip',
+        duration: dur,
+        inPoint: 0,
+        outPoint: dur,
+        startInSource: 0,
+        endInSource: dur,
+        startOffset: currentTotalOffset,
+        speed: 1.0,
+        color: gradColor,
+        grad: gradColor,
+        transition: 'none',
+        transitionDuration: 0.6
+      };
 
       if (!APP_STATE.sourceLoaded && item.type === 'video' && item.blob) {
-        const url = URL.createObjectURL(item.blob);
-        loadVideoMedia(url, item.name, item.blob);
-      } else {
-        const newClip = {
-          id: 'clip-' + Date.now(),
-          startInSource: 0,
-          endInSource: dur,
-          duration: dur,
-          speed: 1.0,
-          grad: 'from-blue-600 to-indigo-700',
-          transition: 'none',
-          transitionDuration: 0.6
-        };
-        APP_STATE.clipsV1.push(newClip);
-        APP_STATE.selectedTrackType = 'v1';
-        APP_STATE.selectedItemId = newClip.id;
-        renderTimeline();
-        showMobileToast(`"${item.name}" añadido a pista V1`);
+        APP_STATE.sourceLoaded = true;
+        APP_STATE.sourceDuration = dur;
+        APP_STATE.sourceUrl = blobUrl;
+        APP_STATE.sourceName = item.name;
+        if (hiddenVideo) {
+          hiddenVideo.src = blobUrl;
+          hiddenVideo.currentTime = 0;
+        }
       }
+
+      APP_STATE.clipsV1.push(newClip);
+      APP_STATE.selectedTrackType = 'v1';
+      APP_STATE.selectedItemId = newClip.id;
+
+      renderTimeline();
+      updateClipActionLabels();
+      updatePrecisionTrimUI();
+      showMobileToast("Clip añadido al Timeline");
     }
 
     function addItemToV2(item) {
@@ -3383,12 +5010,13 @@
     function prepareVideoElement(video) {
       if (!video) return;
       video.playsInline = true;
-      video.muted = true;
       video.preload = 'auto';
       video.crossOrigin = 'anonymous';
       video.setAttribute('playsinline', 'true');
       video.setAttribute('webkit-playsinline', 'true');
-      video.setAttribute('muted', '');
+      video.muted = APP_STATE.isMuted;
+      if (!APP_STATE.isMuted) video.removeAttribute('muted');
+      video.volume = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
       video.setAttribute('preload', 'auto');
       video.setAttribute('crossorigin', 'anonymous');
     }
@@ -3505,10 +5133,17 @@
       // Asignar exactamente UN SOLO clip que abarca la totalidad del archivo (evita duplicación)
       const singleClip = {
         id: 'clip-' + Date.now(),
+        mediaId: 'media-main',
+        mediaSrc: url,
+        sourceDuration: dur,
+        name: name,
         startInSource: 0,
         endInSource: dur,
+        inPoint: 0,
+        outPoint: dur,
         duration: dur,
         speed: 1.0,
+        color: 'from-cyan-600 to-blue-700',
         grad: 'from-cyan-600 to-blue-700',
         transition: 'none',
         transitionDuration: 0.6
