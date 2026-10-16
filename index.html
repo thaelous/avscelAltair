@@ -237,11 +237,11 @@
 <body class="flex flex-col h-full overflow-hidden select-none">
 
   <!-- BARRA SUPERIOR CON ACCIONES RÁPIDAS Y DESHACER / REHACER -->
-  <header class="h-13 bg-[#0d0f17] border-b border-[#1c1f2d] px-2 flex items-center shrink-0 z-30 pt-safe">
-    <div class="flex items-center gap-1.5 scroll-touch-x w-full py-1">
-      
-      <!-- Logo AVS PRO -->
-      <div class="flex items-center gap-1.5 shrink-0 pr-1">
+  <!-- BARRA SUPERIOR LIMPIA (SIN SATURACIÓN NI CORTES) -->
+  <header class="h-12 bg-[#0d0f17] border-b border-[#1c1f2d] px-3 flex items-center justify-between shrink-0 z-30 pt-safe">
+    <!-- Izquierda: Logo compacto + Deshacer/Rehacer -->
+    <div class="flex items-center gap-2 shrink-0">
+      <div class="flex items-center gap-1.5">
         <div class="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 flex items-center justify-center text-black font-extrabold text-xs shadow-md shadow-cyan-500/25">
           <i class="fa-solid fa-scissors"></i>
         </div>
@@ -252,91 +252,140 @@
       </div>
 
       <!-- BOTONES DE DESHACER (UNDO) Y REHACER (REDO) -->
-      <div class="flex items-center gap-1 shrink-0 bg-[#141622] px-1 py-0.5 rounded-lg border border-[#222536]">
-        <button id="btnUndo" class="touch-btn w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-white bg-[#1b1e2c] border border-[#2b2f42] btn-disabled transition-all" title="Deshacer (Undo)">
-          <i class="fa-solid fa-rotate-left text-xs"></i>
+      <div class="flex items-center gap-0.5 bg-[#141622] px-1 py-0.5 rounded-lg border border-[#222536] ml-1">
+        <button id="btnUndo" class="touch-btn w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-white bg-[#1b1e2c] border border-[#2b2f42] btn-disabled transition-all" title="Deshacer (Undo)">
+          <i class="fa-solid fa-rotate-left text-[11px]"></i>
         </button>
-        <button id="btnRedo" class="touch-btn w-7 h-7 rounded-md flex items-center justify-center text-gray-300 hover:text-white bg-[#1b1e2c] border border-[#2b2f42] btn-disabled transition-all" title="Rehacer (Redo)">
-          <i class="fa-solid fa-rotate-right text-xs"></i>
+        <button id="btnRedo" class="touch-btn w-6 h-6 rounded flex items-center justify-center text-gray-300 hover:text-white bg-[#1b1e2c] border border-[#2b2f42] btn-disabled transition-all" title="Rehacer (Redo)">
+          <i class="fa-solid fa-rotate-right text-[11px]"></i>
         </button>
       </div>
+    </div>
 
-      <!-- BOTÓN NUEVO PROYECTO (+) -->
-      <button id="btnNewProject" class="touch-btn shrink-0 h-8 px-2.5 bg-cyan-950/80 border border-cyan-700/80 text-cyan-300 rounded-lg flex items-center gap-1 text-xs font-bold shadow-sm" title="Crear Nuevo Proyecto">
-        <i class="fa-solid fa-plus text-cyan-400 text-xs"></i>
-        <span class="text-[11px]">Nuevo</span>
-      </button>
-
-      <!-- SELECTOR DE TEMA CLARO / OSCURO -->
-      <button id="btnThemeToggle" class="touch-btn shrink-0 w-8 h-8 bg-[#171a26] border border-[#272b3d] text-amber-400 rounded-lg flex items-center justify-center shadow-sm" title="Cambiar Tema (Claro / Oscuro)">
-        <i id="iconThemeDark" class="fa-solid fa-moon text-xs"></i>
-        <i id="iconThemeLight" class="fa-solid fa-sun text-xs text-amber-500 hidden"></i>
-      </button>
-
-      <!-- BOTÓN INSTALACIÓN ANDROID PWA -->
-      <button id="pwaInstallBtn" class="touch-btn shrink-0 h-8 px-2 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/50 text-emerald-300 rounded-lg flex items-center gap-1 text-xs font-bold shadow-sm hidden">
-        <i class="fa-brands fa-android text-emerald-400 text-xs"></i>
-        <span class="text-[10px]">Instalar</span>
-      </button>
-
-      <!-- Selector de Proporción (16:9 / 9:16) -->
-      <button id="btnRatioToggle" class="touch-btn shrink-0 h-8 px-2 bg-[#171a26] border border-[#272b3d] text-[11px] text-gray-200 font-mono rounded-lg flex items-center gap-1 shadow-sm">
+    <!-- Centro: Selector de Aspecto (16:9 / 9:16) -->
+    <div class="flex items-center justify-center">
+      <button id="btnRatioToggle" class="touch-btn h-7 px-2.5 bg-[#171a26] border border-[#272b3d] text-[11px] text-gray-200 font-mono rounded-lg flex items-center gap-1.5 shadow-sm hover:border-cyan-500/60 transition-colors" title="Cambiar formato de pantalla">
         <i class="fa-solid fa-mobile-screen text-[10px] text-cyan-400"></i>
-        <span id="ratioLabel">16:9</span>
+        <span id="ratioLabel" class="font-bold">16:9</span>
       </button>
+    </div>
 
-      <!-- Botón Abrir Video -->
-      <label class="touch-btn shrink-0 h-8 px-2.5 bg-[#171a26] border border-[#272b3d] text-gray-200 text-xs font-semibold rounded-lg flex items-center gap-1 cursor-pointer shadow-sm">
-        <i class="fa-solid fa-folder-open text-cyan-400 text-xs"></i>
-        <span class="text-[11px]">Abrir</span>
-        <input type="file" id="filePicker" accept="video/*" class="hidden">
-      </label>
+    <!-- Derecha: Exportación rápida + Menú Desplegable (⋮) -->
+    <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Input de archivo oculto para apertura global -->
+      <input type="file" id="filePicker" multiple accept="video/*" class="hidden">
 
-      <!-- Botón Bottom Sheet Vaciar Timeline -->
-      <button id="btnOpenClearSheet" class="touch-btn shrink-0 h-8 px-2 bg-rose-950/80 border border-rose-800/80 text-rose-300 text-xs font-semibold rounded-lg flex items-center gap-1 shadow-sm" title="Opciones de Limpieza del Timeline">
-        <i class="fa-solid fa-broom text-xs text-rose-400"></i>
-        <span class="text-[11px]">Vaciar</span>
-      </button>
-
-      <!-- Botón Guardar / Exportar -->
-      <button id="exportBtn" class="touch-btn shrink-0 h-8 px-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-black rounded-lg flex items-center gap-1 shadow-md shadow-cyan-400/25 ml-auto">
+      <button id="exportBtn" class="touch-btn h-7 px-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-black rounded-lg flex items-center gap-1 shadow-md shadow-cyan-400/25 active:scale-95 transition-transform" title="Exportar Proyecto">
         <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
-        <span class="text-[11px]">Exportar</span>
+        <span class="text-[11px] hidden sm:inline">Exportar</span>
       </button>
 
-      <!-- Botón Menú Móvil Limpio (⋮) con todas las opciones -->
-      <div class="relative shrink-0 ml-1">
-        <button id="btnHeaderMenu" class="touch-btn w-8 h-8 rounded-lg bg-[#171a26] border border-[#272b3d] text-gray-200 hover:text-white flex items-center justify-center shadow-sm" title="Menú de opciones">
-          <i class="fa-solid fa-ellipsis-vertical text-sm text-cyan-400"></i>
-        </button>
-        <div id="headerDropdownMenu" class="hidden absolute right-0 top-10 w-52 bg-[#12141f] border border-[#222536] rounded-xl shadow-2xl py-1 z-50 text-left">
-          <button id="menuItemNewProject" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-gray-200 hover:bg-[#1a1e2e] hover:text-cyan-400 transition-colors">
-            <i class="fa-solid fa-plus text-cyan-400 w-4 text-center"></i>
-            <span>Nuevo Proyecto</span>
-          </button>
-          <label class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-gray-200 hover:bg-[#1a1e2e] hover:text-cyan-400 transition-colors cursor-pointer">
-            <i class="fa-solid fa-folder-open text-blue-400 w-4 text-center"></i>
-            <span>Importar Video</span>
-            <input type="file" id="menuVideoFileInput" accept="video/*" class="hidden">
-          </label>
-          <button id="menuItemExport" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-gray-200 hover:bg-[#1a1e2e] hover:text-cyan-400 transition-colors">
-            <i class="fa-solid fa-arrow-down-to-bracket text-cyan-400 w-4 text-center"></i>
-            <span>Exportar Video</span>
-          </button>
-          <button id="menuItemClearTimeline" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-rose-300 hover:bg-[#1a1e2e] transition-colors">
-            <i class="fa-solid fa-broom text-rose-400 w-4 text-center"></i>
-            <span>Vaciar Timeline</span>
-          </button>
-          <div class="h-px bg-[#222536] my-1"></div>
-          <button id="menuItemPwa" class="w-full px-3.5 py-2.5 flex items-center gap-2.5 text-xs text-emerald-300 hover:bg-[#1a1e2e] transition-colors">
-            <i class="fa-brands fa-android text-emerald-400 w-4 text-center"></i>
-            <span>Instalar PWA</span>
-          </button>
-        </div>
-      </div>
-
+      <!-- Botón Menú Desplegable (⋮) -->
+      <button id="btnHeaderMenu" class="touch-btn w-8 h-8 rounded-lg bg-[#171a26] border border-[#272b3d] text-cyan-400 hover:text-white flex items-center justify-center shadow-sm active:scale-95 transition-transform" title="Menú principal y opciones">
+        <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+      </button>
     </div>
   </header>
+
+  <!-- MODAL / DRAWER INFERIOR DEL MENÚ DESPLEGABLE (⋮) -->
+  <div id="appMenuModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex flex-col justify-end hidden transition-opacity duration-200">
+    <div class="bg-[#121420] border-t border-[#23273c] rounded-t-2xl p-4 space-y-3 max-h-[85vh] overflow-y-auto animate-slide-up shadow-2xl">
+      <div class="flex items-center justify-between pb-2 border-b border-[#202438]">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-400 to-blue-600 flex items-center justify-center text-black font-extrabold text-sm shadow">
+            <i class="fa-solid fa-scissors"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-white leading-none">AVS Mobile Studio Pro</h3>
+            <span class="text-[10px] text-gray-400 font-mono">Menú Principal y Configuración</span>
+          </div>
+        </div>
+        <button id="closeAppMenuBtn" class="touch-btn w-7 h-7 rounded-full bg-[#1b1e2e] text-gray-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Opciones Principales del Menú -->
+      <div class="space-y-1.5">
+        <!-- 1. + Nuevo Proyecto -->
+        <button id="drawerNewProjectBtn" class="touch-btn w-full p-2.5 rounded-xl bg-[#161826] hover:bg-[#1f2337] border border-[#262a40] flex items-center gap-3 text-left transition-all">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950/80 border border-cyan-700/80 text-cyan-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-plus text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-white">+ Nuevo Proyecto</div>
+            <div class="text-[10px] text-gray-400">Reinicia timeline y estados de memoria con confirmación</div>
+          </div>
+        </button>
+
+        <!-- 2. Abrir Video Local (múltiple) -->
+        <label class="touch-btn w-full p-2.5 rounded-xl bg-[#161826] hover:bg-[#1f2337] border border-[#262a40] flex items-center gap-3 text-left transition-all cursor-pointer">
+          <div class="w-8 h-8 rounded-lg bg-blue-950/80 border border-blue-700/80 text-blue-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-folder-open text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-white">Abrir Video Local</div>
+            <div class="text-[10px] text-gray-400">Selector múltiple para importar clips locales</div>
+          </div>
+          <input type="file" id="drawerVideoFileInput" multiple accept="video/*" class="hidden">
+        </label>
+
+        <!-- 3. Vaciar Timeline -->
+        <button id="drawerClearTimelineBtn" class="touch-btn w-full p-2.5 rounded-xl bg-[#1c131d] hover:bg-[#281827] border border-rose-900/50 flex items-center gap-3 text-left transition-all">
+          <div class="w-8 h-8 rounded-lg bg-rose-950/90 border border-rose-700/80 text-rose-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-trash-can text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-rose-300">Vaciar Timeline</div>
+            <div class="text-[10px] text-rose-400/80">Limpia todos los clips de golpe con confirmación</div>
+          </div>
+        </button>
+
+        <!-- 4. Instalar App Offline (PWA) -->
+        <button id="drawerInstallPwaBtn" class="touch-btn w-full p-2.5 rounded-xl bg-[#12221b] hover:bg-[#183127] border border-emerald-900/50 flex items-center gap-3 text-left transition-all">
+          <div class="w-8 h-8 rounded-lg bg-emerald-950/90 border border-emerald-700/80 text-emerald-400 flex items-center justify-center shrink-0">
+            <i class="fa-brands fa-android text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-emerald-300">Instalar App Offline (PWA)</div>
+            <div class="text-[10px] text-emerald-400/80">Instalar en Android para edición 100% sin conexión</div>
+          </div>
+        </button>
+
+        <!-- 5. Ajustes de Calidad (720p / 1080p) -->
+        <div class="p-2.5 rounded-xl bg-[#161826] border border-[#262a40] space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-amber-400"></i> Ajustes de Calidad
+            </span>
+            <span id="qualityBadge" class="font-mono text-[10px] text-cyan-300 bg-cyan-950 px-2 py-0.5 rounded border border-cyan-800 font-bold">720p HD</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 pt-0.5">
+            <button id="btnQuality720" class="touch-btn h-8 rounded-lg bg-cyan-500 text-black font-extrabold text-[11px] font-mono border border-cyan-400 flex items-center justify-center gap-1.5">
+              <i class="fa-solid fa-bolt text-xs"></i> 720p (Rápido)
+            </button>
+            <button id="btnQuality1080" class="touch-btn h-8 rounded-lg bg-[#1a1d2c] text-gray-300 font-bold text-[11px] font-mono border border-[#2a2f44] flex items-center justify-center gap-1.5 hover:text-white">
+              <i class="fa-solid fa-award text-xs text-amber-400"></i> 1080p (Full HD)
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. Selector de Tema Claro / Oscuro -->
+        <button id="drawerThemeToggleBtn" class="touch-btn w-full p-2.5 rounded-xl bg-[#161826] hover:bg-[#1f2337] border border-[#262a40] flex items-center justify-between transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-amber-950/80 border border-amber-700/80 text-amber-400 flex items-center justify-center shrink-0">
+              <i class="fa-solid fa-circle-half-stroke text-sm"></i>
+            </div>
+            <div class="text-left">
+              <div class="text-xs font-bold text-white">Tema Visual</div>
+              <div id="drawerThemeLabel" class="text-[10px] text-gray-400">Modo Oscuro (Activo)</div>
+            </div>
+          </div>
+          <span class="text-xs text-cyan-400 font-bold">Cambiar</span>
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- AVISO OFFLINE PWA -->
   <div id="offlineIndicator" class="fixed top-14 left-1/2 -translate-x-1/2 bg-amber-950/95 border border-amber-500/80 text-amber-200 text-[10px] font-bold px-3 py-0.5 rounded-full shadow-2xl z-40 flex items-center gap-1.5 backdrop-blur-md hidden">
@@ -348,7 +397,7 @@
   <main class="relative flex-1 bg-[#050608] flex flex-col items-center justify-between p-2 min-h-0 overflow-hidden">
     
     <div class="relative w-full flex-1 flex items-center justify-center min-h-0">
-      <div id="playerFrame" class="relative max-w-full max-h-full aspect-video bg-[#000000] rounded-xl overflow-hidden shadow-2xl border border-[#181a26] flex items-center justify-center transition-all duration-200">
+      <div id="playerFrame" class="relative max-w-full max-h-full aspect-video bg-[#000000] rounded-xl overflow-hidden shadow-2xl border border-[#181a26] flex items-center justify-center transition-all duration-200 touch-none">
         
         <!-- Canvas WebGL acelerado por hardware GPU (proxy de previsualización 720p sin lag) -->
         <canvas id="glCanvas" width="720" height="404" class="w-full h-full object-contain pointer-events-none"></canvas>
@@ -369,8 +418,23 @@
           <span class="w-1.5 h-1.5 rounded-full bg-white"></span> REC
         </div>
 
+        <!-- Floating Viewer Zoom Controls & Paneo Táctil -->
+        <div id="viewerZoomControls" class="absolute top-2 left-2 z-30 flex items-center gap-1.5 bg-black/85 px-2 py-1 rounded-lg border border-white/10 backdrop-blur-sm">
+          <span class="text-[9px] font-mono text-cyan-300 font-bold flex items-center gap-1">
+            <i class="fa-solid fa-magnifying-glass text-[8px]"></i>
+            <span id="viewerZoomLabel">1.0x</span>
+          </span>
+          <input type="range" id="viewerZoomSlider" min="1.0" max="4.0" step="0.1" value="1.0" class="w-14 accent-cyan-400 h-1.5 bg-[#252839] rounded cursor-pointer" title="Zoom del Visor (1.0x - 4.0x)">
+          <button id="viewerZoomResetBtn" class="touch-btn text-[8px] font-mono text-gray-400 hover:text-cyan-300 px-1 py-0.5 rounded bg-[#181a26] border border-[#272b3d]" title="Restablecer a 1.0x">1x</button>
+        </div>
+
+        <!-- Badge Pan Hint cuando Zoom > 1.0x -->
+        <div id="viewerPanHint" class="absolute top-2 right-2 bg-cyan-950/90 border border-cyan-500/60 text-cyan-300 font-mono text-[8px] px-2 py-0.5 rounded-full z-30 hidden font-bold pointer-events-none">
+          <i class="fa-solid fa-arrows-up-down-left-right text-[7px] mr-1"></i> Paneo Activo
+        </div>
+
         <!-- Badge de velocidad activa si difiere de 1.0x -->
-        <div id="speedHud" class="absolute top-2.5 right-2.5 bg-cyan-950/90 border border-cyan-500/60 text-cyan-300 font-mono text-[9px] px-2 py-0.5 rounded-full z-30 hidden font-bold">
+        <div id="speedHud" class="absolute top-8 right-2.5 bg-cyan-950/90 border border-cyan-500/60 text-cyan-300 font-mono text-[9px] px-2 py-0.5 rounded-full z-30 hidden font-bold pointer-events-none">
           <span id="speedHudText">1.0x</span>
         </div>
 
@@ -382,6 +446,7 @@
         </div>
       </div>
     </div>
+
 
     <!-- Barra de Transporte de Reproducción Ergonómica + Control de Salida de Audio (dB) -->
     <div class="w-full max-w-sm px-2 py-1 flex items-center justify-between text-xs shrink-0 mt-1 gap-1">
@@ -562,80 +627,236 @@
         </div>
       </div>
 
-      <!-- PESTAÑA 3: EFECTOS FX EN GPU -->
-      <div id="panel-effects" class="drawer-panel hidden p-3 space-y-2.5">
-        <div class="flex items-center justify-between pb-1">
-          <span class="text-[10px] text-gray-400 font-medium">Shaders GLSL acelerados en GPU</span>
-          <button id="resetAllFxBtn" class="text-[10px] text-cyan-400 font-bold touch-btn px-2.5 py-0.5 bg-[#181a27] rounded-lg border border-[#272b3d]">
-            Restablecer FX
+      <!-- PESTAÑA 3: EFECTOS FX EN GPU (SUITE COMPLETA PREMIUM + BASE) -->
+      <div id="panel-effects" class="drawer-panel hidden p-3 space-y-3">
+        <div class="flex items-center justify-between pb-1 border-b border-[#1c1f2d]">
+          <div>
+            <span class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-wand-magic-sparkles text-cyan-400"></i> Suite de Efectos Visuales GPU
+            </span>
+            <span class="text-[9px] text-gray-400 block font-mono">Renderizado en tiempo real WebGL / Canvas</span>
+          </div>
+          <button id="resetAllFxBtn" class="text-[10px] text-cyan-400 font-bold touch-btn px-2.5 py-1 bg-[#181a27] rounded-lg border border-[#272b3d] hover:bg-[#202436] active:scale-95">
+            Restablecer Todo
           </button>
         </div>
 
-        <div class="grid grid-cols-2 gap-2 pb-2">
-          <!-- Onda (Wave) -->
-          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-water"></i> Onda GPU</span>
-              <input type="checkbox" id="fxWaveToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
-            </div>
-            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Amplitud</span><span id="waveVal">16px</span></div>
-            <input type="range" id="fxWaveSlider" min="2" max="40" value="16" class="w-full">
-          </div>
+        <!-- SECCIÓN 1: EFECTOS PREMIUM (MUST-HAVE) -->
+        <div class="space-y-1">
+          <span class="text-[10px] font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-gem text-cyan-400 text-[9px]"></i> Efectos Premium
+          </span>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
 
-          <!-- Ojo de Pez (Fisheye) -->
-          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5"><i class="fa-solid fa-circle-dot"></i> Ojo de Pez</span>
-              <input type="checkbox" id="fxFisheyeToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            <!-- 1. Espejo (Mirror) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-arrows-left-right"></i> Espejo (Mirror)
+                </span>
+                <input type="checkbox" id="fxMirrorToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="flex items-center justify-between gap-1 text-[9px]">
+                <span class="text-gray-400 font-mono">Eje de simetría:</span>
+                <div class="flex items-center gap-1">
+                  <button id="btnMirrorHoriz" class="touch-btn px-2 py-0.5 rounded bg-cyan-500 text-black font-extrabold text-[9px]">Horizontal</button>
+                  <button id="btnMirrorVert" class="touch-btn px-2 py-0.5 rounded bg-[#1c1f2e] text-gray-300 font-bold text-[9px] border border-[#2b2f44]">Vertical</button>
+                </div>
+              </div>
             </div>
-            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Curvatura</span><span id="fishVal">1.8</span></div>
-            <input type="range" id="fxFisheyeSlider" min="0.5" max="3.2" step="0.1" value="1.8" class="w-full">
-          </div>
 
-          <!-- Sepia Vintage -->
-          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-camera-retro"></i> Sepia GPU</span>
-              <input type="checkbox" id="fxSepiaToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            <!-- 2. Cilindro 3D (Cylinder) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-shapes"></i> Cilindro 3D
+                </span>
+                <input type="checkbox" id="fxCylinderToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Curvatura horizontal</span><span id="cylinderVal">45%</span>
+              </div>
+              <input type="range" id="fxCylinderSlider" min="10" max="95" value="45" class="w-full">
             </div>
-            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Intensidad</span><span id="sepiaVal">80%</span></div>
-            <input type="range" id="fxSepiaSlider" min="10" max="100" value="80" class="w-full">
-          </div>
 
-          <!-- Glitch VHS -->
-          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-pink-300 flex items-center gap-1.5"><i class="fa-solid fa-bolt"></i> Glitch VHS</span>
-              <input type="checkbox" id="fxGlitchToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            <!-- 3. Nieve (Snow) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-sky-200 flex items-center gap-1.5">
+                  <i class="fa-regular fa-snowflake"></i> Nieve Continua
+                </span>
+                <input type="checkbox" id="fxSnowToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Densidad</span><span id="snowDensityVal">60%</span>
+              </div>
+              <input type="range" id="fxSnowDensitySlider" min="10" max="100" value="60" class="w-full">
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono pt-0.5">
+                <span>Velocidad de caída</span><span id="snowSpeedVal">1.0x</span>
+              </div>
+              <input type="range" id="fxSnowSpeedSlider" min="5" max="25" value="10" class="w-full">
             </div>
-            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Desfase</span><span id="glitchVal">12px</span></div>
-            <input type="range" id="fxGlitchSlider" min="3" max="30" value="12" class="w-full">
-          </div>
 
-          <!-- Pixelado -->
-          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-yellow-300 flex items-center gap-1.5"><i class="fa-solid fa-border-all"></i> Pixelado</span>
-              <input type="checkbox" id="fxPixelateToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+            <!-- 4. Película Antigua (Film) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-film"></i> Película Antigua
+                </span>
+                <input type="checkbox" id="fxFilmToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Grano, rayones y parpadeo</span><span id="filmVal">70%</span>
+              </div>
+              <input type="range" id="fxFilmSlider" min="10" max="100" value="70" class="w-full">
             </div>
-            <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Mosaico</span><span id="pixelVal">14px</span></div>
-            <input type="range" id="fxPixelSlider" min="4" max="36" value="14" class="w-full">
-          </div>
 
-          <!-- Filtros B&N, Inversión, Viñeta -->
-          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] flex flex-col justify-around text-xs space-y-1">
-            <label class="flex items-center justify-between py-0.5 cursor-pointer">
-              <span class="text-[11px] text-gray-300 font-medium">B & N Cine</span>
-              <input type="checkbox" id="fxBwToggle" class="w-3.5 h-3.5 accent-cyan-400">
-            </label>
-            <label class="flex items-center justify-between py-0.5 cursor-pointer">
-              <span class="text-[11px] text-gray-300 font-medium">Inversión Color</span>
-              <input type="checkbox" id="fxInvertToggle" class="w-3.5 h-3.5 accent-cyan-400">
-            </label>
-            <label class="flex items-center justify-between py-0.5 cursor-pointer">
-              <span class="text-[11px] text-gray-300 font-medium">Viñeta Opcional</span>
-              <input type="checkbox" id="fxVignetteToggle" class="w-3.5 h-3.5 accent-cyan-400">
-            </label>
+            <!-- 5. Hojas Flotantes (Leaves) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-orange-400 flex items-center gap-1.5">
+                  <i class="fa-solid fa-leaf"></i> Hojas Cayendo
+                </span>
+                <input type="checkbox" id="fxLeavesToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Cantidad</span><span id="leavesCountVal">50%</span>
+              </div>
+              <input type="range" id="fxLeavesCountSlider" min="10" max="100" value="50" class="w-full">
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono pt-0.5">
+                <span>Fuerza de viento</span><span id="leavesWindVal">1.0</span>
+              </div>
+              <input type="range" id="fxLeavesWindSlider" min="2" max="25" value="10" class="w-full">
+            </div>
+
+            <!-- 6. Lluvia Continua (Rain) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-blue-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-cloud-showers-heavy"></i> Lluvia Continua
+                </span>
+                <input type="checkbox" id="fxRainToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Intensidad de lluvia</span><span id="rainDensityVal">70%</span>
+              </div>
+              <input type="range" id="fxRainDensitySlider" min="10" max="100" value="70" class="w-full">
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono pt-0.5">
+                <span>Velocidad</span><span id="rainSpeedVal">1.5x</span>
+              </div>
+              <input type="range" id="fxRainSpeedSlider" min="5" max="30" value="15" class="w-full">
+            </div>
+
+            <!-- 7. Mosaico de Vidrio (Glass Mosaics) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-teal-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-border-none"></i> Mosaico de Vidrio
+                </span>
+                <input type="checkbox" id="fxMosaicToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Tamaño de tesela</span><span id="mosaicSizeVal">18px</span>
+              </div>
+              <input type="range" id="fxMosaicSizeSlider" min="6" max="48" value="18" class="w-full">
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono pt-0.5">
+                <span>Relieve e iluminación</span><span id="mosaicReliefVal">70%</span>
+              </div>
+              <input type="range" id="fxMosaicReliefSlider" min="10" max="100" value="70" class="w-full">
+            </div>
+
+            <!-- 8. Vidrio Roto (Broken Glass) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-rose-300 flex items-center gap-1.5">
+                  <i class="fa-solid fa-burst"></i> Vidrio Roto
+                </span>
+                <input type="checkbox" id="fxGlassToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono">
+                <span>Densidad de fracturas</span><span id="glassDensityVal">60%</span>
+              </div>
+              <input type="range" id="fxGlassDensitySlider" min="10" max="100" value="60" class="w-full">
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono pt-0.5">
+                <span>Refracción óptica</span><span id="glassStrengthVal">80%</span>
+              </div>
+              <input type="range" id="fxGlassStrengthSlider" min="10" max="100" value="80" class="w-full">
+            </div>
+
+          </div>
+        </div>
+
+        <!-- SECCIÓN 2: EFECTOS BASE -->
+        <div class="space-y-1 pt-1">
+          <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
+            <i class="fa-solid fa-sliders text-gray-400 text-[9px]"></i> Efectos Base
+          </span>
+          <div class="grid grid-cols-2 gap-2 pb-2">
+            <!-- Onda (Wave) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-cyan-300 flex items-center gap-1.5"><i class="fa-solid fa-water"></i> Onda Senoidal</span>
+                <input type="checkbox" id="fxWaveToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Amplitud</span><span id="waveVal">16px</span></div>
+              <input type="range" id="fxWaveSlider" min="2" max="40" value="16" class="w-full">
+            </div>
+
+            <!-- Ojo de Pez (Fisheye) -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5"><i class="fa-solid fa-circle-dot"></i> Ojo de Pez</span>
+                <input type="checkbox" id="fxFisheyeToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Curvatura</span><span id="fishVal">1.8</span></div>
+              <input type="range" id="fxFisheyeSlider" min="0.5" max="3.2" step="0.1" value="1.8" class="w-full">
+            </div>
+
+            <!-- Sepia Vintage -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-camera-retro"></i> Sepia Vintage</span>
+                <input type="checkbox" id="fxSepiaToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Intensidad</span><span id="sepiaVal">80%</span></div>
+              <input type="range" id="fxSepiaSlider" min="10" max="100" value="80" class="w-full">
+            </div>
+
+            <!-- Glitch VHS -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-pink-300 flex items-center gap-1.5"><i class="fa-solid fa-bolt"></i> Glitch VHS</span>
+                <input type="checkbox" id="fxGlitchToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Desfase</span><span id="glitchVal">12px</span></div>
+              <input type="range" id="fxGlitchSlider" min="3" max="30" value="12" class="w-full">
+            </div>
+
+            <!-- Pixelado -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-1.5">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-yellow-300 flex items-center gap-1.5"><i class="fa-solid fa-border-all"></i> Pixelado Base</span>
+                <input type="checkbox" id="fxPixelateToggle" class="w-4 h-4 accent-cyan-400 rounded cursor-pointer">
+              </div>
+              <div class="text-[9px] text-gray-400 flex justify-between font-mono"><span>Mosaico</span><span id="pixelVal">14px</span></div>
+              <input type="range" id="fxPixelSlider" min="4" max="36" value="14" class="w-full">
+            </div>
+
+            <!-- Filtros B&N, Inversión, Viñeta -->
+            <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] flex flex-col justify-around text-xs space-y-1">
+              <label class="flex items-center justify-between py-0.5 cursor-pointer">
+                <span class="text-[11px] text-gray-300 font-medium">Blanco & Negro</span>
+                <input type="checkbox" id="fxBwToggle" class="w-3.5 h-3.5 accent-cyan-400">
+              </label>
+              <label class="flex items-center justify-between py-0.5 cursor-pointer">
+                <span class="text-[11px] text-gray-300 font-medium">Inversión Color</span>
+                <input type="checkbox" id="fxInvertToggle" class="w-3.5 h-3.5 accent-cyan-400">
+              </label>
+              <label class="flex items-center justify-between py-0.5 cursor-pointer">
+                <span class="text-[11px] text-gray-300 font-medium">Viñeta Opcional</span>
+                <input type="checkbox" id="fxVignetteToggle" class="w-3.5 h-3.5 accent-cyan-400">
+              </label>
+            </div>
           </div>
         </div>
       </div>
@@ -1661,6 +1882,11 @@
       uniform float u_bright;
       uniform float u_contrast;
 
+      // Zoom y Paneo óptico/digital del visor
+      uniform float u_viewerZoom;
+      uniform vec2 u_viewerPan;
+
+      // Efectos Base
       uniform int u_fxWave;
       uniform float u_waveAmp;
       uniform int u_fxFish;
@@ -1675,27 +1901,73 @@
       uniform int u_fxInvert;
       uniform int u_fxVignette;
 
+      // Efectos Premium
+      uniform int u_fxMirror;
+      uniform int u_mirrorMode; // 0 = Horizontal, 1 = Vertical
+      uniform int u_fxCylinder;
+      uniform float u_cylinderCurv;
+      uniform int u_fxSnow;
+      uniform float u_snowDensity;
+      uniform float u_snowSpeed;
+      uniform int u_fxFilm;
+      uniform float u_filmIntensity;
+      uniform int u_fxLeaves;
+      uniform float u_leavesCount;
+      uniform float u_leavesWind;
+      uniform int u_fxRain;
+      uniform float u_rainDensity;
+      uniform float u_rainSpeed;
+      uniform int u_fxMosaic;
+      uniform float u_mosaicSize;
+      uniform float u_mosaicRelief;
+      uniform int u_fxGlass;
+      uniform float u_glassDensity;
+      uniform float u_glassStrength;
+
+      // Transiciones
       uniform int u_transType;
       uniform float u_transProg;
 
       varying vec2 v_uv;
 
       void main() {
-        vec2 uv = v_uv;
+        // Coordenadas con soporte de Zoom Digital (1.0x - 4.0x) y Paneo táctil
+        vec2 uv = (v_uv - 0.5 - u_viewerPan) / max(u_viewerZoom, 1.0) + 0.5;
+        uv = clamp(uv, 0.0, 1.0);
 
-        // 1. Pixelado GPU
-        if (u_fxPixel == 1 && u_pixelSize > 1.0) {
+        // 1. Espejo (Mirror): simetría en tiempo real horizontal o vertical
+        if (u_fxMirror == 1) {
+          if (u_mirrorMode == 0) {
+            if (uv.x > 0.5) uv.x = 1.0 - uv.x;
+          } else {
+            if (uv.y > 0.5) uv.y = 1.0 - uv.y;
+          }
+        }
+
+        // 2. Cilindro 3D (Cylinder): curvatura cilíndrica horizontal
+        if (u_fxCylinder == 1) {
+          float cX = uv.x - 0.5;
+          float cZ = sqrt(max(0.001, 0.25 - cX * cX * (u_cylinderCurv * 0.95)));
+          uv.x = 0.5 + (cX / (cZ * 2.0));
+          uv = clamp(uv, 0.0, 1.0);
+        }
+
+        // 3. Mosaico de Vidrio / Pixelado (Cuantización de coordenadas)
+        if (u_fxMosaic == 1 && u_mosaicSize > 2.0) {
+          vec2 mTile = vec2(u_mosaicSize / u_res.x, u_mosaicSize / u_res.y);
+          uv = (floor(uv / mTile) + 0.5) * mTile;
+        } else if (u_fxPixel == 1 && u_pixelSize > 1.0) {
           vec2 pSize = vec2(u_pixelSize / u_res.x, u_pixelSize / u_res.y);
           uv = floor(uv / pSize) * pSize;
         }
 
-        // 2. Onda GPU
+        // 4. Onda GPU
         if (u_fxWave == 1) {
           float shift = sin(uv.y * 32.0 + u_time * 6.0) * (u_waveAmp / u_res.x);
           uv.x += shift;
         }
 
-        // 3. Ojo de Pez Polar GPU
+        // 5. Ojo de Pez Polar GPU
         if (u_fxFish == 1) {
           vec2 p = uv - vec2(0.5);
           float r = length(p) * 2.0;
@@ -1706,9 +1978,21 @@
           }
         }
 
+        // 6. Vidrio Roto: Refracción óptica en las uniones de las grietas
+        float crackVal = 0.0;
+        if (u_fxGlass == 1) {
+          vec2 dP = uv - vec2(0.5);
+          float rad = length(dP);
+          float ang = atan(dP.y, dP.x);
+          float spoke = abs(sin(ang * 8.0 + sin(rad * 22.0) * 1.5));
+          float ring = abs(sin(rad * (20.0 + u_glassDensity * 20.0)));
+          crackVal = (smoothstep(0.08, 0.0, spoke) + smoothstep(0.12, 0.0, ring)) * u_glassStrength;
+          uv += vec2(cos(ang * 3.0), sin(ang * 3.0)) * crackVal * 0.025;
+        }
+
         uv = clamp(uv, 0.0, 1.0);
 
-        // 4. Glitch VHS con desfase cromático y scanlines
+        // Muestreo de textura de video (con Glitch VHS si está activo)
         vec4 col;
         if (u_fxGlitch == 1) {
           float shift = u_glitchShift / u_res.x;
@@ -1722,11 +2006,83 @@
           col = texture2D(u_image, uv);
         }
 
+        // Mosaico de Vidrio: relieve y bisel iluminado
+        if (u_fxMosaic == 1 && u_mosaicSize > 2.0) {
+          vec2 mTile = vec2(u_mosaicSize / u_res.x, u_mosaicSize / u_res.y);
+          vec2 mInner = fract(v_uv / mTile);
+          float bevel = (1.0 - smoothstep(0.0, 0.15, mInner.x)) * 0.3
+                      + (1.0 - smoothstep(0.0, 0.15, mInner.y)) * 0.3
+                      - smoothstep(0.85, 1.0, mInner.x) * 0.3
+                      - smoothstep(0.85, 1.0, mInner.y) * 0.3;
+          col.rgb = mix(col.rgb, col.rgb + bevel, u_mosaicRelief);
+        }
+
+        // Vidrio Roto: destellos en grietas
+        if (u_fxGlass == 1 && crackVal > 0.01) {
+          col.rgb = mix(col.rgb, vec3(1.0, 1.0, 1.0), clamp(crackVal * 0.65, 0.0, 0.85));
+        }
+
+        // Partículas de Nieve continuas
+        if (u_fxSnow == 1) {
+          vec2 sUv = v_uv * vec2(u_res.x / u_res.y, 1.0) * (18.0 + u_snowDensity * 24.0);
+          sUv.y += u_time * (2.0 + u_snowSpeed * 3.5);
+          sUv.x += sin(u_time * 1.5 + sUv.y * 0.4) * 0.4;
+          vec2 gId = floor(sUv);
+          vec2 gUv = fract(sUv) - 0.5;
+          float rnd = fract(sin(dot(gId, vec2(12.9898, 78.233))) * 43758.5453);
+          if (rnd > (1.0 - u_snowDensity * 0.65)) {
+            float flake = smoothstep(0.22 * rnd, 0.0, length(gUv - vec2(rnd * 0.3 - 0.15)));
+            col.rgb += vec3(flake * 0.95);
+          }
+        }
+
+        // Película Antigua (Film): grano, parpadeo, rayones verticales y tinte sepia/cálido
+        if (u_fxFilm == 1) {
+          float grain = (fract(sin(dot(v_uv * (u_time + 1.0), vec2(12.9898, 78.233))) * 43758.5453) - 0.5) * u_filmIntensity * 0.4;
+          float flicker = sin(u_time * 26.0) * 0.06 * u_filmIntensity;
+          float scratch1 = smoothstep(0.003, 0.0, abs(v_uv.x - fract(sin(floor(u_time * 10.0)) * 91.0))) * 0.45 * u_filmIntensity;
+          float scratch2 = smoothstep(0.002, 0.0, abs(v_uv.x - fract(sin(floor(u_time * 6.0)) * 173.0))) * 0.55 * u_filmIntensity;
+          col.rgb = mix(col.rgb, vec3(col.r * 1.15 + 0.05, col.g * 0.95 + 0.02, col.b * 0.72), u_filmIntensity * 0.65);
+          col.rgb += grain + flicker - scratch1 - scratch2;
+        }
+
+        // Hojas Cayendo (Leaves): rotación y viento
+        if (u_fxLeaves == 1) {
+          vec2 lUv = v_uv * vec2(u_res.x / u_res.y, 1.0) * (8.0 + u_leavesCount * 10.0);
+          lUv.y += u_time * 1.8;
+          lUv.x -= u_time * (1.2 + u_leavesWind * 2.5);
+          vec2 lId = floor(lUv);
+          vec2 lFract = fract(lUv) - 0.5;
+          float rnd = fract(sin(dot(lId, vec2(39.34, 84.12))) * 23421.631);
+          if (rnd > (1.0 - u_leavesCount * 0.55)) {
+            float angle = u_time * 3.0 + rnd * 6.28;
+            vec2 rotUv = vec2(lFract.x * cos(angle) - lFract.y * sin(angle), lFract.x * sin(angle) + lFract.y * cos(angle));
+            float leafShape = (1.0 - smoothstep(0.04, 0.22, abs(rotUv.x) * 2.2 + abs(rotUv.y)));
+            vec3 leafCol = mix(vec3(0.85, 0.4, 0.08), vec3(0.7, 0.18, 0.05), rnd);
+            col.rgb = mix(col.rgb, leafCol, leafShape * u_leavesCount * 0.9);
+          }
+        }
+
+        // Lluvia Continua (Rain): trazos diagonales translúcidos a alta velocidad
+        if (u_fxRain == 1) {
+          vec2 rUv = v_uv * vec2(u_res.x / u_res.y, 1.0);
+          rUv.x += rUv.y * 0.3 + u_time * 0.7;
+          rUv.y += u_time * (9.0 + u_rainSpeed * 12.0);
+          rUv *= vec2(55.0 + u_rainDensity * 45.0, 14.0);
+          vec2 rId = floor(rUv);
+          vec2 rFract = fract(rUv);
+          float rnd = fract(sin(dot(rId, vec2(93.1, 41.7))) * 87642.1);
+          if (rnd > (1.0 - u_rainDensity * 0.55)) {
+            float drop = smoothstep(0.09, 0.0, abs(rFract.x - 0.5)) * smoothstep(0.0, 0.7, rFract.y);
+            col.rgb += vec3(0.65, 0.8, 0.98) * drop * 0.65;
+          }
+        }
+
         // Calibración Brillo y Contraste
         col.rgb = (col.rgb - 0.5) * u_contrast + 0.5;
         col.rgb *= u_bright;
 
-        // 5. Sepia Vintage
+        // Sepia Vintage
         if (u_fxSepia == 1) {
           vec3 sCol;
           sCol.r = dot(col.rgb, vec3(0.393, 0.769, 0.189));
@@ -1735,25 +2091,25 @@
           col.rgb = mix(col.rgb, sCol, u_sepiaVal);
         }
 
-        // 6. Blanco y Negro Cine
+        // Blanco y Negro Cine
         if (u_fxBw == 1) {
           float gr = dot(col.rgb, vec3(0.299, 0.587, 0.114));
           col.rgb = vec3(gr);
         }
 
-        // 7. Inversión
+        // Inversión
         if (u_fxInvert == 1) {
           col.rgb = 1.0 - col.rgb;
         }
 
-        // 8. Viñeta
+        // Viñeta (desactivada por defecto para máxima nitidez)
         if (u_fxVignette == 1) {
-          float dist = distance(uv, vec2(0.5));
+          float dist = distance(v_uv, vec2(0.5));
           float vig = smoothstep(0.72, 0.28, dist);
           col.rgb *= vig;
         }
 
-        // 9. Transición GPU entre cortes
+        // Transiciones GPU entre cortes
         if (u_transType == 1) { // Fundido a Negro
           float a = u_transProg < 0.5 ? u_transProg * 2.0 : (1.0 - u_transProg) * 2.0;
           col.rgb = mix(col.rgb, vec3(0.0), clamp(a, 0.0, 1.0));
@@ -1761,10 +2117,10 @@
           float a = u_transProg < 0.5 ? u_transProg * 2.0 : (1.0 - u_transProg) * 2.0;
           col.rgb = mix(col.rgb, vec3(1.0), clamp(a * 0.95, 0.0, 1.0));
         } else if (u_transType == 3) { // Cortinilla (Wipe)
-          if (uv.x < u_transProg) {
+          if (v_uv.x < u_transProg) {
             col.rgb = mix(col.rgb, vec3(0.0, 0.94, 1.0), 0.22);
           }
-          if (abs(uv.x - u_transProg) < 0.005) {
+          if (abs(v_uv.x - u_transProg) < 0.005) {
             col.rgb = vec3(0.0, 0.94, 1.0);
           }
         } else if (u_transType == 4) { // Crossfade
@@ -1808,8 +2164,8 @@
         gl.enableVertexAttribArray(posAttr);
         gl.vertexAttribPointer(posAttr, 2, gl.FLOAT, false, 0, 0);
 
-        const uvBuf = gl.createBuffer();
-        gl.bindBuffer(gl.ARRAY_BUFFER, uvBuf);
+        this.uvBuf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuf);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0, 0, 0, 1, 1, 0, 1, 1]), gl.STATIC_DRAW);
         const uvAttr = gl.getAttribLocation(prog, 'a_uv');
         gl.enableVertexAttribArray(uvAttr);
@@ -1823,9 +2179,20 @@
         gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 
         this.u = {};
-        const unifs = ['u_image', 'u_res', 'u_time', 'u_bright', 'u_contrast', 'u_fxWave', 'u_waveAmp',
-                       'u_fxFish', 'u_fishStr', 'u_fxSepia', 'u_sepiaVal', 'u_fxGlitch', 'u_glitchShift',
-                       'u_fxPixel', 'u_pixelSize', 'u_fxBw', 'u_fxInvert', 'u_fxVignette', 'u_transType', 'u_transProg'];
+        const unifs = [
+          'u_image', 'u_res', 'u_time', 'u_bright', 'u_contrast',
+          'u_viewerZoom', 'u_viewerPan',
+          'u_fxWave', 'u_waveAmp', 'u_fxFish', 'u_fishStr', 'u_fxSepia', 'u_sepiaVal',
+          'u_fxGlitch', 'u_glitchShift', 'u_fxPixel', 'u_pixelSize', 'u_fxBw', 'u_fxInvert', 'u_fxVignette',
+          'u_fxMirror', 'u_mirrorMode', 'u_fxCylinder', 'u_cylinderCurv',
+          'u_fxSnow', 'u_snowDensity', 'u_snowSpeed',
+          'u_fxFilm', 'u_filmIntensity',
+          'u_fxLeaves', 'u_leavesCount', 'u_leavesWind',
+          'u_fxRain', 'u_rainDensity', 'u_rainSpeed',
+          'u_fxMosaic', 'u_mosaicSize', 'u_mosaicRelief',
+          'u_fxGlass', 'u_glassDensity', 'u_glassStrength',
+          'u_transType', 'u_transProg'
+        ];
         unifs.forEach(n => this.u[n] = gl.getUniformLocation(prog, n));
         this.ready = true;
       }
@@ -1842,6 +2209,9 @@
         if (!this.canvas) return;
         const w = this.canvas.width;
         const h = this.canvas.height;
+        const zoom = state.viewerZoom || 1.0;
+        const panX = state.viewerPanX || 0;
+        const panY = state.viewerPanY || 0;
 
         // Fallback 2D si WebGL no está disponible
         if (!this.gl) {
@@ -1865,7 +2235,12 @@
             }
             this.ctx2d.fillStyle = '#000000';
             this.ctx2d.fillRect(0, 0, w, h);
-            this.ctx2d.drawImage(sourceVideo, dx, dy, dw, dh);
+            this.ctx2d.save();
+            this.ctx2d.translate(dx + dw / 2, dy + dh / 2);
+            this.ctx2d.scale(zoom, zoom);
+            this.ctx2d.translate(-panX * dw, panY * dh);
+            this.ctx2d.drawImage(sourceVideo, -dw / 2, -dh / 2, dw, dh);
+            this.ctx2d.restore();
           }
           return;
         }
@@ -1884,10 +2259,8 @@
         let scaleX = 1.0;
         let scaleY = 1.0;
         if (vAspect > cAspect) {
-          // Video más panorámico que el canvas: franjas negras arriba y abajo
           scaleY = cAspect / vAspect;
         } else if (vAspect < cAspect) {
-          // Video vertical o más estrecho que el canvas: franjas negras a los lados
           scaleX = vAspect / cAspect;
         }
 
@@ -1917,20 +2290,50 @@
         gl.uniform1f(this.u['u_bright'], state.brightness / 100);
         gl.uniform1f(this.u['u_contrast'], state.contrast / 100);
 
-        gl.uniform1i(this.u['u_fxWave'], state.effects.wave ? 1 : 0);
-        gl.uniform1f(this.u['u_waveAmp'], state.effects.waveAmp);
-        gl.uniform1i(this.u['u_fxFish'], state.effects.fisheye ? 1 : 0);
-        gl.uniform1f(this.u['u_fishStr'], state.effects.fisheyeStrength);
-        gl.uniform1i(this.u['u_fxSepia'], state.effects.sepia ? 1 : 0);
-        gl.uniform1f(this.u['u_sepiaVal'], state.effects.sepiaVal);
-        gl.uniform1i(this.u['u_fxGlitch'], state.effects.glitch ? 1 : 0);
-        gl.uniform1f(this.u['u_glitchShift'], state.effects.glitchShift);
-        gl.uniform1i(this.u['u_fxPixel'], state.effects.pixelate ? 1 : 0);
-        gl.uniform1f(this.u['u_pixelSize'], state.effects.pixelSize);
-        gl.uniform1i(this.u['u_fxBw'], state.effects.bw ? 1 : 0);
-        gl.uniform1i(this.u['u_fxInvert'], state.effects.invert ? 1 : 0);
-        gl.uniform1i(this.u['u_fxVignette'], state.effects.vignette ? 1 : 0);
+        // Zoom y Paneo óptico/digital
+        gl.uniform1f(this.u['u_viewerZoom'], zoom);
+        gl.uniform2f(this.u['u_viewerPan'], panX, panY);
 
+        // Efectos Base
+        const fx = state.effects || {};
+        gl.uniform1i(this.u['u_fxWave'], fx.wave ? 1 : 0);
+        gl.uniform1f(this.u['u_waveAmp'], fx.waveAmp || 16);
+        gl.uniform1i(this.u['u_fxFish'], fx.fisheye ? 1 : 0);
+        gl.uniform1f(this.u['u_fishStr'], fx.fisheyeStrength || 1.8);
+        gl.uniform1i(this.u['u_fxSepia'], fx.sepia ? 1 : 0);
+        gl.uniform1f(this.u['u_sepiaVal'], fx.sepiaVal !== undefined ? fx.sepiaVal : 0.8);
+        gl.uniform1i(this.u['u_fxGlitch'], fx.glitch ? 1 : 0);
+        gl.uniform1f(this.u['u_glitchShift'], fx.glitchShift || 12);
+        gl.uniform1i(this.u['u_fxPixel'], fx.pixelate ? 1 : 0);
+        gl.uniform1f(this.u['u_pixelSize'], fx.pixelSize || 14);
+        gl.uniform1i(this.u['u_fxBw'], fx.bw ? 1 : 0);
+        gl.uniform1i(this.u['u_fxInvert'], fx.invert ? 1 : 0);
+        gl.uniform1i(this.u['u_fxVignette'], fx.vignette ? 1 : 0);
+
+        // Efectos Premium
+        gl.uniform1i(this.u['u_fxMirror'], fx.mirror ? 1 : 0);
+        gl.uniform1i(this.u['u_mirrorMode'], fx.mirrorMode || 0);
+        gl.uniform1i(this.u['u_fxCylinder'], fx.cylinder ? 1 : 0);
+        gl.uniform1f(this.u['u_cylinderCurv'], fx.cylinderCurv || 0.45);
+        gl.uniform1i(this.u['u_fxSnow'], fx.snow ? 1 : 0);
+        gl.uniform1f(this.u['u_snowDensity'], fx.snowDensity || 0.6);
+        gl.uniform1f(this.u['u_snowSpeed'], fx.snowSpeed || 1.0);
+        gl.uniform1i(this.u['u_fxFilm'], fx.film ? 1 : 0);
+        gl.uniform1f(this.u['u_filmIntensity'], fx.filmIntensity || 0.7);
+        gl.uniform1i(this.u['u_fxLeaves'], fx.leaves ? 1 : 0);
+        gl.uniform1f(this.u['u_leavesCount'], fx.leavesCount || 0.5);
+        gl.uniform1f(this.u['u_leavesWind'], fx.leavesWind || 1.0);
+        gl.uniform1i(this.u['u_fxRain'], fx.rain ? 1 : 0);
+        gl.uniform1f(this.u['u_rainDensity'], fx.rainDensity || 0.7);
+        gl.uniform1f(this.u['u_rainSpeed'], fx.rainSpeed || 1.5);
+        gl.uniform1i(this.u['u_fxMosaic'], fx.mosaics ? 1 : 0);
+        gl.uniform1f(this.u['u_mosaicSize'], fx.mosaicSize || 18);
+        gl.uniform1f(this.u['u_mosaicRelief'], fx.mosaicRelief || 0.7);
+        gl.uniform1i(this.u['u_fxGlass'], fx.brokenGlass ? 1 : 0);
+        gl.uniform1f(this.u['u_glassDensity'], fx.glassDensity || 0.6);
+        gl.uniform1f(this.u['u_glassStrength'], fx.glassStrength || 0.8);
+
+        // Transición
         gl.uniform1i(this.u['u_transType'], state.activeTransition.type);
         gl.uniform1f(this.u['u_transProg'], state.activeTransition.prog);
 
@@ -1968,7 +2371,13 @@
       isDrawerOpen: true,
       currentRatio: '16:9',
       activeTab: 'panel-timeline',
+      previewQuality: '720p',
       
+      // Zoom óptico/digital del visor
+      viewerZoom: 1.0,
+      viewerPanX: 0.0,
+      viewerPanY: 0.0,
+
       clipsV1: [],
       activeClipId: null,
       activeTransition: { type: 0, prog: 0 },
@@ -2002,7 +2411,30 @@
         pixelSize: 14,
         bw: false,
         invert: false,
-        vignette: false
+        vignette: false, // Apagado por defecto para máxima nitidez
+
+        // Efectos Visuales Premium
+        mirror: false,
+        mirrorMode: 0, // 0 = Horizontal, 1 = Vertical
+        cylinder: false,
+        cylinderCurv: 0.45,
+        snow: false,
+        snowDensity: 0.6,
+        snowSpeed: 1.0,
+        film: false,
+        filmIntensity: 0.7,
+        leaves: false,
+        leavesCount: 0.5,
+        leavesWind: 1.0,
+        rain: false,
+        rainDensity: 0.7,
+        rainSpeed: 1.5,
+        mosaics: false,
+        mosaicSize: 18,
+        mosaicRelief: 0.7,
+        brokenGlass: false,
+        glassDensity: 0.6,
+        glassStrength: 0.8
       },
       audioEffects: {
         voiceMod: 'none',
@@ -4684,6 +5116,13 @@
       const originalSourceDur = clip.endInSource - clip.startInSource;
       clip.duration = Number((originalSourceDur / newSpeed).toFixed(2));
 
+      // Recalcular startOffset proporcional de todos los clips V1 (efecto Ripple)
+      let offset = 0;
+      APP_STATE.clipsV1.forEach(c => {
+        c.startOffset = Number(offset.toFixed(2));
+        offset += c.duration;
+      });
+
       renderTimeline();
       updateClipActionLabels();
       syncPlayback(APP_STATE.currentTime);
@@ -5906,55 +6345,86 @@
       }
     }
 
-    // Bandera de control de ciclo de vida de importación para evitar llamadas duplicadas
+    // Control de ciclo de vida de importación para múltiples archivos locales
     let isImporting = false;
 
-    async function handleUserVideoFileImport(file) {
-      if (!file) return;
-      if (isImporting) return; // Debounce / control de concurrencia
+    async function handleUserVideoFilesImport(files) {
+      if (!files || files.length === 0) return;
+      if (isImporting) return;
       isImporting = true;
 
       try {
         pauseVideo();
+        const fileList = Array.from(files);
 
-        // 1. Reseteo explícito del arreglo global de clips antes de procesar el archivo
-        APP_STATE.clipsV1 = [];
-        APP_STATE.activeClipId = null;
-        APP_STATE.selectedItemId = null;
-        APP_STATE.currentTime = 0;
-        renderTimeline();
+        for (let i = 0; i < fileList.length; i++) {
+          const file = fileList[i];
+          const url = URL.createObjectURL(file);
 
-        // 2. Limpieza de memoria para URLs previas antes de asignar la nueva
-        if (hiddenVideo && hiddenVideo.src && hiddenVideo.src.startsWith('blob:')) {
-          try { URL.revokeObjectURL(hiddenVideo.src); } catch (e) {}
+          if (APP_STATE.clipsV1.length === 0 && i === 0) {
+            // Primer archivo inicializa el video base
+            await loadVideoMedia(url, file.name, file);
+          } else {
+            // Archivos adicionales se agregan al final del timeline y al Media Pool
+            const tempVid = document.createElement('video');
+            tempVid.preload = 'metadata';
+            tempVid.src = url;
+            await new Promise((res) => {
+              tempVid.onloadedmetadata = () => res();
+              tempVid.onerror = () => res();
+              setTimeout(res, 1200);
+            });
+            const dur = tempVid.duration && !isNaN(tempVid.duration) && tempVid.duration > 0 ? Number(tempVid.duration.toFixed(2)) : 6.0;
+
+            let thumb = '';
+            try {
+              const tc = document.createElement('canvas');
+              tc.width = 160;
+              tc.height = 90;
+              const tCtx = tc.getContext('2d');
+              tCtx.fillStyle = '#000000';
+              tCtx.fillRect(0, 0, 160, 90);
+              tCtx.drawImage(tempVid, 0, 0, 160, 90);
+              thumb = tc.toDataURL('image/jpeg', 0.65);
+            } catch (e) {}
+
+            const mediaItem = {
+              id: 'media-' + Date.now() + '-' + i,
+              name: file.name,
+              type: 'video',
+              blob: file,
+              thumbnail: thumb,
+              duration: dur,
+              sizeStr: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
+              dateStr: new Date().toLocaleDateString()
+            };
+            await dbSaveMediaItem(mediaItem);
+            addItemToV1(mediaItem);
+          }
         }
-        if (APP_STATE.sourceUrl && APP_STATE.sourceUrl.startsWith('blob:')) {
-          try { URL.revokeObjectURL(APP_STATE.sourceUrl); } catch (e) {}
-        }
-
-        const url = URL.createObjectURL(file);
-        await loadVideoMedia(url, file.name, file);
+        await renderLibraryUI();
+        showMobileToast(`${fileList.length} video(s) importado(s)`);
       } catch (err) {
-        console.error("Error importando video:", err);
-        showMobileToast("Error al importar el archivo");
+        console.error("Error importando archivos:", err);
+        showMobileToast("Error al importar archivos");
       } finally {
         isImporting = false;
       }
     }
 
     safeOn(filePicker, 'change', async (e) => {
-      const file = e.target.files && e.target.files[0];
-      if (file) {
-        await handleUserVideoFileImport(file);
-        e.target.value = ''; // Permite volver a abrir el mismo archivo
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        await handleUserVideoFilesImport(files);
+        e.target.value = '';
       }
     });
 
-    safeOn('menuVideoFileInput', 'change', async (e) => {
-      closeHeaderMenu();
-      const file = e.target.files && e.target.files[0];
-      if (file) {
-        await handleUserVideoFileImport(file);
+    safeOn('drawerVideoFileInput', 'change', async (e) => {
+      closeAppMenuModal();
+      const files = e.target.files;
+      if (files && files.length > 0) {
+        await handleUserVideoFilesImport(files);
         e.target.value = '';
       }
     });
@@ -6137,8 +6607,145 @@
     });
 
     /* ========================================================
-       16. CONTROLADORES DE EFECTOS SHADER GPU
+       16. CONTROLADORES DE EFECTOS SHADER GPU (PREMIUM & BASE)
        ======================================================== */
+    // 1. Espejo (Mirror)
+    safeOn('fxMirrorToggle', 'change', e => {
+      APP_STATE.effects.mirror = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('btnMirrorHoriz', 'click', () => {
+      APP_STATE.effects.mirrorMode = 0;
+      const bH = document.getElementById('btnMirrorHoriz');
+      const bV = document.getElementById('btnMirrorVert');
+      if (bH) bH.className = "touch-btn px-2 py-0.5 rounded bg-cyan-500 text-black font-extrabold text-[9px]";
+      if (bV) bV.className = "touch-btn px-2 py-0.5 rounded bg-[#1c1f2e] text-gray-300 font-bold text-[9px] border border-[#2b2f44]";
+      renderCurrentFrame();
+    });
+    safeOn('btnMirrorVert', 'click', () => {
+      APP_STATE.effects.mirrorMode = 1;
+      const bH = document.getElementById('btnMirrorHoriz');
+      const bV = document.getElementById('btnMirrorVert');
+      if (bV) bV.className = "touch-btn px-2 py-0.5 rounded bg-cyan-500 text-black font-extrabold text-[9px]";
+      if (bH) bH.className = "touch-btn px-2 py-0.5 rounded bg-[#1c1f2e] text-gray-300 font-bold text-[9px] border border-[#2b2f44]";
+      renderCurrentFrame();
+    });
+
+    // 2. Cilindro 3D (Cylinder)
+    safeOn('fxCylinderToggle', 'change', e => {
+      APP_STATE.effects.cylinder = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxCylinderSlider', 'input', e => {
+      APP_STATE.effects.cylinderCurv = parseInt(e.target.value) / 100;
+      const val = document.getElementById('cylinderVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+
+    // 3. Nieve (Snow)
+    safeOn('fxSnowToggle', 'change', e => {
+      APP_STATE.effects.snow = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxSnowDensitySlider', 'input', e => {
+      APP_STATE.effects.snowDensity = parseInt(e.target.value) / 100;
+      const val = document.getElementById('snowDensityVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+    safeOn('fxSnowSpeedSlider', 'input', e => {
+      APP_STATE.effects.snowSpeed = parseInt(e.target.value) / 10;
+      const val = document.getElementById('snowSpeedVal');
+      if (val) val.textContent = (parseInt(e.target.value) / 10).toFixed(1) + 'x';
+      renderCurrentFrame();
+    });
+
+    // 4. Película Antigua (Film)
+    safeOn('fxFilmToggle', 'change', e => {
+      APP_STATE.effects.film = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxFilmSlider', 'input', e => {
+      APP_STATE.effects.filmIntensity = parseInt(e.target.value) / 100;
+      const val = document.getElementById('filmVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+
+    // 5. Hojas Cayendo (Leaves)
+    safeOn('fxLeavesToggle', 'change', e => {
+      APP_STATE.effects.leaves = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxLeavesCountSlider', 'input', e => {
+      APP_STATE.effects.leavesCount = parseInt(e.target.value) / 100;
+      const val = document.getElementById('leavesCountVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+    safeOn('fxLeavesWindSlider', 'input', e => {
+      APP_STATE.effects.leavesWind = parseInt(e.target.value) / 10;
+      const val = document.getElementById('leavesWindVal');
+      if (val) val.textContent = (parseInt(e.target.value) / 10).toFixed(1);
+      renderCurrentFrame();
+    });
+
+    // 6. Lluvia Continua (Rain)
+    safeOn('fxRainToggle', 'change', e => {
+      APP_STATE.effects.rain = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxRainDensitySlider', 'input', e => {
+      APP_STATE.effects.rainDensity = parseInt(e.target.value) / 100;
+      const val = document.getElementById('rainDensityVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+    safeOn('fxRainSpeedSlider', 'input', e => {
+      APP_STATE.effects.rainSpeed = parseInt(e.target.value) / 10;
+      const val = document.getElementById('rainSpeedVal');
+      if (val) val.textContent = (parseInt(e.target.value) / 10).toFixed(1) + 'x';
+      renderCurrentFrame();
+    });
+
+    // 7. Mosaico de Vidrio (Glass Mosaics)
+    safeOn('fxMosaicToggle', 'change', e => {
+      APP_STATE.effects.mosaics = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxMosaicSizeSlider', 'input', e => {
+      APP_STATE.effects.mosaicSize = parseInt(e.target.value);
+      const val = document.getElementById('mosaicSizeVal');
+      if (val) val.textContent = e.target.value + 'px';
+      renderCurrentFrame();
+    });
+    safeOn('fxMosaicReliefSlider', 'input', e => {
+      APP_STATE.effects.mosaicRelief = parseInt(e.target.value) / 100;
+      const val = document.getElementById('mosaicReliefVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+
+    // 8. Vidrio Roto (Broken Glass)
+    safeOn('fxGlassToggle', 'change', e => {
+      APP_STATE.effects.brokenGlass = e.target.checked;
+      renderCurrentFrame();
+    });
+    safeOn('fxGlassDensitySlider', 'input', e => {
+      APP_STATE.effects.glassDensity = parseInt(e.target.value) / 100;
+      const val = document.getElementById('glassDensityVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+    safeOn('fxGlassStrengthSlider', 'input', e => {
+      APP_STATE.effects.glassStrength = parseInt(e.target.value) / 100;
+      const val = document.getElementById('glassStrengthVal');
+      if (val) val.textContent = e.target.value + '%';
+      renderCurrentFrame();
+    });
+
+    // Efectos Base
     safeOn('fxWaveToggle', 'change', e => { APP_STATE.effects.wave = e.target.checked; renderCurrentFrame(); });
     safeOn('fxWaveSlider', 'input', e => {
       APP_STATE.effects.waveAmp = parseInt(e.target.value);
@@ -6297,55 +6904,213 @@
     });
 
     /* ========================================================
-       18. INICIALIZACIÓN AUTOMÁTICA SEGURA Y MENÚ MÓVIL (⋮)
+       18. INICIALIZACIÓN AUTOMÁTICA, VISOR ZOOM/PAN Y MENÚ MÓVIL (⋮)
        ======================================================== */
-    const btnHeaderMenu = document.getElementById('btnHeaderMenu');
-    const headerDropdownMenu = document.getElementById('headerDropdownMenu');
-    const menuItemNewProject = document.getElementById('menuItemNewProject');
-    const menuItemExport = document.getElementById('menuItemExport');
-    const menuItemClearTimeline = document.getElementById('menuItemClearTimeline');
-    const menuItemPwa = document.getElementById('menuItemPwa');
+    // A. ZOOM ÓPTICO / DIGITAL Y PANEO TÁCTIL DEL VISOR
+    const viewerZoomSlider = document.getElementById('viewerZoomSlider');
+    const viewerZoomResetBtn = document.getElementById('viewerZoomResetBtn');
+    const viewerZoomLabel = document.getElementById('viewerZoomLabel');
+    const viewerPanHint = document.getElementById('viewerPanHint');
 
-    function closeHeaderMenu() {
-      if (headerDropdownMenu) headerDropdownMenu.classList.add('hidden');
+    if (viewerZoomSlider) {
+      safeOn(viewerZoomSlider, 'input', (e) => {
+        const z = parseFloat(e.target.value) || 1.0;
+        APP_STATE.viewerZoom = z;
+        if (viewerZoomLabel) viewerZoomLabel.textContent = `${z.toFixed(1)}x`;
+        if (viewerPanHint) {
+          if (z > 1.05) viewerPanHint.classList.remove('hidden');
+          else viewerPanHint.classList.add('hidden');
+        }
+        if (z <= 1.0) {
+          APP_STATE.viewerPanX = 0;
+          APP_STATE.viewerPanY = 0;
+        }
+        renderCurrentFrame();
+      });
     }
 
-    safeOn(btnHeaderMenu, 'click', (e) => {
+    if (viewerZoomResetBtn) {
+      safeOn(viewerZoomResetBtn, 'click', () => {
+        APP_STATE.viewerZoom = 1.0;
+        APP_STATE.viewerPanX = 0;
+        APP_STATE.viewerPanY = 0;
+        if (viewerZoomSlider) viewerZoomSlider.value = 1.0;
+        if (viewerZoomLabel) viewerZoomLabel.textContent = '1.0x';
+        if (viewerPanHint) viewerPanHint.classList.add('hidden');
+        renderCurrentFrame();
+        showMobileToast("Zoom del visor restablecido a 1.0x");
+      });
+    }
+
+    // Paneo táctil en playerFrame cuando Zoom > 1.0x
+    let isPanningViewer = false;
+    let panStartX = 0;
+    let panStartY = 0;
+    let panStartViewerX = 0;
+    let panStartViewerY = 0;
+
+    if (playerFrame) {
+      playerFrame.addEventListener('pointerdown', (e) => {
+        if (APP_STATE.viewerZoom <= 1.05) return;
+        if (e.target.closest('button') || e.target.closest('input')) return;
+        isPanningViewer = true;
+        panStartX = e.clientX;
+        panStartY = e.clientY;
+        panStartViewerX = APP_STATE.viewerPanX;
+        panStartViewerY = APP_STATE.viewerPanY;
+        try { playerFrame.setPointerCapture(e.pointerId); } catch (_) {}
+      });
+
+      playerFrame.addEventListener('pointermove', (e) => {
+        if (!isPanningViewer) return;
+        const rect = playerFrame.getBoundingClientRect();
+        const dx = (e.clientX - panStartX) / (rect.width || 300);
+        const dy = (e.clientY - panStartY) / (rect.height || 200);
+        const maxPan = 0.5 * (1.0 - 1.0 / APP_STATE.viewerZoom);
+
+        APP_STATE.viewerPanX = Math.max(-maxPan, Math.min(maxPan, panStartViewerX - dx));
+        APP_STATE.viewerPanY = Math.max(-maxPan, Math.min(maxPan, panStartViewerY + dy));
+        renderCurrentFrame();
+      });
+
+      const endViewerPan = (e) => {
+        if (!isPanningViewer) return;
+        isPanningViewer = false;
+        try { playerFrame.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+      playerFrame.addEventListener('pointerup', endViewerPan);
+      playerFrame.addEventListener('pointercancel', endViewerPan);
+    }
+
+    // B. MODAL / DRAWER INFERIOR DEL MENÚ (⋮)
+    const appMenuModal = document.getElementById('appMenuModal');
+    const closeAppMenuBtn = document.getElementById('closeAppMenuBtn');
+    const drawerNewProjectBtn = document.getElementById('drawerNewProjectBtn');
+    const drawerClearTimelineBtn = document.getElementById('drawerClearTimelineBtn');
+    const drawerInstallPwaBtn = document.getElementById('drawerInstallPwaBtn');
+    const btnQuality720 = document.getElementById('btnQuality720');
+    const btnQuality1080 = document.getElementById('btnQuality1080');
+    const qualityBadge = document.getElementById('qualityBadge');
+    const drawerThemeToggleBtn = document.getElementById('drawerThemeToggleBtn');
+    const drawerThemeLabel = document.getElementById('drawerThemeLabel');
+
+    function openAppMenuModal() {
+      if (appMenuModal) appMenuModal.classList.remove('hidden');
+    }
+
+    function closeAppMenuModal() {
+      if (appMenuModal) appMenuModal.classList.add('hidden');
+    }
+
+    safeOn('btnHeaderMenu', 'click', (e) => {
       e.stopPropagation();
-      if (headerDropdownMenu) {
-        headerDropdownMenu.classList.toggle('hidden');
+      openAppMenuModal();
+    });
+
+    safeOn(closeAppMenuBtn, 'click', closeAppMenuModal);
+
+    if (appMenuModal) {
+      safeOn(appMenuModal, 'click', (e) => {
+        if (e.target === appMenuModal) {
+          closeAppMenuModal();
+        }
+      });
+    }
+
+    // 1. Nuevo Proyecto
+    safeOn(drawerNewProjectBtn, 'click', () => {
+      closeAppMenuModal();
+      if (confirm("¿Crear un nuevo proyecto? Se reiniciará la línea de tiempo.")) {
+        pauseVideo();
+        APP_STATE.clipsV1 = [];
+        APP_STATE.clipsV2 = [];
+        APP_STATE.textItems = [];
+        APP_STATE.audioClips = [];
+        APP_STATE.currentTime = 0;
+        APP_STATE.activeClipId = null;
+        APP_STATE.selectedItemId = null;
+        pushHistoryState("Nuevo Proyecto");
+        renderTimeline();
+        renderCurrentFrame();
+        showMobileToast("Nuevo proyecto iniciado");
       }
     });
 
-    document.addEventListener('click', (e) => {
-      if (headerDropdownMenu && !headerDropdownMenu.contains(e.target) && e.target !== btnHeaderMenu) {
-        closeHeaderMenu();
+    // 3. Vaciar Timeline
+    safeOn(drawerClearTimelineBtn, 'click', () => {
+      closeAppMenuModal();
+      if (confirm("¿Vaciar todos los clips del Timeline?")) {
+        pauseVideo();
+        APP_STATE.clipsV1 = [];
+        APP_STATE.clipsV2 = [];
+        APP_STATE.textItems = [];
+        APP_STATE.audioClips = [];
+        APP_STATE.currentTime = 0;
+        APP_STATE.activeClipId = null;
+        APP_STATE.selectedItemId = null;
+        pushHistoryState("Vaciar Timeline Completo");
+        renderTimeline();
+        renderCurrentFrame();
+        showMobileToast("Timeline vaciado por completo");
       }
     });
 
-    safeOn(menuItemNewProject, 'click', () => {
-      closeHeaderMenu();
-      if (btnNewProject) btnNewProject.click();
-    });
-
-    safeOn(menuItemExport, 'click', () => {
-      closeHeaderMenu();
-      if (exportBtn) exportBtn.click();
-    });
-
-    safeOn(menuItemClearTimeline, 'click', () => {
-      closeHeaderMenu();
-      if (btnOpenClearSheet) btnOpenClearSheet.click();
-    });
-
-    safeOn(menuItemPwa, 'click', () => {
-      closeHeaderMenu();
+    // 4. Instalar App Offline (PWA)
+    safeOn(drawerInstallPwaBtn, 'click', () => {
+      closeAppMenuModal();
       if (deferredPrompt) {
         deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(() => {
+          deferredPrompt = null;
+        });
       } else {
-        showMobileToast("Instalación PWA lista en tu navegador");
+        showMobileToast("Instalación lista: añade a pantalla de inicio desde tu navegador");
       }
     });
+
+    // 5. Ajustes de Calidad (720p / 1080p)
+    function setQuality(quality) {
+      APP_STATE.previewQuality = quality;
+      if (quality === '1080p') {
+        if (glCanvas) { glCanvas.width = 1080; glCanvas.height = 608; }
+        if (overlayCanvas) { overlayCanvas.width = 1080; overlayCanvas.height = 608; }
+        if (qualityBadge) qualityBadge.textContent = '1080p FHD';
+        if (btnQuality1080) btnQuality1080.className = "touch-btn h-8 rounded-lg bg-cyan-500 text-black font-extrabold text-[11px] font-mono border border-cyan-400 flex items-center justify-center gap-1.5";
+        if (btnQuality720) btnQuality720.className = "touch-btn h-8 rounded-lg bg-[#1a1d2c] text-gray-300 font-bold text-[11px] font-mono border border-[#2a2f44] flex items-center justify-center gap-1.5 hover:text-white";
+        showMobileToast("Calidad de previsualización: 1080p Full HD");
+      } else {
+        if (glCanvas) { glCanvas.width = 720; glCanvas.height = 404; }
+        if (overlayCanvas) { overlayCanvas.width = 720; overlayCanvas.height = 404; }
+        if (qualityBadge) qualityBadge.textContent = '720p HD';
+        if (btnQuality720) btnQuality720.className = "touch-btn h-8 rounded-lg bg-cyan-500 text-black font-extrabold text-[11px] font-mono border border-cyan-400 flex items-center justify-center gap-1.5";
+        if (btnQuality1080) btnQuality1080.className = "touch-btn h-8 rounded-lg bg-[#1a1d2c] text-gray-300 font-bold text-[11px] font-mono border border-[#2a2f44] flex items-center justify-center gap-1.5 hover:text-white";
+        showMobileToast("Calidad de previsualización: 720p HD (Rendimiento Óptimo)");
+      }
+      renderCurrentFrame();
+    }
+
+    safeOn(btnQuality720, 'click', () => setQuality('720p'));
+    safeOn(btnQuality1080, 'click', () => setQuality('1080p'));
+
+    // 6. Tema Claro / Oscuro desde el Drawer
+    safeOn(drawerThemeToggleBtn, 'click', () => {
+      const current = document.body.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', next);
+      if (drawerThemeLabel) {
+        drawerThemeLabel.textContent = next === 'light' ? 'Modo Claro (Activo)' : 'Modo Oscuro (Activo)';
+      }
+      showMobileToast(`Tema cambiado a modo ${next === 'light' ? 'claro' : 'oscuro'}`);
+    });
+
+    // C. DESBLOQUEO AUTOMÁTICO DE AUDIO AL PRIMER TOQUE
+    document.addEventListener('pointerdown', () => {
+      getAudioContext();
+      if (hiddenVideo) {
+        hiddenVideo.muted = false;
+        hiddenVideo.volume = 1.0;
+      }
+    }, { once: true });
 
     async function startApp() {
       try {
