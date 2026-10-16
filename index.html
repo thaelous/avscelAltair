@@ -462,9 +462,9 @@
 
           <!-- Slider Zoom del Timeline con botones +/- -->
           <div class="flex items-center gap-1 shrink-0 bg-[#161824] px-1.5 py-0.5 rounded-md border border-[#232738] ml-auto">
-            <button id="zoomOutBtn" class="w-5 h-5 flex items-center justify-center text-gray-400 text-[10px] touch-btn">-</button>
-            <input type="range" id="zoomRange" min="0.5" max="3.0" step="0.1" value="1.0" class="w-16">
-            <button id="zoomInBtn" class="w-5 h-5 flex items-center justify-center text-gray-400 text-[10px] touch-btn">+</button>
+            <button id="zoomOutBtn" class="w-5 h-5 flex items-center justify-center text-gray-400 text-[10px] touch-btn" title="Alejar zoom">-</button>
+            <input type="range" id="zoomRange" min="0.3" max="8.0" step="0.05" value="1.0" class="w-16" title="Zoom del Timeline (Pellizcar con 2 dedos)">
+            <button id="zoomInBtn" class="w-5 h-5 flex items-center justify-center text-gray-400 text-[10px] touch-btn" title="Acercar zoom">+</button>
           </div>
         </div>
 
@@ -906,34 +906,211 @@
 
       <!-- PESTAÑA 6: PISTA DE AUDIO (A1) Y MEZCLA DE SONIDO -->
       <div id="panel-audio" class="drawer-panel hidden p-3 space-y-3">
-        <div class="flex items-center justify-between pb-1 border-b border-[#1c1f2d]">
-          <span class="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-music"></i> Pista de Audio Principal (A1)
-          </span>
-          <button id="addPresetMusicBtn" class="touch-btn h-6 px-2.5 bg-emerald-950 border border-emerald-600 text-emerald-300 text-[10px] font-bold rounded">
-            + Sintetizar Beat
+        <!-- Encabezado de Pista y Generador -->
+        <div class="flex items-center justify-between pb-1.5 border-b border-[#1c1f2d]">
+          <div class="flex items-center gap-1.5">
+            <span class="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">
+              <i class="fa-solid fa-music"></i>
+            </span>
+            <span class="text-xs font-bold text-emerald-300">
+              Estudio de Audio & Mezcla FX
+            </span>
+          </div>
+          <button id="addPresetMusicBtn" class="touch-btn h-6 px-2.5 bg-emerald-950 border border-emerald-600 text-emerald-300 text-[10px] font-bold rounded-lg flex items-center gap-1 shadow">
+            <i class="fa-solid fa-wave-square text-[9px]"></i> + Sintetizar Beat
           </button>
         </div>
 
-        <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-[10px] text-gray-300 font-semibold" id="activeAudioName">Pista: Ninguna cargada</span>
-            <span id="activeAudioVolDisplay" class="font-mono text-emerald-400 text-[10px] font-bold">100%</span>
+        <!-- Subpestañas ergonómicas de navegación de Audio -->
+        <div class="flex items-center bg-[#0d0f17] p-0.5 rounded-xl border border-[#212536] gap-1">
+          <button id="audioSubtabBtn-track" class="audio-subtab-btn touch-btn flex-1 py-1 text-[10px] font-bold rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40" data-subtab="audio-subtab-track">
+            <i class="fa-solid fa-sliders text-[9px] mr-1"></i> Pista & Fades
+          </button>
+          <button id="audioSubtabBtn-voice" class="audio-subtab-btn touch-btn flex-1 py-1 text-[10px] font-bold rounded-lg text-gray-400 hover:text-gray-200" data-subtab="audio-subtab-voice">
+            <i class="fa-solid fa-microphone-lines text-[9px] mr-1"></i> Voz & Tono
+          </button>
+          <button id="audioSubtabBtn-fx" class="audio-subtab-btn touch-btn flex-1 py-1 text-[10px] font-bold rounded-lg text-gray-400 hover:text-gray-200" data-subtab="audio-subtab-fx">
+            <i class="fa-solid fa-compact-disc text-[9px] mr-1"></i> Filtros & Espacio
+          </button>
+        </div>
+
+        <!-- SUBPESTAÑA 1: PISTA, GANANCIA & FADES -->
+        <div id="audio-subtab-track" class="audio-subtab-content space-y-2.5">
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2 truncate">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-[10px] text-gray-300 font-semibold truncate" id="activeAudioName">Pista: Ninguna cargada</span>
+              </div>
+              <span id="activeAudioVolDisplay" class="font-mono text-emerald-400 text-xs font-bold">100% (+0.0 dB)</span>
+            </div>
+            
+            <!-- Control de Ganancia / Volumen (hasta 200%) -->
+            <div>
+              <div class="flex justify-between text-[9px] text-gray-400 mb-0.5">
+                <span class="font-medium text-gray-300">Ganancia / Normalizador (hasta 200%)</span>
+                <span class="text-emerald-400 font-mono text-[9px]" id="audioGainDbBadge">0.0 dB</span>
+              </div>
+              <input type="range" id="audioVolumeSlider" min="0" max="200" value="100" class="w-full accent-emerald-400">
+            </div>
+
+            <!-- Normalizador / Compresor Limiter Anti-Clipping -->
+            <div class="flex items-center justify-between pt-1 border-t border-[#1c1f2e]">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-compress text-emerald-400 text-[10px]"></i>
+                <span class="text-[10px] text-gray-200 font-semibold">Normalizador Anti-Saturación</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="audioNormalizerToggle" checked class="sr-only peer">
+                <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+
+            <!-- Fade In y Fade Out -->
+            <div class="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-[#1c1f2e]">
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-trend-up text-cyan-400 text-[8px]"></i> Fade In</span>
+                  <span id="audioFadeInVal" class="font-mono text-cyan-400 font-bold text-[9px]">1.0s</span>
+                </div>
+                <input type="range" id="audioFadeInSlider" min="0" max="5" step="0.1" value="1.0" class="w-full accent-cyan-400">
+              </div>
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-arrow-trend-down text-purple-400 text-[8px]"></i> Fade Out</span>
+                  <span id="audioFadeOutVal" class="font-mono text-purple-400 font-bold text-[9px]">1.5s</span>
+                </div>
+                <input type="range" id="audioFadeOutSlider" min="0" max="5" step="0.1" value="1.5" class="w-full accent-purple-400">
+              </div>
+            </div>
           </div>
-          
-          <div>
-            <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Volumen (Ganancia A1)</span></div>
-            <input type="range" id="audioVolumeSlider" min="0" max="200" value="100" class="w-full accent-emerald-400">
+        </div>
+
+        <!-- SUBPESTAÑA 2: MODULADORES DE VOZ / TONO -->
+        <div id="audio-subtab-voice" class="audio-subtab-content hidden space-y-2.5">
+          <!-- Presets de voz -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+            <span class="text-[10px] text-gray-400 font-semibold uppercase tracking-wider block">Presets de Modulación de Voz</span>
+            <div class="grid grid-cols-4 gap-1.5">
+              <button class="voice-preset-btn touch-btn flex flex-col items-center justify-center p-2 rounded-xl border border-cyan-400 bg-cyan-950/40 text-cyan-300" data-voice="none">
+                <i class="fa-solid fa-user text-xs mb-1"></i>
+                <span class="text-[9px] font-bold">Natural</span>
+              </button>
+              <button class="voice-preset-btn touch-btn flex flex-col items-center justify-center p-2 rounded-xl border border-[#272b3c] bg-[#10121c] text-gray-300 hover:border-emerald-500/50" data-voice="robot">
+                <i class="fa-solid fa-robot text-xs mb-1 text-emerald-400"></i>
+                <span class="text-[9px] font-bold">Robot</span>
+              </button>
+              <button class="voice-preset-btn touch-btn flex flex-col items-center justify-center p-2 rounded-xl border border-[#272b3c] bg-[#10121c] text-gray-300 hover:border-amber-500/50" data-voice="chipmunk">
+                <i class="fa-solid fa-bolt text-xs mb-1 text-amber-400"></i>
+                <span class="text-[9px] font-bold">Ardilla</span>
+              </button>
+              <button class="voice-preset-btn touch-btn flex flex-col items-center justify-center p-2 rounded-xl border border-[#272b3c] bg-[#10121c] text-gray-300 hover:border-rose-500/50" data-voice="deep">
+                <i class="fa-solid fa-drum text-xs mb-1 text-rose-400"></i>
+                <span class="text-[9px] font-bold">Grave</span>
+              </button>
+            </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 text-xs">
+          <!-- Ajustes de Tono y Síntesis -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
             <div>
-              <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Fade In</span><span id="audioFadeInVal">1.0s</span></div>
-              <input type="range" id="audioFadeInSlider" min="0" max="5" step="0.2" value="1.0" class="w-full">
+              <div class="flex justify-between text-[9px] text-gray-300 mb-0.5">
+                <span class="font-medium flex items-center gap-1"><i class="fa-solid fa-arrows-up-down text-cyan-400"></i> Tono / Pitch Shift Fino</span>
+                <span id="voicePitchVal" class="font-mono text-cyan-400 font-bold">0 semitonos</span>
+              </div>
+              <input type="range" id="voicePitchSlider" min="-12" max="12" step="1" value="0" class="w-full accent-cyan-400">
+              <div class="flex justify-between text-[8px] text-gray-500 font-mono mt-0.5">
+                <span>-12 (Grave)</span>
+                <span>0 (Original)</span>
+                <span>+12 (Agudo)</span>
+              </div>
             </div>
-            <div>
-              <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Fade Out</span><span id="audioFadeOutVal">1.5s</span></div>
-              <input type="range" id="audioFadeOutSlider" min="0" max="5" step="0.2" value="1.5" class="w-full">
+
+            <div id="robotControlsBox" class="pt-2 border-t border-[#1c1f2e] space-y-1.5">
+              <div class="flex justify-between text-[9px] text-gray-300">
+                <span>Portadora Robot / Sintetizador</span>
+                <span id="robotFreqVal" class="font-mono text-emerald-400 font-bold">60 Hz</span>
+              </div>
+              <input type="range" id="robotFreqSlider" min="30" max="150" step="5" value="60" class="w-full accent-emerald-400">
+            </div>
+          </div>
+        </div>
+
+        <!-- SUBPESTAÑA 3: FILTROS & ESPACIALIDAD (DELAY, REVERB, BASS BOOST) -->
+        <div id="audio-subtab-fx" class="audio-subtab-content hidden space-y-2.5">
+          <!-- REFUERZO DE GRAVES (BASS BOOST) -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-sliders text-amber-400 text-xs"></i>
+                <span class="text-xs font-bold text-gray-200">Refuerzo de Graves (Bass Boost)</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="bassBoostToggle" class="sr-only peer">
+                <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500"></div>
+              </label>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Ganancia Graves</span><span id="bassGainVal" class="font-mono text-amber-400 font-bold">+9 dB</span></div>
+                <input type="range" id="bassGainSlider" min="0" max="18" step="1" value="9" class="w-full accent-amber-400">
+              </div>
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Frecuencia</span><span id="bassFreqVal" class="font-mono text-amber-400 font-bold">110 Hz</span></div>
+                <input type="range" id="bassFreqSlider" min="60" max="200" step="5" value="110" class="w-full accent-amber-400">
+              </div>
+            </div>
+          </div>
+
+          <!-- ECO / DELAY CON CONTROL DE REPETICIÓN -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-stopwatch text-cyan-400 text-xs"></i>
+                <span class="text-xs font-bold text-gray-200">Eco / Delay (Repetición)</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="delayToggle" class="sr-only peer">
+                <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-cyan-500"></div>
+              </label>
+            </div>
+            <div class="grid grid-cols-3 gap-1.5 text-xs">
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Tiempo</span><span id="delayTimeVal" class="font-mono text-cyan-400 font-bold">300ms</span></div>
+                <input type="range" id="delayTimeSlider" min="0.05" max="1.0" step="0.05" value="0.30" class="w-full accent-cyan-400">
+              </div>
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Repetición</span><span id="delayFeedbackVal" class="font-mono text-cyan-400 font-bold">40%</span></div>
+                <input type="range" id="delayFeedbackSlider" min="0" max="85" step="5" value="40" class="w-full accent-cyan-400">
+              </div>
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Mezcla</span><span id="delayMixVal" class="font-mono text-cyan-400 font-bold">40%</span></div>
+                <input type="range" id="delayMixSlider" min="0" max="100" step="5" value="40" class="w-full accent-cyan-400">
+              </div>
+            </div>
+          </div>
+
+          <!-- REVERBERACIÓN (SALA / ESPACIO) -->
+          <div class="bg-[#141622] p-2.5 rounded-xl border border-[#232738] space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-mountain-sun text-purple-400 text-xs"></i>
+                <span class="text-xs font-bold text-gray-200">Reverb (Reverberación de Sala)</span>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="reverbToggle" class="sr-only peer">
+                <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-purple-500"></div>
+              </label>
+            </div>
+            <div class="grid grid-cols-2 gap-2 text-xs">
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Espacio / Decaimiento</span><span id="reverbDecayVal" class="font-mono text-purple-400 font-bold">1.8s</span></div>
+                <input type="range" id="reverbDecaySlider" min="0.5" max="4.0" step="0.2" value="1.8" class="w-full accent-purple-400">
+              </div>
+              <div>
+                <div class="flex justify-between text-[9px] text-gray-400 mb-0.5"><span>Mezcla Sala</span><span id="reverbMixVal" class="font-mono text-purple-400 font-bold">35%</span></div>
+                <input type="range" id="reverbMixSlider" min="0" max="100" step="5" value="35" class="w-full accent-purple-400">
+              </div>
             </div>
           </div>
         </div>
@@ -1826,6 +2003,23 @@
         bw: false,
         invert: false,
         vignette: false
+      },
+      audioEffects: {
+        voiceMod: 'none',
+        pitchSemitones: 0,
+        robotFreq: 60,
+        robotMix: 0.75,
+        delayEnabled: false,
+        delayTime: 0.3,
+        delayFeedback: 0.4,
+        delayMix: 0.4,
+        reverbEnabled: false,
+        reverbDecay: 1.8,
+        reverbMix: 0.35,
+        bassBoostEnabled: false,
+        bassBoostGain: 9,
+        bassBoostFreq: 110,
+        normalizerEnabled: true
       }
     };
 
@@ -2156,11 +2350,13 @@
     });
 
     /* ========================================================
-       6. MOTOR DE AUDIO WEB AUDIO API (A1 + FADES + VOLUMEN GENERAL dB)
+       6. MOTOR DE AUDIO WEB AUDIO API (PIPELINE, EFECTOS & FADES)
        ======================================================== */
     let audioCtx = null;
     let audioGainNode = null;
     let audioTrackElement = null;
+    let audioPipeline = null;
+    let mediaSourcesConnected = { video: false, audioTrack: false };
 
     function getAudioContext() {
       if (!audioCtx) {
@@ -2181,6 +2377,296 @@
       return audioTrackElement;
     }
 
+    function generateImpulseResponse(ctx, decayDuration = 1.8) {
+      const rate = ctx.sampleRate || 44100;
+      const length = Math.max(1, Math.floor(rate * decayDuration));
+      const impulse = ctx.createBuffer(2, length, rate);
+      const left = impulse.getChannelData(0);
+      const right = impulse.getChannelData(1);
+      for (let i = 0; i < length; i++) {
+        const decay = Math.exp(-3 * (i / length));
+        left[i] = (Math.random() * 2 - 1) * decay;
+        right[i] = (Math.random() * 2 - 1) * decay;
+      }
+      return impulse;
+    }
+
+    function initAudioPipeline() {
+      if (audioPipeline) return audioPipeline;
+      const ctx = getAudioContext();
+      if (!ctx) return null;
+
+      try {
+        const eff = APP_STATE.audioEffects || {};
+
+        // Master Gain
+        const masterGain = ctx.createGain();
+        masterGain.gain.value = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
+
+        // Input Bus
+        const inputBus = ctx.createGain();
+        inputBus.gain.value = 1.0;
+
+        // Gains por fuente
+        const trackGainNode = ctx.createGain();
+        trackGainNode.gain.value = 1.0;
+        const videoGainNode = ctx.createGain();
+        videoGainNode.gain.value = 1.0;
+
+        // Refuerzo de Graves (Bass Boost): BiquadFilter lowshelf
+        const bassFilter = ctx.createBiquadFilter();
+        bassFilter.type = 'lowshelf';
+        bassFilter.frequency.value = eff.bassBoostFreq || 110;
+        bassFilter.gain.value = eff.bassBoostEnabled ? (eff.bassBoostGain || 9) : 0;
+
+        // Filtro de Formantes para Voz Ardilla / Grave
+        const formantFilter = ctx.createBiquadFilter();
+        formantFilter.type = 'allpass';
+        formantFilter.frequency.value = 1000;
+        formantFilter.gain.value = 0;
+
+        // Modulador Robot: Oscilador Carrier + Multiplicador de Anillo (Ring Modulator)
+        const ringModCarrier = ctx.createOscillator();
+        ringModCarrier.type = 'sine';
+        ringModCarrier.frequency.value = eff.robotFreq || 60;
+        ringModCarrier.start();
+
+        const ringModGain = ctx.createGain();
+        ringModGain.gain.value = 0.0;
+        ringModCarrier.connect(ringModGain.gain);
+
+        const dryVoiceGain = ctx.createGain();
+        dryVoiceGain.gain.value = 1.0;
+        const robotVoiceGain = ctx.createGain();
+        robotVoiceGain.gain.value = 0.0;
+
+        const postVoiceBus = ctx.createGain();
+
+        // Eco / Delay con feedback
+        const delayNode = ctx.createDelay(3.0);
+        delayNode.delayTime.value = eff.delayTime || 0.3;
+        const delayFeedback = ctx.createGain();
+        delayFeedback.gain.value = eff.delayFeedback || 0.4;
+        delayNode.connect(delayFeedback);
+        delayFeedback.connect(delayNode);
+        const delayWet = ctx.createGain();
+        delayWet.gain.value = eff.delayEnabled ? (eff.delayMix || 0.4) : 0.0;
+        delayNode.connect(delayWet);
+
+        // Reverb Convolver
+        const convolver = ctx.createConvolver();
+        convolver.buffer = generateImpulseResponse(ctx, eff.reverbDecay || 1.8);
+        const reverbWet = ctx.createGain();
+        reverbWet.gain.value = eff.reverbEnabled ? (eff.reverbMix || 0.35) : 0.0;
+        convolver.connect(reverbWet);
+
+        // Mix Bus
+        const mixBus = ctx.createGain();
+
+        // Normalizador / Compresor Limiter
+        const compressor = ctx.createDynamicsCompressor();
+        compressor.threshold.value = eff.normalizerEnabled ? -12 : 0;
+        compressor.knee.value = 20;
+        compressor.ratio.value = eff.normalizerEnabled ? 8 : 1;
+        compressor.attack.value = 0.003;
+        compressor.release.value = 0.25;
+
+        // Conexiones del Grafo de Audio
+        inputBus.connect(bassFilter);
+        bassFilter.connect(formantFilter);
+
+        // Rama seca de voz
+        formantFilter.connect(dryVoiceGain);
+        dryVoiceGain.connect(postVoiceBus);
+
+        // Rama robot (Ring Mod)
+        formantFilter.connect(ringModGain);
+        ringModGain.connect(robotVoiceGain);
+        robotVoiceGain.connect(postVoiceBus);
+
+        // Señal directa al mix
+        postVoiceBus.connect(mixBus);
+
+        // Envíos de Delay y Reverb
+        postVoiceBus.connect(delayNode);
+        delayWet.connect(mixBus);
+
+        postVoiceBus.connect(convolver);
+        reverbWet.connect(mixBus);
+
+        // Salida a compresor y master
+        mixBus.connect(compressor);
+        compressor.connect(masterGain);
+        masterGain.connect(ctx.destination);
+
+        audioPipeline = {
+          masterGain,
+          inputBus,
+          trackGainNode,
+          videoGainNode,
+          bassFilter,
+          formantFilter,
+          ringModCarrier,
+          ringModGain,
+          dryVoiceGain,
+          robotVoiceGain,
+          postVoiceBus,
+          delayNode,
+          delayFeedback,
+          delayWet,
+          convolver,
+          reverbWet,
+          compressor,
+          mixBus
+        };
+
+        audioGainNode = masterGain;
+        return audioPipeline;
+      } catch (err) {
+        console.warn("Error creando pipeline Web Audio:", err);
+        return null;
+      }
+    }
+
+    function connectMediaElementsToAudioContext() {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const pipeline = initAudioPipeline();
+      if (!pipeline) return;
+
+      const trackElem = getAudioTrackElement();
+      if (trackElem && !mediaSourcesConnected.audioTrack) {
+        try {
+          const src = ctx.createMediaElementSource(trackElem);
+          src.connect(pipeline.trackGainNode);
+          pipeline.trackGainNode.connect(pipeline.inputBus);
+          mediaSourcesConnected.audioTrack = true;
+        } catch (e) {
+          mediaSourcesConnected.audioTrack = true;
+        }
+      }
+
+      if (hiddenVideo && !mediaSourcesConnected.video) {
+        try {
+          const src = ctx.createMediaElementSource(hiddenVideo);
+          src.connect(pipeline.videoGainNode);
+          pipeline.videoGainNode.connect(pipeline.inputBus);
+          mediaSourcesConnected.video = true;
+        } catch (e) {
+          mediaSourcesConnected.video = true;
+        }
+      }
+    }
+
+    function applyAudioEffects() {
+      const pipeline = initAudioPipeline();
+      if (!pipeline) return;
+      const ctx = getAudioContext();
+      const now = ctx ? ctx.currentTime : 0;
+      const eff = APP_STATE.audioEffects || {};
+
+      // 1. Refuerzo de Graves (Bass Boost)
+      if (pipeline.bassFilter) {
+        pipeline.bassFilter.frequency.setTargetAtTime(eff.bassBoostFreq || 110, now, 0.05);
+        pipeline.bassFilter.gain.setTargetAtTime(eff.bassBoostEnabled ? (eff.bassBoostGain || 9) : 0, now, 0.05);
+      }
+
+      // 2. Moduladores de Voz / Tono
+      if (eff.voiceMod === 'robot') {
+        pipeline.dryVoiceGain.gain.setTargetAtTime(1.0 - (eff.robotMix || 0.75), now, 0.05);
+        pipeline.robotVoiceGain.gain.setTargetAtTime(eff.robotMix || 0.75, now, 0.05);
+        pipeline.ringModCarrier.frequency.setTargetAtTime(eff.robotFreq || 60, now, 0.05);
+        pipeline.formantFilter.type = 'allpass';
+        pipeline.formantFilter.gain.setTargetAtTime(0, now, 0.05);
+      } else if (eff.voiceMod === 'chipmunk') {
+        // Voz ardilla / aguda: acento nasal y armónicos altos
+        pipeline.dryVoiceGain.gain.setTargetAtTime(1.0, now, 0.05);
+        pipeline.robotVoiceGain.gain.setTargetAtTime(0.0, now, 0.05);
+        pipeline.formantFilter.type = 'peaking';
+        pipeline.formantFilter.frequency.setTargetAtTime(2800, now, 0.05);
+        pipeline.formantFilter.gain.setTargetAtTime(12.0, now, 0.05);
+        pipeline.formantFilter.Q.setTargetAtTime(1.5, now, 0.05);
+      } else if (eff.voiceMod === 'deep') {
+        // Voz grave / profunda: filtro cálido y resonancia baja
+        pipeline.dryVoiceGain.gain.setTargetAtTime(1.0, now, 0.05);
+        pipeline.robotVoiceGain.gain.setTargetAtTime(0.0, now, 0.05);
+        pipeline.formantFilter.type = 'lowshelf';
+        pipeline.formantFilter.frequency.setTargetAtTime(250, now, 0.05);
+        pipeline.formantFilter.gain.setTargetAtTime(10.0, now, 0.05);
+        pipeline.formantFilter.Q.setTargetAtTime(1.2, now, 0.05);
+      } else {
+        // Voz Natural
+        pipeline.dryVoiceGain.gain.setTargetAtTime(1.0, now, 0.05);
+        pipeline.robotVoiceGain.gain.setTargetAtTime(0.0, now, 0.05);
+        pipeline.formantFilter.type = 'allpass';
+        pipeline.formantFilter.gain.setTargetAtTime(0, now, 0.05);
+      }
+
+      updatePlaybackPitch();
+
+      // 3. Eco / Delay
+      if (pipeline.delayNode && pipeline.delayFeedback && pipeline.delayWet) {
+        pipeline.delayNode.delayTime.setTargetAtTime(eff.delayTime || 0.3, now, 0.05);
+        pipeline.delayFeedback.gain.setTargetAtTime(eff.delayEnabled ? (eff.delayFeedback || 0.4) : 0, now, 0.05);
+        pipeline.delayWet.gain.setTargetAtTime(eff.delayEnabled ? (eff.delayMix || 0.4) : 0, now, 0.05);
+      }
+
+      // 4. Reverb
+      if (pipeline.reverbWet) {
+        pipeline.reverbWet.gain.setTargetAtTime(eff.reverbEnabled ? (eff.reverbMix || 0.35) : 0, now, 0.05);
+      }
+
+      // 5. Normalizador / Compresor Limiter
+      if (pipeline.compressor) {
+        if (eff.normalizerEnabled) {
+          pipeline.compressor.threshold.setTargetAtTime(-12, now, 0.05);
+          pipeline.compressor.ratio.setTargetAtTime(8, now, 0.05);
+        } else {
+          pipeline.compressor.threshold.setTargetAtTime(0, now, 0.05);
+          pipeline.compressor.ratio.setTargetAtTime(1, now, 0.05);
+        }
+      }
+
+      // Master Volume
+      if (pipeline.masterGain) {
+        const effVol = APP_STATE.isMuted ? 0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
+        pipeline.masterGain.gain.setTargetAtTime(effVol, now, 0.05);
+      }
+    }
+
+    function updatePlaybackPitch() {
+      const eff = APP_STATE.audioEffects || {};
+      let pitchFactor = 1.0;
+      if (eff.voiceMod === 'chipmunk') {
+        pitchFactor = 1.35;
+      } else if (eff.voiceMod === 'deep') {
+        pitchFactor = 0.75;
+      }
+      if (eff.pitchSemitones && eff.pitchSemitones !== 0) {
+        pitchFactor *= Math.pow(2, eff.pitchSemitones / 12);
+      }
+
+      const trackElem = getAudioTrackElement();
+      if (trackElem) {
+        try {
+          trackElem.playbackRate = pitchFactor;
+          trackElem.preservesPitch = false;
+          trackElem.mozPreservesPitch = false;
+          trackElem.webkitPreservesPitch = false;
+        } catch(e) {}
+      }
+      if (hiddenVideo) {
+        try {
+          const match = getV1ClipAt(APP_STATE.currentTime);
+          const actSpeed = match && match.clip && match.clip.speed ? match.clip.speed : 1.0;
+          hiddenVideo.playbackRate = actSpeed * pitchFactor;
+          hiddenVideo.preservesPitch = (pitchFactor === 1.0);
+          hiddenVideo.mozPreservesPitch = (pitchFactor === 1.0);
+          hiddenVideo.webkitPreservesPitch = (pitchFactor === 1.0);
+        } catch(e) {}
+      }
+    }
+
     // Regulación de volumen maestro con escala de decibelios (dB)
     function setMasterVolume(val, updateInputs = true) {
       const vol = Math.max(0, Math.min(val, 1.0));
@@ -2193,13 +2679,15 @@
       if (hiddenVideo) {
         hiddenVideo.muted = APP_STATE.isMuted;
         if (!APP_STATE.isMuted) hiddenVideo.removeAttribute('muted');
-        hiddenVideo.volume = effectiveVol;
+        hiddenVideo.volume = mediaSourcesConnected.video ? 1.0 : effectiveVol;
       }
       const trackElem = getAudioTrackElement();
       if (trackElem) {
-        trackElem.volume = effectiveVol;
+        trackElem.volume = mediaSourcesConnected.audioTrack ? 1.0 : effectiveVol;
       }
-      if (audioGainNode) {
+      if (audioPipeline && audioPipeline.masterGain) {
+        audioPipeline.masterGain.gain.value = effectiveVol;
+      } else if (audioGainNode) {
         audioGainNode.gain.value = effectiveVol;
       }
 
@@ -2246,16 +2734,19 @@
       if (ctx && ctx.state === 'suspended') {
         ctx.resume().catch(() => {});
       }
+      initAudioPipeline();
+      connectMediaElementsToAudioContext();
       if (hiddenVideo && !APP_STATE.isMuted) {
         hiddenVideo.muted = false;
         hiddenVideo.removeAttribute('muted');
-        hiddenVideo.volume = APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0;
+        hiddenVideo.volume = mediaSourcesConnected.video ? 1.0 : (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
       }
+      applyAudioEffects();
     };
     window.addEventListener('click', unlockAudioOnGesture, { passive: true });
     window.addEventListener('touchstart', unlockAudioOnGesture, { passive: true });
 
-    // Listeners interactivos para sliders de volumen
+    // Listeners interactivos para sliders de volumen maestro
     safeOn(masterVolumeSlider, 'input', (e) => {
       unlockAudioOnGesture();
       setMasterVolume(parseInt(e.target.value) / 100, false);
@@ -2293,7 +2784,7 @@
       }
 
       const localTime = currentTime - actClip.start;
-      const baseVol = (actClip.volume !== undefined ? actClip.volume : 1.0) * (APP_STATE.masterVolume !== undefined ? APP_STATE.masterVolume : 1.0);
+      const baseVol = (actClip.volume !== undefined ? actClip.volume : 1.0);
       let gain = baseVol;
 
       if (actClip.fadeIn > 0 && localTime < actClip.fadeIn) {
@@ -2304,8 +2795,17 @@
         gain = baseVol * (remaining / actClip.fadeOut);
       }
 
+      if (audioPipeline && audioPipeline.trackGainNode) {
+        audioPipeline.trackGainNode.gain.value = Math.max(0, Math.min(gain, 2.0));
+      }
+
       if (trackElem) {
-        trackElem.volume = Math.max(0, Math.min(gain, 1.0));
+        if (!mediaSourcesConnected.audioTrack) {
+          trackElem.volume = Math.max(0, Math.min(gain * (APP_STATE.masterVolume || 1.0), 1.0));
+        } else {
+          trackElem.volume = 1.0;
+        }
+
         if (actClip.blobUrl && trackElem.src !== actClip.blobUrl && !trackElem.src.endsWith(actClip.blobUrl)) {
           trackElem.src = actClip.blobUrl;
         }
@@ -2317,10 +2817,6 @@
         } else if (!APP_STATE.isPlaying && !trackElem.paused) {
           trackElem.pause();
         }
-      }
-
-      if (audioGainNode) {
-        audioGainNode.gain.value = Math.max(0, Math.min(gain, 2.0));
       }
     }
 
@@ -3850,17 +4346,21 @@
       const an = document.getElementById('activeAudioName');
       if (an) an.textContent = `Pista: ${aud.name || 'Audio'}`;
       const avs = document.getElementById('audioVolumeSlider');
-      if (avs) avs.value = (aud.volume || 1.0) * 100;
+      const vol = aud.volume !== undefined ? aud.volume : 1.0;
+      if (avs) avs.value = Math.round(vol * 100);
       const avd = document.getElementById('activeAudioVolDisplay');
-      if (avd) avd.textContent = `${Math.floor((aud.volume || 1.0) * 100)}%`;
+      const db = vol > 0 ? (20 * Math.log10(vol)).toFixed(1) : '-∞';
+      if (avd) avd.textContent = `${Math.round(vol * 100)}% (${db} dB)`;
+      const gdb = document.getElementById('audioGainDbBadge');
+      if (gdb) gdb.textContent = `${db} dB`;
       const afi = document.getElementById('audioFadeInSlider');
-      if (afi) afi.value = aud.fadeIn || 1.0;
+      if (afi) afi.value = aud.fadeIn !== undefined ? aud.fadeIn : 1.0;
       const afiv = document.getElementById('audioFadeInVal');
-      if (afiv) afiv.textContent = `${aud.fadeIn || 1.0}s`;
+      if (afiv) afiv.textContent = `${(aud.fadeIn !== undefined ? aud.fadeIn : 1.0).toFixed(1)}s`;
       const afo = document.getElementById('audioFadeOutSlider');
-      if (afo) afo.value = aud.fadeOut || 1.5;
+      if (afo) afo.value = aud.fadeOut !== undefined ? aud.fadeOut : 1.5;
       const afov = document.getElementById('audioFadeOutVal');
-      if (afov) afov.textContent = `${aud.fadeOut || 1.5}s`;
+      if (afov) afov.textContent = `${(aud.fadeOut !== undefined ? aud.fadeOut : 1.5).toFixed(1)}s`;
     }
 
     function updatePlayheadUI() {
@@ -3899,8 +4399,95 @@
 
     window.addEventListener('touchend', () => isTouchScrubbing = false);
 
+    /* ========================================================
+       ZOOM POR PELLIZCO EN EL TIMELINE (PINCH-TO-ZOOM TÁCTIL)
+       ======================================================== */
+    let pinchStartDistance = 0;
+    let pinchStartZoom = 1.0;
+    let pinchMidTime = 0;
+    let pinchMidContainerX = 0;
+    let isPinching = false;
+
+    if (timelineScrollContainer) {
+      timelineScrollContainer.addEventListener('touchstart', (e) => {
+        if (e.touches.length === 2) {
+          isPinching = true;
+          isTouchScrubbing = false;
+          const t1 = e.touches[0];
+          const t2 = e.touches[1];
+          pinchStartDistance = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+          pinchStartZoom = APP_STATE.zoom;
+
+          const rect = timelineScrollContainer.getBoundingClientRect();
+          const midClientX = (t1.clientX + t2.clientX) / 2;
+          pinchMidContainerX = midClientX - rect.left;
+          const contentX = timelineScrollContainer.scrollLeft + pinchMidContainerX;
+          const pps = APP_STATE.pixelsPerSecond * pinchStartZoom;
+          pinchMidTime = Math.max(0, (contentX - 32) / pps);
+        }
+      }, { passive: false });
+
+      timelineScrollContainer.addEventListener('touchmove', (e) => {
+        if (isPinching && e.touches.length === 2) {
+          e.preventDefault(); // Previene zoom del navegador para centrarse en el timeline
+          const t1 = e.touches[0];
+          const t2 = e.touches[1];
+          const currentDist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+          if (pinchStartDistance > 5) {
+            const ratio = currentDist / pinchStartDistance;
+            let newZoom = pinchStartZoom * ratio;
+            // Limitar entre vista general (0.3x) y precisión máxima milimétrica (8.0x)
+            newZoom = Math.max(0.3, Math.min(newZoom, 8.0));
+            APP_STATE.zoom = Number(newZoom.toFixed(2));
+            if (zoomRange) zoomRange.value = APP_STATE.zoom;
+
+            renderTimeline();
+
+            // Mantener centrado en el punto medio del pellizco
+            const newPps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+            const targetContentX = pinchMidTime * newPps + 32;
+            timelineScrollContainer.scrollLeft = targetContentX - pinchMidContainerX;
+          }
+        }
+      }, { passive: false });
+
+      timelineScrollContainer.addEventListener('touchend', (e) => {
+        if (e.touches.length < 2) {
+          setTimeout(() => { isPinching = false; }, 50);
+          pinchStartDistance = 0;
+        }
+      });
+
+      timelineScrollContainer.addEventListener('touchcancel', () => {
+        isPinching = false;
+        pinchStartDistance = 0;
+      });
+
+      // Fallback con rueda del ratón (Ctrl + Wheel) para pruebas en escritorio
+      timelineScrollContainer.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const rect = timelineScrollContainer.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const contentX = timelineScrollContainer.scrollLeft + mouseX;
+          const pps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+          const targetTime = Math.max(0, (contentX - 32) / pps);
+
+          const zoomDelta = e.deltaY < 0 ? 1.15 : 0.87;
+          let newZoom = Math.max(0.3, Math.min(APP_STATE.zoom * zoomDelta, 8.0));
+          APP_STATE.zoom = Number(newZoom.toFixed(2));
+          if (zoomRange) zoomRange.value = APP_STATE.zoom;
+
+          renderTimeline();
+
+          const newPps = APP_STATE.pixelsPerSecond * APP_STATE.zoom;
+          timelineScrollContainer.scrollLeft = (targetTime * newPps + 32) - mouseX;
+        }
+      }, { passive: false });
+    }
+
     safeOn(timelineScrollContainer, 'click', (e) => {
-      if (e.target.closest('.track-item') || e.target.closest('button')) return;
+      if (isPinching || e.target.closest('.track-item') || e.target.closest('button')) return;
       setTimelineTimeByTouch(e.clientX);
     });
 
@@ -4469,12 +5056,12 @@
       renderTimeline();
     });
     safeOn('zoomOutBtn', 'click', () => {
-      APP_STATE.zoom = Math.max(0.5, APP_STATE.zoom - 0.2);
+      APP_STATE.zoom = Math.max(0.3, Number((APP_STATE.zoom - 0.25).toFixed(2)));
       if (zoomRange) zoomRange.value = APP_STATE.zoom;
       renderTimeline();
     });
     safeOn('zoomInBtn', 'click', () => {
-      APP_STATE.zoom = Math.min(3.0, APP_STATE.zoom + 0.2);
+      APP_STATE.zoom = Math.min(8.0, Number((APP_STATE.zoom + 0.25).toFixed(2)));
       if (zoomRange) zoomRange.value = APP_STATE.zoom;
       renderTimeline();
     });
@@ -4528,7 +5115,7 @@
     });
 
     /* ========================================================
-       12. GESTIÓN DE AUDIO (A1) Y MEZCLA
+       12. GESTIÓN DE AUDIO (A1), EFECTOS & MEZCLA
        ======================================================== */
     function addSyntheticAudioToTimeline(name = "Cyber Synth Beat") {
       const wavBlob = synthesizeWavMusic('cyber');
@@ -4554,13 +5141,42 @@
 
     safeOn('addPresetMusicBtn', 'click', () => addSyntheticAudioToTimeline());
 
+    // Subpestañas ergonómicas de audio (Pista & Fades, Voz & Tono, Filtros & Espacio)
+    document.querySelectorAll('.audio-subtab-btn').forEach(btn => {
+      safeOn(btn, 'click', () => {
+        const targetSubtab = btn.dataset.subtab;
+        document.querySelectorAll('.audio-subtab-btn').forEach(b => {
+          b.className = "audio-subtab-btn touch-btn flex-1 py-1 text-[10px] font-bold rounded-lg text-gray-400 hover:text-gray-200";
+        });
+        btn.className = "audio-subtab-btn touch-btn flex-1 py-1 text-[10px] font-bold rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/40";
+
+        document.querySelectorAll('.audio-subtab-content').forEach(content => {
+          content.classList.add('hidden');
+        });
+        const activeContent = document.getElementById(targetSubtab);
+        if (activeContent) activeContent.classList.remove('hidden');
+      });
+    });
+
+    // Subpestaña 1: Pista, Ganancia y Fades
     safeOn('audioVolumeSlider', 'input', (e) => {
+      const vol = parseInt(e.target.value) / 100;
       const aud = APP_STATE.audioClips.find(a => a.id === APP_STATE.selectedItemId);
       if (aud) {
-        aud.volume = parseInt(e.target.value) / 100;
-        const disp = document.getElementById('activeAudioVolDisplay');
-        if (disp) disp.textContent = `${e.target.value}%`;
+        aud.volume = vol;
       }
+      const disp = document.getElementById('activeAudioVolDisplay');
+      const db = vol > 0 ? (20 * Math.log10(vol)).toFixed(1) : '-∞';
+      if (disp) disp.textContent = `${e.target.value}% (${db} dB)`;
+      const gdb = document.getElementById('audioGainDbBadge');
+      if (gdb) gdb.textContent = `${db} dB`;
+      applyAudioEffects();
+    });
+
+    safeOn('audioNormalizerToggle', 'change', (e) => {
+      APP_STATE.audioEffects.normalizerEnabled = e.target.checked;
+      applyAudioEffects();
+      showMobileToast(e.target.checked ? "Normalizador activado (Anti-Clipping)" : "Normalizador desactivado");
     });
 
     safeOn('audioFadeInSlider', 'input', (e) => {
@@ -4568,7 +5184,7 @@
       if (aud) {
         aud.fadeIn = parseFloat(e.target.value);
         const disp = document.getElementById('audioFadeInVal');
-        if (disp) disp.textContent = `${e.target.value}s`;
+        if (disp) disp.textContent = `${parseFloat(e.target.value).toFixed(1)}s`;
       }
     });
 
@@ -4577,8 +5193,112 @@
       if (aud) {
         aud.fadeOut = parseFloat(e.target.value);
         const disp = document.getElementById('audioFadeOutVal');
-        if (disp) disp.textContent = `${e.target.value}s`;
+        if (disp) disp.textContent = `${parseFloat(e.target.value).toFixed(1)}s`;
       }
+    });
+
+    // Subpestaña 2: Moduladores de Voz y Tono
+    document.querySelectorAll('.voice-preset-btn').forEach(btn => {
+      safeOn(btn, 'click', () => {
+        const mode = btn.dataset.voice;
+        APP_STATE.audioEffects.voiceMod = mode;
+        document.querySelectorAll('.voice-preset-btn').forEach(b => {
+          b.className = "voice-preset-btn touch-btn flex flex-col items-center justify-center p-2 rounded-xl border border-[#272b3c] bg-[#10121c] text-gray-300 hover:border-emerald-500/50";
+        });
+        btn.className = "voice-preset-btn touch-btn flex flex-col items-center justify-center p-2 rounded-xl border border-cyan-400 bg-cyan-950/40 text-cyan-300 shadow-md";
+        
+        applyAudioEffects();
+        const modeNames = { none: 'Voz Natural', robot: 'Efecto Robot', chipmunk: 'Voz Ardilla', deep: 'Voz Grave' };
+        showMobileToast(`Modo de voz: ${modeNames[mode] || mode}`);
+      });
+    });
+
+    safeOn('voicePitchSlider', 'input', (e) => {
+      const val = parseInt(e.target.value);
+      APP_STATE.audioEffects.pitchSemitones = val;
+      const disp = document.getElementById('voicePitchVal');
+      if (disp) disp.textContent = `${val > 0 ? '+' : ''}${val} semitonos`;
+      applyAudioEffects();
+    });
+
+    safeOn('robotFreqSlider', 'input', (e) => {
+      const val = parseInt(e.target.value);
+      APP_STATE.audioEffects.robotFreq = val;
+      const disp = document.getElementById('robotFreqVal');
+      if (disp) disp.textContent = `${val} Hz`;
+      applyAudioEffects();
+    });
+
+    // Subpestaña 3: Filtros & Espacialidad (Delay, Reverb, Bass Boost)
+    safeOn('bassBoostToggle', 'change', (e) => {
+      APP_STATE.audioEffects.bassBoostEnabled = e.target.checked;
+      applyAudioEffects();
+      showMobileToast(e.target.checked ? "Refuerzo de Graves activado" : "Refuerzo de Graves desactivado");
+    });
+    safeOn('bassGainSlider', 'input', (e) => {
+      const val = parseFloat(e.target.value);
+      APP_STATE.audioEffects.bassBoostGain = val;
+      const disp = document.getElementById('bassGainVal');
+      if (disp) disp.textContent = `+${val} dB`;
+      applyAudioEffects();
+    });
+    safeOn('bassFreqSlider', 'input', (e) => {
+      const val = parseInt(e.target.value);
+      APP_STATE.audioEffects.bassBoostFreq = val;
+      const disp = document.getElementById('bassFreqVal');
+      if (disp) disp.textContent = `${val} Hz`;
+      applyAudioEffects();
+    });
+
+    safeOn('delayToggle', 'change', (e) => {
+      APP_STATE.audioEffects.delayEnabled = e.target.checked;
+      applyAudioEffects();
+      showMobileToast(e.target.checked ? "Eco / Delay activado" : "Eco / Delay desactivado");
+    });
+    safeOn('delayTimeSlider', 'input', (e) => {
+      const val = parseFloat(e.target.value);
+      APP_STATE.audioEffects.delayTime = val;
+      const disp = document.getElementById('delayTimeVal');
+      if (disp) disp.textContent = `${Math.round(val * 1000)}ms`;
+      applyAudioEffects();
+    });
+    safeOn('delayFeedbackSlider', 'input', (e) => {
+      const val = parseInt(e.target.value);
+      APP_STATE.audioEffects.delayFeedback = val / 100;
+      const disp = document.getElementById('delayFeedbackVal');
+      if (disp) disp.textContent = `${val}%`;
+      applyAudioEffects();
+    });
+    safeOn('delayMixSlider', 'input', (e) => {
+      const val = parseInt(e.target.value);
+      APP_STATE.audioEffects.delayMix = val / 100;
+      const disp = document.getElementById('delayMixVal');
+      if (disp) disp.textContent = `${val}%`;
+      applyAudioEffects();
+    });
+
+    safeOn('reverbToggle', 'change', (e) => {
+      APP_STATE.audioEffects.reverbEnabled = e.target.checked;
+      applyAudioEffects();
+      showMobileToast(e.target.checked ? "Reverberación activada" : "Reverberación desactivada");
+    });
+    safeOn('reverbDecaySlider', 'input', (e) => {
+      const val = parseFloat(e.target.value);
+      APP_STATE.audioEffects.reverbDecay = val;
+      const disp = document.getElementById('reverbDecayVal');
+      if (disp) disp.textContent = `${val.toFixed(1)}s`;
+      const ctx = getAudioContext();
+      if (ctx && audioPipeline && audioPipeline.convolver) {
+        audioPipeline.convolver.buffer = generateImpulseResponse(ctx, val);
+      }
+      applyAudioEffects();
+    });
+    safeOn('reverbMixSlider', 'input', (e) => {
+      const val = parseInt(e.target.value);
+      APP_STATE.audioEffects.reverbMix = val / 100;
+      const disp = document.getElementById('reverbMixVal');
+      if (disp) disp.textContent = `${val}%`;
+      applyAudioEffects();
     });
 
     /* ========================================================
