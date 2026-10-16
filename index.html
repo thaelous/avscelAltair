@@ -270,14 +270,15 @@
       </button>
     </div>
 
-    <!-- Derecha: Exportación rápida + Menú Desplegable (⋮) -->
+    <!-- Derecha: Guardado/Exportación rápida (💾 Guardar MP4) + Menú Desplegable (⋮) -->
     <div class="flex items-center gap-1.5 shrink-0">
       <!-- Input de archivo oculto para apertura global -->
       <input type="file" id="filePicker" multiple accept="video/*" class="hidden">
 
-      <button id="exportBtn" class="touch-btn h-7 px-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-black rounded-lg flex items-center gap-1 shadow-md shadow-cyan-400/25 active:scale-95 transition-transform" title="Exportar Proyecto">
-        <i class="fa-solid fa-arrow-down-to-bracket text-xs"></i>
-        <span class="text-[11px] hidden sm:inline">Exportar</span>
+      <button id="exportBtn" class="touch-btn h-7 px-3 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-black text-xs font-black rounded-lg flex items-center gap-1.5 shadow-md shadow-cyan-400/25 active:scale-95 transition-transform" title="Guardar y Exportar Video MP4">
+        <i class="fa-solid fa-floppy-disk text-xs"></i>
+        <span class="text-[11px] font-extrabold hidden sm:inline">Guardar MP4</span>
+        <span class="text-[11px] font-extrabold sm:hidden">Guardar</span>
       </button>
 
       <!-- Botón Menú Desplegable (⋮) -->
@@ -330,7 +331,18 @@
           <input type="file" id="drawerVideoFileInput" multiple accept="video/*" class="hidden">
         </label>
 
-        <!-- 3. Vaciar Timeline -->
+        <!-- 3. Guardar Como... (MP4) -->
+        <button id="drawerSaveAsMp4Btn" class="touch-btn w-full p-2.5 rounded-xl bg-[#13242c] hover:bg-[#1a323d] border border-cyan-800/60 flex items-center gap-3 text-left transition-all">
+          <div class="w-8 h-8 rounded-lg bg-cyan-950/90 border border-cyan-700/80 text-cyan-400 flex items-center justify-center shrink-0">
+            <i class="fa-solid fa-floppy-disk text-sm"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div class="text-xs font-bold text-cyan-300">Guardar Como... (MP4)</div>
+            <div class="text-[10px] text-cyan-400/80">Elige nombre, resolución y carpeta de destino en tu dispositivo</div>
+          </div>
+        </button>
+
+        <!-- 4. Vaciar Timeline -->
         <button id="drawerClearTimelineBtn" class="touch-btn w-full p-2.5 rounded-xl bg-[#1c131d] hover:bg-[#281827] border border-rose-900/50 flex items-center gap-3 text-left transition-all">
           <div class="w-8 h-8 rounded-lg bg-rose-950/90 border border-rose-700/80 text-rose-400 flex items-center justify-center shrink-0">
             <i class="fa-solid fa-trash-can text-sm"></i>
@@ -341,7 +353,7 @@
           </div>
         </button>
 
-        <!-- 4. Instalar App Offline (PWA) -->
+        <!-- 5. Instalar App Offline (PWA) -->
         <button id="drawerInstallPwaBtn" class="touch-btn w-full p-2.5 rounded-xl bg-[#12221b] hover:bg-[#183127] border border-emerald-900/50 flex items-center gap-3 text-left transition-all">
           <div class="w-8 h-8 rounded-lg bg-emerald-950/90 border border-emerald-700/80 text-emerald-400 flex items-center justify-center shrink-0">
             <i class="fa-brands fa-android text-sm"></i>
@@ -1492,6 +1504,83 @@
         </button>
         <button id="btnApplyTransition" class="touch-btn flex-1 h-9 bg-gradient-to-r from-cyan-400 to-blue-500 text-black text-xs font-extrabold rounded-xl shadow-md shadow-cyan-400/25">
           Listo
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIGURACIÓN DE GUARDADO / EXPORTACIÓN LOCAL (.MP4) -->
+  <div id="saveExportDialogModal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-3 hidden transition-opacity duration-200">
+    <div class="bg-[#121420] border border-[#252a3d] rounded-2xl w-full max-w-sm p-4 space-y-3.5 shadow-2xl animate-slide-up">
+      <!-- Encabezado -->
+      <div class="flex items-center justify-between pb-2 border-b border-[#1f2334]">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-600 text-black flex items-center justify-center text-sm font-black shadow-md shadow-cyan-500/20">
+            <i class="fa-solid fa-floppy-disk"></i>
+          </div>
+          <div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider">Guardar Video Local (.MP4)</h4>
+            <p class="text-[10px] text-gray-400 font-mono">File System Access API • 100% Local</p>
+          </div>
+        </div>
+        <button id="closeSaveExportDialogBtn" class="touch-btn w-7 h-7 rounded-full bg-[#1b1e2e] text-gray-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- 1. Campo de Nombre de Archivo Personalizado -->
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-gray-300 flex items-center justify-between">
+          <span>Nombre del Archivo</span>
+          <span class="text-[9px] font-mono text-cyan-400">Extensión .mp4</span>
+        </label>
+        <div class="relative flex items-center">
+          <input type="text" id="exportCustomFileName" value="Mi_Video_Editado.mp4" class="w-full bg-[#0d0f17] border border-[#23273c] rounded-xl px-3 py-2 text-xs font-mono text-cyan-300 focus:border-cyan-400 focus:outline-none pr-10 shadow-inner">
+          <span class="absolute right-3 text-gray-500 text-xs font-mono pointer-events-none">.mp4</span>
+        </div>
+        <!-- Sugerencias rápidas de nombre -->
+        <div class="flex items-center gap-1.5 pt-1 overflow-x-auto scroll-touch-x">
+          <button class="name-preset-btn touch-btn text-[9px] font-mono px-2 py-0.5 rounded-md bg-[#191c2b] text-gray-300 hover:text-cyan-300 border border-[#252a3d] shrink-0" data-name="Mi_Video_Editado.mp4">Mi_Video</button>
+          <button class="name-preset-btn touch-btn text-[9px] font-mono px-2 py-0.5 rounded-md bg-[#191c2b] text-gray-300 hover:text-cyan-300 border border-[#252a3d] shrink-0" data-name="Video_Instagram.mp4">Instagram</button>
+          <button class="name-preset-btn touch-btn text-[9px] font-mono px-2 py-0.5 rounded-md bg-[#191c2b] text-gray-300 hover:text-cyan-300 border border-[#252a3d] shrink-0" data-name="TikTok_Clip.mp4">TikTok</button>
+          <button class="name-preset-btn touch-btn text-[9px] font-mono px-2 py-0.5 rounded-md bg-[#191c2b] text-gray-300 hover:text-cyan-300 border border-[#252a3d] shrink-0" data-name="Proyecto_AVS.mp4">AVS_Pro</button>
+        </div>
+      </div>
+
+      <!-- 2. Calidad / Resolución de Exportación -->
+      <div class="space-y-1">
+        <label class="text-[11px] font-bold text-gray-300 flex items-center justify-between">
+          <span>Resolución y Calidad</span>
+          <span id="exportQualityLabel" class="text-[10px] font-mono text-cyan-300 font-bold">720p HD</span>
+        </label>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="exportOpt720" class="export-res-btn touch-btn h-9 rounded-xl bg-cyan-500 text-black font-extrabold text-[11px] font-mono border border-cyan-400 flex items-center justify-center gap-1.5 shadow-sm" data-quality="720p">
+            <i class="fa-solid fa-bolt text-xs"></i> 720p HD (Rápido)
+          </button>
+          <button id="exportOpt1080" class="export-res-btn touch-btn h-9 rounded-xl bg-[#191c2b] text-gray-300 font-bold text-[11px] font-mono border border-[#262a3f] flex items-center justify-center gap-1.5 hover:text-white" data-quality="1080p">
+            <i class="fa-solid fa-award text-xs text-amber-400"></i> 1080p FHD
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. Información de Ruta y Guardado Local con File System Access API -->
+      <div class="bg-[#0b0d14] p-2.5 rounded-xl border border-[#1f2334] space-y-1">
+        <div class="flex items-center gap-1.5 text-[10px] text-cyan-300 font-bold">
+          <i class="fa-solid fa-folder-tree text-cyan-400"></i>
+          <span>Destino en Almacenamiento Local</span>
+        </div>
+        <p id="fsaSupportNote" class="text-[9px] text-gray-400 leading-relaxed font-sans">
+          Al presionar guardar se abrirá el explorador de archivos nativo de tu dispositivo para elegir la carpeta exacta.
+        </p>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="space-y-2 pt-1">
+        <button id="btnConfirmSaveExport" class="touch-btn w-full h-11 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 text-black font-black text-xs rounded-xl shadow-lg shadow-cyan-400/25 flex items-center justify-center gap-2 active:scale-95 transition-all">
+          <i class="fa-solid fa-floppy-disk text-sm"></i> Guardar Video (.mp4)
+        </button>
+        <button id="btnCancelSaveExportDialog" class="touch-btn w-full h-8 bg-[#181a27] hover:bg-[#202334] border border-[#272b3d] text-gray-300 font-bold text-xs rounded-xl hover:text-white">
+          Cancelar
         </button>
       </div>
     </div>
@@ -6800,19 +6889,77 @@
     });
 
     /* ========================================================
-       17. EXPORTACIÓN MULTIPISTA REAL (V1 + V2 + TEXTOS + AUDIO)
+       17. EXPORTACIÓN Y GUARDADO LOCAL (.MP4 CON RUTA Y NOMBRE)
        ======================================================== */
     let mediaExportRecorder = null;
     let exportLoopTimer = null;
+    let pendingExportConfig = { fileName: 'Mi_Video_Editado.mp4', quality: '720p' };
 
-    safeOn(exportBtn, 'click', () => {
+    const saveExportDialogModal = document.getElementById('saveExportDialogModal');
+    const closeSaveExportDialogBtn = document.getElementById('closeSaveExportDialogBtn');
+    const btnCancelSaveExportDialog = document.getElementById('btnCancelSaveExportDialog');
+    const btnConfirmSaveExport = document.getElementById('btnConfirmSaveExport');
+    const exportCustomFileName = document.getElementById('exportCustomFileName');
+    const exportQualityLabel = document.getElementById('exportQualityLabel');
+    const drawerSaveAsMp4Btn = document.getElementById('drawerSaveAsMp4Btn');
+
+    function openSaveExportDialog() {
       if (getProjectDuration() === 0) {
         return showMobileToast("Carga y organiza clips en el timeline primero");
       }
-      startMultiTrackExport();
+      if (saveExportDialogModal) saveExportDialogModal.classList.remove('hidden');
+    }
+
+    function closeSaveExportDialog() {
+      if (saveExportDialogModal) saveExportDialogModal.classList.add('hidden');
+    }
+
+    safeOn(exportBtn, 'click', openSaveExportDialog);
+    if (drawerSaveAsMp4Btn) {
+      safeOn(drawerSaveAsMp4Btn, 'click', () => {
+        closeAppMenuModal();
+        openSaveExportDialog();
+      });
+    }
+
+    safeOn(closeSaveExportDialogBtn, 'click', closeSaveExportDialog);
+    safeOn(btnCancelSaveExportDialog, 'click', closeSaveExportDialog);
+    if (saveExportDialogModal) {
+      safeOn(saveExportDialogModal, 'click', (e) => {
+        if (e.target === saveExportDialogModal) closeSaveExportDialog();
+      });
+    }
+
+    // Presets de nombres rápidos
+    document.querySelectorAll('.name-preset-btn').forEach(btn => {
+      safeOn(btn, 'click', () => {
+        const name = btn.dataset.name;
+        if (exportCustomFileName) exportCustomFileName.value = name;
+      });
     });
 
-    function startMultiTrackExport() {
+    // Selector de calidad en modal de exportación
+    document.querySelectorAll('.export-res-btn').forEach(btn => {
+      safeOn(btn, 'click', () => {
+        const q = btn.dataset.quality;
+        pendingExportConfig.quality = q;
+        document.querySelectorAll('.export-res-btn').forEach(b => {
+          b.className = "export-res-btn touch-btn h-9 rounded-xl bg-[#191c2b] text-gray-300 font-bold text-[11px] font-mono border border-[#262a3f] flex items-center justify-center gap-1.5 hover:text-white";
+        });
+        btn.className = "export-res-btn touch-btn h-9 rounded-xl bg-cyan-500 text-black font-extrabold text-[11px] font-mono border border-cyan-400 flex items-center justify-center gap-1.5 shadow-sm";
+        if (exportQualityLabel) exportQualityLabel.textContent = q === '1080p' ? '1080p FHD' : '720p HD';
+      });
+    });
+
+    safeOn(btnConfirmSaveExport, 'click', () => {
+      let fName = (exportCustomFileName && exportCustomFileName.value.trim()) ? exportCustomFileName.value.trim() : 'Mi_Video_Editado.mp4';
+      if (!fName.toLowerCase().endsWith('.mp4')) fName += '.mp4';
+      pendingExportConfig.fileName = fName;
+      closeSaveExportDialog();
+      startMultiTrackExport(pendingExportConfig);
+    });
+
+    function startMultiTrackExport(config) {
       pauseVideo();
       if (exportModal) exportModal.classList.remove('hidden');
       const recHud = document.getElementById('recordingHud');
@@ -6823,8 +6970,9 @@
 
       const totalDur = getProjectDuration();
       const exportCanvas = document.createElement('canvas');
-      exportCanvas.width = glCanvas ? glCanvas.width : 720;
-      exportCanvas.height = glCanvas ? glCanvas.height : 404;
+      const is1080 = config.quality === '1080p';
+      exportCanvas.width = is1080 ? 1080 : 720;
+      exportCanvas.height = is1080 ? 608 : 404;
       const expCtx = exportCanvas.getContext('2d');
 
       let canvasStream = null;
@@ -6837,37 +6985,72 @@
         return showMobileToast("Navegador no soporta MediaRecorder");
       }
 
-      let options = { mimeType: 'video/webm' };
+      let options = { mimeType: 'video/mp4' };
+      if (!MediaRecorder.isTypeSupported('video/mp4')) {
+        options = { mimeType: 'video/webm' };
+      }
       const chunks = [];
 
+      let mediaRec = null;
       try {
-        mediaExportRecorder = new MediaRecorder(canvasStream, options);
+        mediaRec = new MediaRecorder(canvasStream, options);
       } catch (err) {
         try {
-          mediaExportRecorder = new MediaRecorder(canvasStream);
+          mediaRec = new MediaRecorder(canvasStream);
         } catch (err2) {
           if (exportModal) exportModal.classList.add('hidden');
+          if (recHud) recHud.classList.add('hidden');
           return showMobileToast("Error inicializando grabación");
         }
       }
+      mediaExportRecorder = mediaRec;
 
       mediaExportRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
 
-      mediaExportRecorder.onstop = () => {
+      mediaExportRecorder.onstop = async () => {
         clearInterval(exportLoopTimer);
         if (exportModal) exportModal.classList.add('hidden');
         if (recHud) recHud.classList.add('hidden');
 
-        const blob = new Blob(chunks, { type: 'video/webm' });
-        const downloadUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = downloadUrl;
-        a.download = `AVS_Studio_Pro_${Date.now()}.webm`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(downloadUrl);
-        showMobileToast("¡Video exportado y descargado con éxito!");
+        const mime = options.mimeType || 'video/mp4';
+        const blob = new Blob(chunks, { type: mime });
+        const finalName = config.fileName || 'Mi_Video_Editado.mp4';
+
+        // 1. Intentar usar File System Access API (showSaveFilePicker) para elegir carpeta y ruta exacta
+        let savedWithFSA = false;
+        if (typeof window.showSaveFilePicker === 'function') {
+          try {
+            const handle = await window.showSaveFilePicker({
+              suggestedName: finalName,
+              types: [{
+                description: 'Video MP4',
+                accept: { 'video/mp4': ['.mp4'], 'video/webm': ['.webm'] }
+              }]
+            });
+            const writable = await handle.createWritable();
+            await writable.write(blob);
+            await writable.close();
+            savedWithFSA = true;
+            showMobileToast(`¡Guardado exitoso en carpeta seleccionada: ${finalName}!`);
+          } catch (err) {
+            if (err.name !== 'AbortError') {
+              console.warn("File System Access API cancelada o no permitida, usando descarga estándar:", err);
+            }
+          }
+        }
+
+        // 2. Fallback Universal si FSA no está disponible o fue cancelado
+        if (!savedWithFSA) {
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = finalName;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl);
+          showMobileToast(`¡Video guardado como "${finalName}"!`);
+        }
       };
 
       mediaExportRecorder.start(100);
@@ -6887,7 +7070,9 @@
 
         if (APP_STATE.currentTime >= totalDur) {
           clearInterval(exportLoopTimer);
-          if (mediaExportRecorder.state !== 'inactive') mediaExportRecorder.stop();
+          if (mediaExportRecorder && mediaExportRecorder.state !== 'inactive') {
+            mediaExportRecorder.stop();
+          }
         }
       }, 33);
     }
